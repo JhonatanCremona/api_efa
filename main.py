@@ -1,9 +1,9 @@
 from typing import Union
 from fastapi import FastAPI, HTTPException
 from contextlib import asynccontextmanager
-from config.opc import OPCUAClient
+from config.opc import OPCUAClient, leer_nodo
 
-URL = "opc.tcp://192.168.0.150:4840"
+URL = "opc.tcp://192.168.10.120:4840"
 opc_client = OPCUAClient(URL)
 
 @asynccontextmanager
@@ -21,9 +21,24 @@ def read_root():
     return {"Hello": "World"}
 
 @app.get("/read")
-async def readNode():
+async def read_node():
     try:
-        value = opc_client.read_node(f"ns=2;i=3")
-        return {"nodo id": 2, "value": value}
+        # Define la ruta del nodo
+       # ruta_nodo = [
+        #    "3:ServerInterfaces", 
+         #   "4:MINI PC", 
+          #  "4:LABORATORIO", 
+           # "4:EQUIPO", 
+            #"4:NRO_PASOS"
+        #]
+
+        # Llama a la función leer_nodo con la ruta especificada
+        nodo_info = leer_nodo(URL)
+        
+        # Verifica si la información del nodo es válida
+        if nodo_info is None:
+            raise HTTPException(status_code=404, detail="Nodo no encontrado")
+        
+        return nodo_info
     except Exception as e:
-        raise HTTPException(status=500, detail=f"Error al leer el nodo: {e}")
+        raise HTTPException(status_code=500, detail=f"Error al leer el nodo: {e}")
