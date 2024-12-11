@@ -23,22 +23,17 @@ def read_root():
 @app.get("/read")
 async def read_node():
     try:
-        # Define la ruta del nodo
-       # ruta_nodo = [
-        #    "3:ServerInterfaces", 
-         #   "4:MINI PC", 
-          #  "4:LABORATORIO", 
-           # "4:EQUIPO", 
-            #"4:NRO_PASOS"
-        #]
-
         # Llama a la función leer_nodo con la ruta especificada
-        nodo_info = leer_nodo(URL)
+        nodo_info = leer_nodo(URL,i=22,cant=5,ns=4)
         
         # Verifica si la información del nodo es válida
         if nodo_info is None:
             raise HTTPException(status_code=404, detail="Nodo no encontrado")
         
-        return nodo_info
+        #return nodo_info
+        return {"status": "success", "data": nodo_info}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al leer el nodo: {e}")
+    
+
+
