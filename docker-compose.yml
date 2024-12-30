@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0.32
+    container_name: mysql-container
+    environment:
+      MYSQL_ROOT_PASSWORD: echo3241
+      MYSQL_DATABASE: mi_base_de_datos
+    ports:
+      - "3306:3306"
+    networks:
+      - mysql-network
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+networks:
+  mysql-network:
+    driver: bridge
+
+volumes:
+  mysql-data:
