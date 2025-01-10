@@ -63,8 +63,16 @@ def datosResumenCelda(opc_cliente):
         lista.append(dGeneral.buscarNodo(2, "sector_IO", "estadoMaquina"))
         lista.append("00:00hs")
 
+        diccionario = {}
+        diccionario["NombreReceta"] = dGeneral.buscarNodo(2, "RecetaActual", "Nombre")
+        diccionario["PesoActual"] = pesoActual
+        diccionario["PesoProducto"] = dGeneral.buscarNodo(2, "RecetaActual", "PesoProducto")
+        diccionario["estadoMaquina"] = dGeneral.buscarNodo(2,"sector_IO", "estadoMaquina")
+        diccionario["TiempoTranscurrido"] = "00:00 hs"
+
+
         celda = {
-            "Desmoldeo": lista,
+            "Desmoldeo": diccionario,
             "Encajonado": [],
             "Palletizado": []
         }

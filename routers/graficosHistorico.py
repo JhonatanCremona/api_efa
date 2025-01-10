@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends, Query
 from sqlalchemy.orm import Session
-from datetime import date
+from datetime import datetime, date
 
 from service.cicloService import obtenerRecetasPorFecha, obtenerListaCiclosXProductos
 from config import db
@@ -10,7 +10,7 @@ RoutersGraficosH = APIRouter(prefix="/graficos-hsitorico", tags=["Graficos Histo
 #Lineas de productos en un grafico
 @RoutersGraficosH.get("/ciclos-productos/")
 def red_lista_ciclos_productos(
-    fecha_inicio: date = Query(..., description="Fecha de inicio (YYYY-MM-DD)"),
+    fecha_inicio: date = Query(..., description="Fecha de inicio (YYYY-MM-DD HH:MM:SS)"),
     fecha_fin: date = Query(..., description="Fecha de fin (YYYY-MM-DD)"), 
     db : Session = Depends(db.get_db)):
 

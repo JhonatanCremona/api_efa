@@ -7,7 +7,7 @@ class RecetaXCiclo(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     pesoProductoXFila = Column(Double, index=True)
-    cantidadNiveles = Column(Integer, index=True)
+    cantidadNivelesCorrectos = Column(Integer, index=True)
 
     id_recetario = Column(Integer, ForeignKey("recetario.id"), nullable=False)
     recetario = relationship("Recetario", back_populates="recetaXCiclo")

@@ -8,5 +8,6 @@ class Torre(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     nombreTag = Column(String(30), index=True)
+    cantidadNiveles = Column(Integer, index=True)
 
     ciclo = relationship("Ciclo", back_populates="torre")

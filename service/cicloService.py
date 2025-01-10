@@ -1,19 +1,22 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
-from datetime import date
+from datetime import date, datetime
 from models.recetaxciclo import RecetaXCiclo
 from models.ciclo import Ciclo
 
-
-
 def obtenerRecetasPorFecha(db, fecha_inicio: date, fecha_fin: date):
+
+    fecha_inicio = datetime.combine(fecha_inicio, datetime.min.time())
+    fecha_fin = datetime.combine(fecha_fin, datetime.max.time())
+    
+
     data = (
         db.query(RecetaXCiclo)
         .join(Ciclo, RecetaXCiclo.id_ciclo == Ciclo.id)
         .filter(Ciclo.fecha_fin.between(fecha_inicio, fecha_fin))
         .all()
         )
-
+    
     tablaCiclo = (
         db.query(Ciclo)
         .filter(Ciclo.fecha_fin.between(fecha_inicio, fecha_fin))
@@ -58,6 +61,7 @@ def obtenerRecetasPorFecha(db, fecha_inicio: date, fecha_fin: date):
             "id_recetario": row["id_recetario"],
             "ciclos": ciclos_agrupados_lista
         })
+    
 
     return resultado
 
@@ -79,6 +83,9 @@ def save_recetaXCiclo():
     return data
 
 def obtenerListaCiclosXProductos(db, fecha_inicio: date, fecha_fin: date):
+    fecha_inicio = datetime.combine(fecha_inicio, datetime.min.time())
+    fecha_fin = datetime.combine(fecha_fin, datetime.max.time())
+    
     data = (
         db.query(RecetaXCiclo)
         .join(Ciclo, RecetaXCiclo.id_ciclo == Ciclo.id)
@@ -95,11 +102,9 @@ def obtenerListaCiclosXProductos(db, fecha_inicio: date, fecha_fin: date):
     for row in tablaCiclo:
         id_fecha = row["fecha_fin"]
         if id_fecha not in value:
-            value.append(
-
-
-
-
+            print()
+    
+    return tablaCiclo
 
 
 
