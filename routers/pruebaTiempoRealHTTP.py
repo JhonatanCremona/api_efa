@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 
-from service.datosTiempoReal import datosGenerale, resumenEtapaDesmoldeo
+from service.datosTiempoReal import datosGenerale, resumenEtapaDesmoldeo, datosResumenCelda
 from config.opc import OPCUAClient
 
 import socket
@@ -11,6 +11,13 @@ opc_client = OPCUAClient(URL)
 opc_client.connect()
 
 RouterLive = APIRouter(prefix="/dev", tags=["PruebaHTTPDatosOPC"], responses={404: {"description": "Sin Acceso al servidor OPC"}})
+
+@RouterLive.get("/celda-completo")
+def read_celda_completo():
+    try:
+        return datosResumenCelda(opc_client)
+    except Exception as e:
+        raise HTTPException(status=500, detail=f"Error al obtener los datos de la celda: {e}")
 
 @RouterLive.get("/resumen-desmoldeo")
 def read_resumen_desmoldeo():

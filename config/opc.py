@@ -24,6 +24,7 @@ class OPCUAClient:
             raise Exception("Cliente no conectado.")
         node = self.client.get_node(node_id)
         return node.get_value()
+    
     def get_objects_node(self):
         if not self.client:
             raise Exception("Cliente no conectado.")

@@ -61,7 +61,16 @@ def obtenerRecetasPorFecha(db, fecha_inicio: date, fecha_fin: date):
 
     return resultado
 
-def save_datosCiclo():
+def save_datosCiclo(opc_client):
+    #Nodo torreActual: id Torre
+    #Nodo tipoFin (Nuevo) --> Nodo estado
+    #Nodo nivelesDesmolde (Fin)
+    #Nodo nivelActual  --> cantidadNivelesFin -> 
+    #Nodo Nivel_x_estado -->int 
+    #BDD -> ETAPA (DESMOLDEO - ENCAJONADO - PALLET)
+    #Validacion 
+    
+
     data = 0
     return data
 

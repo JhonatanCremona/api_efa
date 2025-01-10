@@ -30,3 +30,12 @@ class Recetas:
             print(f"Error al buscar nodos: {e}")
             return None    
         
+    def buscarNodo(self, indice, nbreObjeto, nbreNodo):
+        try:
+            root_node = self.conexion_servidor.get_objects_node()
+            listaNodos = root_node.get_child([f"{indice}:{nbreObjeto}"])
+            nodo = listaNodos.get_child(f"{indice}:{nbreNodo}")
+            return nodo.get_value()
+        except Exception as e:
+            print(f"Error al buscar el nodo: {e}")
+            return None

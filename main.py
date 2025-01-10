@@ -17,7 +17,7 @@ from models.sdda import Sdda
 
 from routers import usuarios, pruebaTiempoRealHTTP, graficosHistorico
 
-from service.datosTiempoReal import datosGenerale, resumenEtapaDesmoldeo
+from service.datosTiempoReal import datosGenerale, resumenEtapaDesmoldeo, datosResumenCelda
 
 import socket
 import asyncio
@@ -56,11 +56,13 @@ async def central_opc_render():
             logger.info("Leyendo valor del OPC centralmente...")
             data = {
                 "desmoldeo": resumenEtapaDesmoldeo(opc_client),
-                "general": datosGenerale(opc_client)
+                "general": datosGenerale(opc_client),
+                "celda": datosResumenCelda(opc_client)
             }
             logger.info(f"Datos leídos: {data}")
             await ws_manager.send_message("resumen-desmoldeo", data["desmoldeo"])
             await ws_manager.send_message("lista-tiempo-real", data["general"])
+            await ws_manager.send_message("celda-completo", data["celda"])
 
             await asyncio.sleep(1.0)  # Intervalo de lectura
         except Exception as e:
@@ -95,7 +97,6 @@ async def resumen_desmoldeo(websocket: WebSocket, id: str):
             await asyncio.sleep(0.3)
     except WebSocketDisconnect:
         await ws_manager.disconnect(id, websocket)
-
 
 @app.get("/")
 def read_root():
