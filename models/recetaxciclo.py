@@ -6,7 +6,6 @@ class RecetaXCiclo(Base):
     __tablename__ = "recetaxciclo"
 
     id = Column(Integer, primary_key=True, index=True)
-    pesoProductoXFila = Column(Double, index=True)
     cantidadNivelesCorrectos = Column(Integer, index=True)
 
     id_recetario = Column(Integer, ForeignKey("recetario.id"), nullable=False)
@@ -19,8 +18,8 @@ class Recetario(Base):
     __tablename__ = "recetario"
 
     id = Column(Integer, primary_key=True, index=True)
-    numeroGripper = Column(Integer, index=True)
     tipoDeMolde = Column(String(50), index=True) 
     nombre = Column(String(50), index=True)
+    pesoProductoXFila = Column(Double, index=True)
 
     recetaXCiclo = relationship("RecetaXCiclo", back_populates="recetario")

@@ -15,7 +15,7 @@ from models.alarma import Alarma
 from models.kuka import Kuka
 from models.sdda import Sdda
 
-from routers import usuarios, pruebaTiempoRealHTTP, graficosHistorico
+from routers import usuarios, pruebaTiempoRealHTTP, graficosHistorico, resumenProductividad
 
 from service.datosTiempoReal import datosGenerale, resumenEtapaDesmoldeo, datosResumenCelda
 
@@ -64,7 +64,7 @@ async def central_opc_render():
             await ws_manager.send_message("lista-tiempo-real", data["general"])
             await ws_manager.send_message("celda-completo", data["celda"])
 
-            await asyncio.sleep(1.0)  # Intervalo de lectura
+            await asyncio.sleep(10.0)  # Intervalo de lectura
         except Exception as e:
             logger.error(f"Error en el lector central del OPC: {e}")
 
@@ -83,6 +83,7 @@ app = FastAPI(lifespan=lifespan)
 app.include_router(usuarios.RouterUsers)
 app.include_router(pruebaTiempoRealHTTP.RouterLive)
 app.include_router(graficosHistorico.RoutersGraficosH)
+app.include_router(resumenProductividad.RouterProductividad)
 
 @app.websocket("/ws/{id}")
 async def resumen_desmoldeo(websocket: WebSocket, id: str):
@@ -94,7 +95,7 @@ async def resumen_desmoldeo(websocket: WebSocket, id: str):
             await websocket.receive_json()  # Aquí puedes hacer validaciones si es necesario
             data = resumenEtapaDesmoldeo(opc_client)  # Datos específicos para desmoldeo
             await ws_manager.send_message(id, data)
-            await asyncio.sleep(0.3)
+            await asyncio.sleep(0.300)
     except WebSocketDisconnect:
         await ws_manager.disconnect(id, websocket)
 
