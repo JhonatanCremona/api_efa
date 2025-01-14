@@ -18,6 +18,7 @@ from models.sdda import Sdda
 from routers import usuarios, pruebaTiempoRealHTTP, graficosHistorico, resumenProductividad
 
 from service.datosTiempoReal import datosGenerale, resumenEtapaDesmoldeo, datosResumenCelda
+from service.alarmasService import enviarDatosAlarmas, enviaListaLogsAlarmas
 
 import socket
 import asyncio
@@ -57,12 +58,16 @@ async def central_opc_render():
             data = {
                 "desmoldeo": resumenEtapaDesmoldeo(opc_client),
                 "general": datosGenerale(opc_client),
-                "celda": datosResumenCelda(opc_client)
+                "celda": datosResumenCelda(opc_client),
+                "alarmas": enviarDatosAlarmas(opc_client),
+                "alarmasLogs": enviaListaLogsAlarmas(),
             }
             logger.info(f"Datos leídos: {data}")
             await ws_manager.send_message("resumen-desmoldeo", data["desmoldeo"])
             await ws_manager.send_message("lista-tiempo-real", data["general"])
-            await ws_manager.send_message("celda-completo", data["celda"])
+            await ws_manager.send_message("celda-completo", data["celda"]),
+            await ws_manager.send_message("alarmas-datos", data["alarmas"]),
+            await ws_manager.send_message("alarmas-logs", data["alarmasLogs"])
 
             await asyncio.sleep(10.0)  # Intervalo de lectura
         except Exception as e:

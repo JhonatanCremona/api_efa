@@ -8,6 +8,25 @@ from models.recetaxciclo import Recetario
 from collections import defaultdict
 from datetime import datetime
 
+
+def save_datosCiclo(opc_client):
+    #Nodo torreActual: id Torre
+    #Nodo tipoFin (Nuevo) --> Nodo estado
+    #Nodo nivelesDesmolde (Fin)
+    #Nodo nivelActual  --> cantidadNivelesFin -> 
+    #Nodo Nivel_x_estado -->int 
+    #BDD -> ETAPA (DESMOLDEO - ENCAJONADO - PALLET)
+    #Validacion 
+    
+
+    data = 0
+    return data
+
+def save_recetaXCiclo():
+    data = 0
+    return data
+
+
 def obtenerRecetasPorFecha(db, fecha_inicio: date, fecha_fin: date):
     #convertir la fecha a timestamp
     fecha_inicio = datetime.combine(fecha_inicio, datetime.min.time())
@@ -63,22 +82,6 @@ def obtenerRecetasPorFecha(db, fecha_inicio: date, fecha_fin: date):
     #return listaCiclo_dic
     return list(resultado.values())
 
-def save_datosCiclo(opc_client):
-    #Nodo torreActual: id Torre
-    #Nodo tipoFin (Nuevo) --> Nodo estado
-    #Nodo nivelesDesmolde (Fin)
-    #Nodo nivelActual  --> cantidadNivelesFin -> 
-    #Nodo Nivel_x_estado -->int 
-    #BDD -> ETAPA (DESMOLDEO - ENCAJONADO - PALLET)
-    #Validacion 
-    
-
-    data = 0
-    return data
-
-def save_recetaXCiclo():
-    data = 0
-    return data
 
 def obtenerListaCiclosXProductos(db, fecha_inicio: date, fecha_fin: date):
     fecha_inicio = datetime.combine(fecha_inicio, datetime.min.time())
@@ -209,13 +212,14 @@ def resumenDeProductiviada(db, fecha_inicio: date, fecha_fin:date):
     productosRealizados = []
     
     resultado = {}
-    resumen["cantidadCiclosCorrectos"] = len(tablaCiclo)
+    resumen["CantidadCiclosFinalizados"] = len(tablaCiclo)
 
     def buscarCiclos(idReceta):
         return [
             {
-                "id_ciclo": ciclo.id,
+                "id_ciclo": ciclo.id_ciclo,
                 "pesoTotal": listaReceta_dic.get(idReceta).pesoProductoXFila * ciclo.cantidadNivelesCorrectos,
+                "tiempoTotal": listaCiclos_dic[ciclo.id_ciclo].tiempoTotal
             }
             for ciclo in listaRecetaXCiclo if ciclo.id_recetario == idReceta
         ]
@@ -224,22 +228,28 @@ def resumenDeProductiviada(db, fecha_inicio: date, fecha_fin:date):
     for item in listaRecetaXCiclo:
         totalPeso += item.cantidadNivelesCorrectos * listaReceta_dic.get(item.id_recetario).pesoProductoXFila
         if item.id_recetario not in resultado:
+            listaBuscarCiclo = buscarCiclos(item.id_recetario)
+            pesoFinal = 0
+            tiempoTotalCiclo = 0
+            for data in listaBuscarCiclo:
+                print(data)
+                pesoFinal += data["pesoTotal"]
+                tiempoTotalCiclo += data["tiempoTotal"]
+
             productosRealizados.append(
                 {
                     "NombreProducto": listaReceta_dic.get(item.id_recetario).nombre,
                     "lote": listaCiclos_dic.get(item.id_ciclo).lote,
-                    "peso": buscarCiclos(item.id_recetario), #iterar la suam de productos
-                    "cantidadCiclos": len(buscarCiclos(item.id_recetario))
+                    "peso": pesoFinal,
+                    "cantidadCiclos": len(listaBuscarCiclo),
+                    "tiempoTotal": tiempoTotalCiclo,
                 }
             )
 
     resultado = list(resultado.values())
 
     resumen["PesoTotal"] = totalPeso / 1000 
+    resumen["ProductosRealizados"] = productosRealizados
 
-    
-
-
-    
 
     return resumen
