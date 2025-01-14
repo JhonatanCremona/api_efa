@@ -1,5 +1,6 @@
 from typing import Union
 from fastapi import FastAPI, HTTPException, Depends, WebSocket, WebSocketDisconnect
+from starlette.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
 from config import db
@@ -89,6 +90,14 @@ app.include_router(usuarios.RouterUsers)
 app.include_router(pruebaTiempoRealHTTP.RouterLive)
 app.include_router(graficosHistorico.RoutersGraficosH)
 app.include_router(resumenProductividad.RouterProductividad)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Permite todas las solicitudes de cualquier dominio
+    allow_credentials=True,
+    allow_methods=["*"],  # Permite todos los métodos (GET, POST, etc.)
+    allow_headers=["*"],  # Permite todos los headers
+)
 
 @app.websocket("/ws/{id}")
 async def resumen_desmoldeo(websocket: WebSocket, id: str):
