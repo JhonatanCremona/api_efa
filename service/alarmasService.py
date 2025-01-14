@@ -372,12 +372,16 @@ def enviarDatosAlarmas(opc_cliente):
     try:
         dbDatosAlarmas = Recetas(opc_cliente)
         todasAlarmas = dbDatosAlarmas.buscarNodo(2, "alarma", "Array")
-        
+
         for alarma in listaAlarmas:
             fecha_actual = datetime.datetime.now()
-            alarma["estadoAlarma"] = "Activo" if todasAlarmas[alarma["id_alarma"] -1 ] else "Inactivo" 
-            alarma["fechaRegistro"] = fecha_actual.strftime("%Y-%m-%d-%H-%M")
-            listaLogsAlarmas.append(alarma)
+            if todasAlarmas[alarma["id_alarma"] -1 ] :
+                alarma["estadoAlarma"] = "Activo"
+                alarma["fechaRegistro"] = fecha_actual.strftime("%Y-%m-%d-%H-%M")
+                listaLogsAlarmas.append(alarma)
+            else:
+                alarma["estadoAlarma"] = "Inactivo"
+                alarma["fechaRegistro"] = fecha_actual.strftime("%Y-%m-%d-%H-%M")
 
         return listaAlarmas
     
@@ -389,7 +393,7 @@ def enviarDatosAlarmas(opc_cliente):
 
 def eliminarRegistroLogsAlarma(listaAlarmas):
     now = datetime.datetime.now()
-    fecha_1hora_atras = now - datetime.timedelta(minutes=1)
+    fecha_1hora_atras = now - datetime.timedelta(hours=1)
     estadoEliminarAlarma = False
 
     # Iterar en orden inverso

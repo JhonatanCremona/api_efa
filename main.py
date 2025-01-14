@@ -85,12 +85,9 @@ async def lifespan(app: FastAPI):
     finally:
         opc_client.disconnect()
 
-app = FastAPI(lifespan=lifespan)
-app.include_router(usuarios.RouterUsers)
-app.include_router(pruebaTiempoRealHTTP.RouterLive)
-app.include_router(graficosHistorico.RoutersGraficosH)
-app.include_router(resumenProductividad.RouterProductividad)
 
+
+app = FastAPI(lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # Permite todas las solicitudes de cualquier dominio
@@ -98,6 +95,12 @@ app.add_middleware(
     allow_methods=["*"],  # Permite todos los métodos (GET, POST, etc.)
     allow_headers=["*"],  # Permite todos los headers
 )
+
+app.include_router(usuarios.RouterUsers)
+app.include_router(pruebaTiempoRealHTTP.RouterLive)
+app.include_router(graficosHistorico.RoutersGraficosH)
+app.include_router(resumenProductividad.RouterProductividad)
+
 
 @app.websocket("/ws/{id}")
 async def resumen_desmoldeo(websocket: WebSocket, id: str):

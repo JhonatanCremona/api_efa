@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 
-from service.alarmasService import enviarDatosAlarmas
+from service.alarmasService import enviarDatosAlarmas, enviaListaLogsAlarmas
 from service.datosTiempoReal import datosGenerale, resumenEtapaDesmoldeo, datosResumenCelda
 from config.opc import OPCUAClient
 
@@ -48,3 +48,11 @@ async def readAlarma():
         return value
     except Exception as e:
         raise HTTPException(status=500, detail=f"Error al leer las alarmas: {e}")
+
+@RouterLive.get("/alarmas-logs")
+async def readAlarmaLogs():
+    try:
+        value = enviaListaLogsAlarmas()
+        return value
+    except Exception as e:
+        raise HTTPException(status=500, detail=f"Error al leer los logs de alarmas: {e}")
