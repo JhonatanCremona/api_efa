@@ -16,9 +16,10 @@ from openpyxl.worksheet.table import Table, TableStyleInfo
 
 import os
 from io import BytesIO
+import uuid
 
 # Crear un libro de trabajo
-workbook = Workbook()
+
 
 def agregarDatosExcel(sheet, producto, ciclos):
 
@@ -59,8 +60,8 @@ def agregarDatosExcel(sheet, producto, ciclos):
     table_range = f"{sheet.cell(row=start_row - 1, column=start_col).coordinate}:{sheet.cell(row=end_row, column=end_col).coordinate}"
 
 
-    table_name = f"TablaCiclos_{producto.replace(' ', '_')}"
-    tabla = Table(displayName=table_name, ref=table_range)
+    tabla_nombre = f"TablaCiclos_{producto.replace(' ', '_')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+    tabla = Table(displayName=tabla_nombre, ref=table_range)
 
     # Aplicar estilo a la tabla
     style = TableStyleInfo(showFirstColumn=False, showLastColumn=False, showRowStripes=True, showColumnStripes=True)
@@ -72,7 +73,26 @@ def agregarDatosExcel(sheet, producto, ciclos):
     # Espacio en blanco al final de cada producto
     sheet.append([])
 
+def buscarCiclosXReceta(idReceta, listaReceta_dic, listaCiclos_dic, listaRecetaXCiclo):
+    return [
+        [
+            ciclo.id_ciclo,
+            listaCiclos_dic[ciclo.id_ciclo].id_torre,
+            listaCiclos_dic[ciclo.id_ciclo].fecha_inicio,
+            listaCiclos_dic[ciclo.id_ciclo].fecha_fin,
+            listaCiclos_dic[ciclo.id_ciclo].tipoFin,
+            ciclo.cantidadNivelesCorrectos, 
+            listaReceta_dic.get(idReceta).pesoProductoXFila,
+            listaReceta_dic.get(idReceta).pesoProductoXFila * ciclo.cantidadNivelesCorrectos,
+            listaCiclos_dic[ciclo.id_ciclo].lote, 
+            listaCiclos_dic[ciclo.id_ciclo].tiempoTotal
+        ]
+        for ciclo in listaRecetaXCiclo if ciclo.id_recetario == idReceta
+    ]
+
 def generarDocumentoExcel(datos):
+    workbook = Workbook()
+    
     sheet = workbook.active
     sheet.title = "Reporte Productividad"
 
@@ -89,6 +109,7 @@ def generarDocumentoExcel(datos):
     producto_cell = sheet.cell(row=sheet.max_row, column=1)
     producto_cell.font = Font(bold= True, size=20)
 
+
     for producto in datos:
         agregarDatosExcel(sheet, producto["nombre"], producto["ciclos"])
     
@@ -103,7 +124,7 @@ def generarDocumentoExcel(datos):
         sheet.column_dimensions[column_letter].width = max_length + 2
 
     # Guardar el archivo Excel
-    workbook.save("productos_ciclos.xlsx")
+    #workbook.save("productos_ciclos.xlsx")
     print("Archivo Excel generado con éxito.")
 
     excel_stream = BytesIO()
@@ -146,27 +167,19 @@ def descargarDocumentoExcel(db, fecha_inicio: date, fecha_fin:date):
                 "nombre": listaReceta_dic.get(item.id_recetario).nombre,
                 "ciclos": buscarCiclosXReceta(item.id_recetario, listaReceta_dic, listaCiclos_dic, listaRecetaXCiclo)
             })
-    
+
+    for item in datosParaExcel:
+        print(f"nombre: {item["ciclos"]}")
+
+    listaRecetaXCiclo.clear()
+    listaRecetas.clear()
+    listaReceta_dic.clear()
+    listaCiclos_dic.clear()
     
     return generarDocumentoExcel(datosParaExcel)
 
 
-def buscarCiclosXReceta(idReceta, listaReceta_dic, listaCiclos_dic, listaRecetaXCiclo):
-    return [
-        [
-            ciclo.id_ciclo,
-            listaCiclos_dic[ciclo.id_ciclo].id_torre,
-            listaCiclos_dic[ciclo.id_ciclo].fecha_inicio,
-            listaCiclos_dic[ciclo.id_ciclo].fecha_fin,
-            listaCiclos_dic[ciclo.id_ciclo].tipoFin,
-            ciclo.cantidadNivelesCorrectos, 
-            listaReceta_dic.get(idReceta).pesoProductoXFila,
-            listaReceta_dic.get(idReceta).pesoProductoXFila * ciclo.cantidadNivelesCorrectos,
-            listaCiclos_dic[ciclo.id_ciclo].lote, 
-            listaCiclos_dic[ciclo.id_ciclo].tiempoTotal
-        ]
-        for ciclo in listaRecetaXCiclo if ciclo.id_recetario == idReceta
-    ]
+
 
 def resumenDeProductiviada(db, fecha_inicio: date, fecha_fin:date):
     fecha_inicio = datetime.combine(fecha_inicio, datetime.min.time())
