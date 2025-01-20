@@ -193,10 +193,6 @@ def resumenDeProductividad(db, fecha_inicio:date, fecha_fin:date):
 
     return respuestaProductividad
 
-
-    data = 0
-    return data
-
 def graficosHistoricos(db, fecha_inicio:date, fecha_fin:date):
     fecha_inicio = datetime.combine(fecha_inicio, datetime.min.time())
     fecha_fin = datetime.combine(fecha_fin, datetime.max.time())
@@ -265,6 +261,7 @@ def generarDocumentoXLMSGraficos(db, fecha_inicio:date, fecha_fin:date):
         db.query(Ciclo, RecetaXCiclo, Recetario)
         .join(Ciclo, RecetaXCiclo.id_ciclo == Ciclo.id)
         .join(Recetario, RecetaXCiclo.id_recetario == Recetario.id)
+        .filter(Ciclo.fecha_fin.between(fecha_inicio, fecha_fin))
         .all()
     )
     resultado = []
