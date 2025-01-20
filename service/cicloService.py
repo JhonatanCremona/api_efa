@@ -187,7 +187,7 @@ def resumenDeProductividad(db, fecha_inicio:date, fecha_fin:date):
                 "cantidadCiclos": len(listaBuscarCiclo),
                 "tiempoTotal": tiempoTotalCiclo,
             }
-    respuestaProductividad["CiclosTotales"] = cantidadCiclosTotal
+    respuestaProductividad["CantidadCiclosCorrectos"] = cantidadCiclosTotal
     respuestaProductividad["PesoTotal"] = totalPeso / 1000 # Total en Toneladas
     respuestaProductividad["ProductosRealizados"] = list(productosRealizados.values())
 
