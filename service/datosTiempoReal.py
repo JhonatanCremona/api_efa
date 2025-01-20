@@ -56,6 +56,7 @@ def datosResumenCelda(opc_cliente):
         ])
 
         pesoActual = datosReceta.get("PesoProducto") * dGeneral.buscarNodo(2, "datosTorre", "NivelActual")
+        estadoDesmoldeo = "Activo" if dGeneral.buscarNodo(2, "sector_IO", "estadoMaquina") == 1 else "Pausa" if dGeneral.buscarNodo(2, "sector_IO", "estadoMaquina") == 2 else "Inactivo" if dGeneral.buscarNodo(2, "sector_IO", "estadoMaquina") == 3 else "Valor desconocido"
 
         lista.append(dGeneral.buscarNodo(2, "RecetaActual", "Nombre"))
         lista.append(pesoActual)
@@ -64,12 +65,11 @@ def datosResumenCelda(opc_cliente):
         lista.append("00:00hs")
 
         diccionario = {}
-        diccionario["NombreReceta"] = dGeneral.buscarNodo(2, "RecetaActual", "Nombre")
+        diccionario["NombreReceta"] = dGeneral.buscarNodo(2, "RecetaActual", "RecetaNombre")
         diccionario["PesoActual"] = pesoActual
         diccionario["PesoProducto"] = dGeneral.buscarNodo(2, "RecetaActual", "PesoProducto")
-        diccionario["estadoMaquina"] = dGeneral.buscarNodo(2,"sector_IO", "estadoMaquina")
+        diccionario["estadoMaquina"] = estadoDesmoldeo
         diccionario["TiempoTranscurrido"] = "00:00 hs"
-
 
         celda = {
             "Desmoldeo": diccionario,

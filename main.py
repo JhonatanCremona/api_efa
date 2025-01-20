@@ -1,5 +1,5 @@
 from typing import Union
-from fastapi import FastAPI, HTTPException, Depends, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from starlette.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
@@ -17,7 +17,6 @@ from models.kuka import Kuka
 from models.sdda import Sdda
 
 from routers import usuarios, pruebaTiempoRealHTTP, graficosHistorico, resumenProductividad
-
 from service.datosTiempoReal import datosGenerale, resumenEtapaDesmoldeo, datosResumenCelda
 from service.alarmasService import enviarDatosAlarmas, enviaListaLogsAlarmas
 
@@ -119,46 +118,3 @@ async def resumen_desmoldeo(websocket: WebSocket, id: str):
 @app.get("/")
 def read_root():
     return {"Hello": "World"}
-
-"""
-@app.websocket("/ws/general/{id}")
-async def resumen_general(websocket: WebSocket, id: str):
-    await websocket.accept()
-    await ws_manager.connect(id, websocket)
-    try:
-        while True:
-            # Esperar mensajes del cliente
-            await websocket.receive_json()
-            data = datosGenerale(opc_client)  # Datos generales
-            await ws_manager.send_message(id, data)
-            await asyncio.sleep(0.3)
-    except WebSocketDisconnect:
-        await ws_manager.disconnect(id, websocket)
-
-
-
-@app.websocket("/ws/desmoldeo/{id}")
-async def resumen_desmoldeo(websocket: WebSocket, id: str):
-    await websocket.accept()
-    await ws_manager.connect(id, websocket)
-    try: 
-        while True:
-            resumen = datosGenerale(opc_client)
-            await ws_manager.send_message(id, resumen)
-            await asyncio.sleep(0.3)
-    except WebSocketDisconnect:
-        await ws_manager.disconnect(f"No se puede Leer Datos Desmoldeo:{id, websocket}")
-@app.websocket("/ws/poll/{poll_id}")
-async def websocket_endpoint(websocket : WebSocket, poll_id : str):
-    logger.info(f"Intentando conectar al WebSocket para {poll_id}")
-    await websocket.accept()
-    await ws_manager.connect(poll_id, websocket)
-    try: 
-        while True:
-            await asyncio.sleep(0.3)
-            await websocket.receive_json()
-    except WebSocketDisconnect:
-        await ws_manager.disconnect(poll_id, websocket)
-    
-"""
-

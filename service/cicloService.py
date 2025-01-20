@@ -13,21 +13,15 @@ from openpyxl.drawing.image import Image
 from openpyxl.styles import Font, Alignment, PatternFill
 from openpyxl.worksheet.table import Table, TableStyleInfo
 
-
-import os
 from io import BytesIO
-import uuid
-
-# Crear un libro de trabajo
-
 
 def agregarDatosExcel(sheet, producto, ciclos):
 
     sheet.append(["Nombre: ", producto])
     nombre_cell = sheet.cell(row=sheet.max_row, column=1)
-    nombre_cell.font = Font(bold= True, size=16)
+    nombre_cell.font = Font(bold= False, size=16)
     nombre_cell = sheet.cell(row=sheet.max_row, column=2)  
-    nombre_cell.font = Font(bold=True, size=16) 
+    nombre_cell.font = Font(bold=False, size=16) 
 
     sheet.append([])
 
@@ -35,7 +29,7 @@ def agregarDatosExcel(sheet, producto, ciclos):
     ciclos_cell = sheet.cell(row=sheet.max_row, column=1)
     ciclos_cell.font = Font(bold= True, size=12)
 
-    headers = ["IdCiclo", "IdTorre", "FechaInicio", "FechaFin", "TipoFin","CantidadNivelesCorrectos","PesoTorreFila","PesoTorreProducto", "Lote", "TiempoTotal"]
+    headers = ["IdCiclo", "TagTorre", "FechaInicio", "FechaFin", "TipoFin","CantidadNivelesCorrectos","PesoTorreFila","PesoTorreProducto", "Lote", "TiempoTotal"]
     sheet.append(headers)
 
     header_fill = PatternFill(start_color="0070c0", end_color="0070c0", fill_type="solid") 
@@ -59,7 +53,7 @@ def agregarDatosExcel(sheet, producto, ciclos):
     end_col = len(headers)
     table_range = f"{sheet.cell(row=start_row - 1, column=start_col).coordinate}:{sheet.cell(row=end_row, column=end_col).coordinate}"
 
-
+    print(f"NOMBRE DE LA TABLA EN BASE NMA PRODUCTO: {producto}")
     tabla_nombre = f"TablaCiclos_{producto.replace(' ', '_')}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
     tabla = Table(displayName=tabla_nombre, ref=table_range)
 
@@ -73,46 +67,77 @@ def agregarDatosExcel(sheet, producto, ciclos):
     # Espacio en blanco al final de cada producto
     sheet.append([])
 
-def buscarCiclosXReceta(idReceta, listaReceta_dic, listaCiclos_dic, listaRecetaXCiclo):
+def buscarCiclosXReceta(idReceta, listaRecetaXCiclo, listaReceta_dic, listaCiclos_dic):
     return [
         [
-            ciclo.id_ciclo,
-            listaCiclos_dic[ciclo.id_ciclo].id_torre,
-            listaCiclos_dic[ciclo.id_ciclo].fecha_inicio,
-            listaCiclos_dic[ciclo.id_ciclo].fecha_fin,
-            listaCiclos_dic[ciclo.id_ciclo].tipoFin,
-            ciclo.cantidadNivelesCorrectos, 
+            recetaXCiclo.id_ciclo,
+            listaCiclos_dic[recetaXCiclo.id_ciclo].id_torre,
+            listaCiclos_dic[recetaXCiclo.id_ciclo].fecha_inicio,
+            listaCiclos_dic[recetaXCiclo.id_ciclo].fecha_fin,
+            listaCiclos_dic[recetaXCiclo.id_ciclo].tipoFin,
+            recetaXCiclo.cantidadNivelesCorrectos, 
             listaReceta_dic.get(idReceta).pesoProductoXFila,
-            listaReceta_dic.get(idReceta).pesoProductoXFila * ciclo.cantidadNivelesCorrectos,
-            listaCiclos_dic[ciclo.id_ciclo].lote, 
-            listaCiclos_dic[ciclo.id_ciclo].tiempoTotal
+            listaReceta_dic.get(idReceta).pesoProductoXFila * recetaXCiclo.cantidadNivelesCorrectos,
+            listaCiclos_dic[recetaXCiclo.id_ciclo].lote, 
+            listaCiclos_dic[recetaXCiclo.id_ciclo].tiempoTotal
         ]
-        for ciclo in listaRecetaXCiclo if ciclo.id_recetario == idReceta
+        for _, recetaXCiclo, _ in listaRecetaXCiclo  # Desempaquetar la tupla correctamente
+        if recetaXCiclo.id_recetario == idReceta
     ]
 
-def generarDocumentoExcel(datos):
+def buscarCiclos(idReceta, listaRecetaXCiclo, listaReceta_dic, listaCiclos_dic):
+    return [
+        {
+            "id_ciclo": recetaXCiclo.id_ciclo,  # Acceder a recetaXCiclo.id_ciclo
+            "pesoTotal": listaReceta_dic.get(idReceta).pesoProductoXFila * recetaXCiclo.cantidadNivelesCorrectos,
+            "tiempoTotal": listaCiclos_dic[recetaXCiclo.id_ciclo].tiempoTotal
+        }
+        for _, recetaXCiclo, _ in listaRecetaXCiclo  # Desempaquetar la tupla correctamente
+        if recetaXCiclo.id_recetario == idReceta
+    ]
+
+def generarDocumentoXLMS(db, fecha_inicio: date, fecha_fin:date):
+    fecha_inicio = datetime.combine(fecha_inicio, datetime.min.time())
+    fecha_fin = datetime.combine(fecha_fin, datetime.max.time())
+    productosRealizados = {}
+    datosParaExcel = []
+
+    tablaCiclo = (
+        db.query(Ciclo, RecetaXCiclo, Recetario)
+        .join(RecetaXCiclo, Ciclo.id == RecetaXCiclo.id_ciclo)
+        .join(Recetario, RecetaXCiclo.id_recetario == Recetario.id)
+        .filter(Ciclo.fecha_fin.between(fecha_inicio, fecha_fin))
+        .all()
+    )
+
+    for ciclo, recetaXCiclo, receta in tablaCiclo:
+        if receta.id not in productosRealizados:
+            productosRealizados[receta.id] = receta.id
+            datosParaExcel.append(
+                {
+                    "nombre": receta.nombre,
+                    "ciclos": buscarCiclosXReceta(receta.id, tablaCiclo, {r.id: r for _,_,r in tablaCiclo}, {c.id: c for c,_,_ in tablaCiclo} )
+                }
+            )
+
     workbook = Workbook()
-    
     sheet = workbook.active
     sheet.title = "Reporte Productividad"
 
     logoPath = "cremona.png"
-
     img = Image(logoPath)
-
-    img.width = 250
+    img.width = 280
     img.height = 70
-
     sheet.add_image(img, 'C1')
 
     sheet.append(["LISTA PRODUCTOS"])
     producto_cell = sheet.cell(row=sheet.max_row, column=1)
     producto_cell.font = Font(bold= True, size=20)
 
-
-    for producto in datos:
+    for producto in datosParaExcel:
         agregarDatosExcel(sheet, producto["nombre"], producto["ciclos"])
-    
+
+
     for col in sheet.columns:
         max_length = 0
         column_letter = col[0].column_letter
@@ -123,166 +148,205 @@ def generarDocumentoExcel(datos):
                 pass
         sheet.column_dimensions[column_letter].width = max_length + 2
 
-    # Guardar el archivo Excel
-    #workbook.save("productos_ciclos.xlsx")
-    print("Archivo Excel generado con éxito.")
-
     excel_stream = BytesIO()
     workbook.save(excel_stream)
+    workbook.close() 
     excel_stream.seek(0)  
     return excel_stream
 
-def descargarDocumentoExcel(db, fecha_inicio: date, fecha_fin:date):
+def resumenDeProductividad(db, fecha_inicio:date, fecha_fin:date):
     fecha_inicio = datetime.combine(fecha_inicio, datetime.min.time())
     fecha_fin = datetime.combine(fecha_fin, datetime.max.time())
 
-    listaRecetaXCiclo = []
-    listaRecetas = []
-    datosParaExcel = []
+    respuestaProductividad = {}
     productosRealizados = {}
-
-    tablaCiclo = (
-         db.query(Ciclo)
-        .join(RecetaXCiclo, Ciclo.id == RecetaXCiclo.id_ciclo)
-        .filter(Ciclo.fecha_fin.between(fecha_inicio, fecha_fin))
-        .all()
-    )
-
-    for item in tablaCiclo:
-        listaRecetaXCiclo.append(
-            db.query(RecetaXCiclo).filter(RecetaXCiclo.id_ciclo == item.id).first()
-        )
-
-    for item in listaRecetaXCiclo:
-        listaRecetas.append(
-            db.query(Recetario).filter(Recetario.id == item.id_recetario).first()
-        )
-
-    listaReceta_dic = {receta.id: receta for receta in listaRecetas}
-    listaCiclos_dic = {ciclo.id: ciclo for ciclo in tablaCiclo}
-
-    for item in listaRecetaXCiclo:
-        if item.id_recetario not in productosRealizados:
-            datosParaExcel.append({
-                "nombre": listaReceta_dic.get(item.id_recetario).nombre,
-                "ciclos": buscarCiclosXReceta(item.id_recetario, listaReceta_dic, listaCiclos_dic, listaRecetaXCiclo)
-            })
-
-    for item in datosParaExcel:
-        print(f"nombre: {item["ciclos"]}")
-
-    listaRecetaXCiclo.clear()
-    listaRecetas.clear()
-    listaReceta_dic.clear()
-    listaCiclos_dic.clear()
-    
-    return generarDocumentoExcel(datosParaExcel)
-
-
-
-
-def resumenDeProductiviada(db, fecha_inicio: date, fecha_fin:date):
-    fecha_inicio = datetime.combine(fecha_inicio, datetime.min.time())
-    fecha_fin = datetime.combine(fecha_fin, datetime.max.time())
-
-    resumen= {}
-    listaRecetaXCiclo = []
-    listaRecetas = []
-
-    tablaCiclo = (
-         db.query(Ciclo)
-        .join(RecetaXCiclo, Ciclo.id == RecetaXCiclo.id_ciclo)
-        .filter(Ciclo.fecha_fin.between(fecha_inicio, fecha_fin))
-        .all()
-    )
-
-    for item in tablaCiclo:
-        listaRecetaXCiclo.append(
-            db.query(RecetaXCiclo).filter(RecetaXCiclo.id_ciclo == item.id).first()
-        )
-
-    for item in listaRecetaXCiclo:
-        listaRecetas.append(
-            db.query(Recetario).filter(Recetario.id == item.id_recetario).first()
-        )
-
-    listaReceta_dic = {receta.id: receta for receta in listaRecetas}
-    listaCiclos_dic = {ciclo.id: ciclo for ciclo in tablaCiclo}
-
-    productosRealizados = {}
-    
-    resumen["CantidadCiclosFinalizados"] = len(tablaCiclo)
-
-    def buscarCiclos(idReceta):
-        return [
-            {
-                "id_ciclo": ciclo.id_ciclo,
-                "pesoTotal": listaReceta_dic.get(idReceta).pesoProductoXFila * ciclo.cantidadNivelesCorrectos,
-                "tiempoTotal": listaCiclos_dic[ciclo.id_ciclo].tiempoTotal
-            }
-            for ciclo in listaRecetaXCiclo if ciclo.id_recetario == idReceta
-        ]
-
-    #GENERAR DESCARGA DOCUMENTO
-
-    datosParaExcel = []
-
     totalPeso = 0
-    for item in listaRecetaXCiclo:
-        totalPeso += item.cantidadNivelesCorrectos * listaReceta_dic.get(item.id_recetario).pesoProductoXFila
-        if item.id_recetario not in productosRealizados:
-            listaBuscarCiclo = buscarCiclos(item.id_recetario)
-            
-            
-            datosParaExcel.append({
-                "nombre": listaReceta_dic.get(item.id_recetario).nombre,
-                "ciclos": buscarCiclosXReceta(item.id_recetario, listaReceta_dic, listaCiclos_dic, listaRecetaXCiclo)
-            })
 
-            pesoFinal = 0
-            tiempoTotalCiclo = 0
-            for data in listaBuscarCiclo:
-                print(data)
-                pesoFinal += data["pesoTotal"]
-                tiempoTotalCiclo += data["tiempoTotal"]
+    tablaCiclos = (
+        db.query(Ciclo, RecetaXCiclo, Recetario)
+        .join(RecetaXCiclo, Ciclo.id == RecetaXCiclo.id_ciclo)
+        .join(Recetario, RecetaXCiclo.id_recetario == Recetario.id)
+        .filter(Ciclo.fecha_fin.between(fecha_inicio,fecha_fin))
+        .all()
+    )
 
-            productosRealizados[item.id_recetario] = {
-                "id_recetario": item.id_recetario,
-                "NombreProducto": listaReceta_dic.get(item.id_recetario).nombre,
+    for ciclo, recetaXCiclo, receta in tablaCiclos:
+        totalPeso += recetaXCiclo.cantidadNivelesCorrectos * receta.pesoProductoXFila
+        if receta.id not in productosRealizados:
+            listaBuscarCiclo = buscarCiclos(receta.id, tablaCiclos, {r.id: r for _,_, r in tablaCiclos}, {c.id: c for c, _, _ in tablaCiclos})
+            pesoFinal = sum(cicloData["pesoTotal"] for cicloData in listaBuscarCiclo)
+            tiempoTotalCiclo = sum(cicloData["tiempoTotal"] for cicloData in listaBuscarCiclo)
+
+            productosRealizados[receta.id] = {
+                "id_recetario": receta.id,
+                "NombreProducto": receta.nombre,
                 "peso": pesoFinal,
                 "cantidadCiclos": len(listaBuscarCiclo),
                 "tiempoTotal": tiempoTotalCiclo,
             }
+    respuestaProductividad["PesoTotal"] = totalPeso / 1000 # Total en Toneladas
+    respuestaProductividad["ProductosRealizados"] = list(productosRealizados.values())
 
-    productosRealizados = list(productosRealizados.values())
+    return respuestaProductividad
 
-    #generarDocumentoExcel(datosParaExcel)
-    global datos_excel_descarga
-    datos_excel_descarga = datosParaExcel
-
-    resumen["PesoTotal"] = totalPeso / 1000 
-    resumen["ProductosRealizados"] = productosRealizados
-    
-    return resumen
-
-def save_datosCiclo(opc_client):
-    #Nodo torreActual: id Torre
-    #Nodo tipoFin (Nuevo) --> Nodo estado
-    #Nodo nivelesDesmolde (Fin)
-    #Nodo nivelActual  --> cantidadNivelesFin -> 
-    #Nodo Nivel_x_estado -->int 
-    #BDD -> ETAPA (DESMOLDEO - ENCAJONADO - PALLET)
-    #Validacion 
-    
 
     data = 0
     return data
 
-def save_recetaXCiclo():
-    data = 0
-    return data
+def graficosHistoricos(db, fecha_inicio:date, fecha_fin:date):
+    fecha_inicio = datetime.combine(fecha_inicio, datetime.min.time())
+    fecha_fin = datetime.combine(fecha_fin, datetime.max.time())
 
+    resultado = {}
+    listaPeso = []
+    listaCiclos = []
+    listaProductos = {}
 
+    tablaBaseDatos = (
+        db.query(Ciclo, RecetaXCiclo, Recetario)
+        .join(RecetaXCiclo, Ciclo.id == RecetaXCiclo.id_ciclo)
+        .join(Recetario, RecetaXCiclo.id_recetario == Recetario.id)
+        .filter(Ciclo.fecha_fin.between(fecha_inicio, fecha_fin))
+        .all()
+    )
+    
+    def buscarCiclos(idReceta, tablaDatos):
+        return [{
+            "idCiclo": ciclo.id,
+            "pesoTotal": receta.pesoProductoXFila * recetaXCiclo.cantidadNivelesCorrectos,
+            "fechaFin" : ciclo.fecha_fin.timestamp(),            
+        } for ciclo, recetaXCiclo, receta in tablaDatos if idReceta == recetaXCiclo.id_recetario ]
+
+    for ciclo, recetaXCiclo, receta in tablaBaseDatos:
+        listaPeso.append({
+            "fecha_fin": ciclo.fecha_fin.strftime("%Y-%m-%d"),
+            "PesoTotal": receta.pesoProductoXFila * recetaXCiclo.cantidadNivelesCorrectos
+        })
+        if recetaXCiclo.id_recetario not in listaProductos:
+            listaProductos[recetaXCiclo.id_recetario] = {
+                "nombre": receta.nombre,
+                "ciclo": buscarCiclos(recetaXCiclo.id_recetario, tablaBaseDatos)
+            }
+
+    # AGRUPAR POR DIA
+    def agruparPorDia(datos):
+        grouped_by_day = defaultdict(list)
+        
+        for item in datos:
+            fechaFin = item.fecha_fin
+            dia = fechaFin.strftime("%Y-%m-%d")
+            grouped_by_day[dia].append(item)
+        return dict(grouped_by_day)
+
+    listaXDia = agruparPorDia({c for c,_,_ in tablaBaseDatos})
+    for clave, valor in listaXDia.items():
+        elemento = {}
+        elemento["fecha_fin"]= clave
+        elemento["CantidadCiclos"]= len(valor)
+        listaCiclos.append(elemento)
+    
+    listaCiclos = sorted(listaCiclos, key=lambda x: datetime.strptime(x['fecha_fin'], "%Y-%m-%d"))
+    
+    resultado["ciclos"] = listaCiclos
+    resultado["pesoProducto"] = listaPeso
+    resultado["listaProductos"] = list(listaProductos.values())
+
+    return resultado
+
+def generarDocumentoXLMSGraficos(db, fecha_inicio:date, fecha_fin:date):
+    fecha_inicio = datetime.combine(fecha_inicio, datetime.min.time())
+    fecha_fin = datetime.combine(fecha_fin, datetime.max.time())
+
+    tabalaDatos = (
+        db.query(Ciclo, RecetaXCiclo, Recetario)
+        .join(Ciclo, RecetaXCiclo.id_ciclo == Ciclo.id)
+        .join(Recetario, RecetaXCiclo.id_recetario == Recetario.id)
+        .all()
+    )
+    resultado = []
+
+    workbook = Workbook()
+    sheet = workbook.active
+    sheet.title = "Reporte Graficos listaProductos"
+
+    logoPath = "cremona.png"
+    img = Image(logoPath)
+    img.width = 280
+    img.height = 70
+    sheet.add_image(img, 'D1')
+
+    sheet.append(["REPORTE: LISTA PRODUCTOS"])
+    producto_cell = sheet.cell(row=sheet.max_row, column=1)
+    producto_cell.font = Font(bold= True, size=20)
+
+    sheet.append(["Fecha Inicio:", fecha_inicio.strftime("%Y-%m-%d")])
+    fechaInicio_cell = sheet.cell(row=sheet.max_row, column=1)
+    fechaInicio_cell.font = Font(bold=True, size=12)
+    sheet.append(["Fecha Fin:", fecha_fin.strftime("%Y-%m-%d")])
+    fechaFin_cell = sheet.cell(row=sheet.max_row, column=1)
+    fechaFin_cell.font = Font(bold=True, size=12)
+
+    headers = ["IdRecetario", "NombreProducto", "IdCiclo","TipoFin","NumeroGripper","Lote","TiempoTotal (minutos)","FechaInicio", "FechaRegistro", "PesoTotalProducto"]
+    sheet.append(headers)
+
+    header_fill = PatternFill(start_color="145f82", end_color="145f82", fill_type="solid")
+    header_font = Font(color="FFFFFF", bold=True)  
+
+    for col in range(1, len(headers) + 1):
+        cell = sheet.cell(row=sheet.max_row, column=col)
+        cell.fill = header_fill
+        cell.font = header_font
+        cell.alignment = Alignment(horizontal="center")
+    
+    start_row = sheet.max_row + 1
+
+    for ciclo, recetaXCiclo, receta in tabalaDatos:
+        resultado.append([
+            recetaXCiclo.id_recetario,
+            receta.nombre, 
+            ciclo.id, 
+            ciclo.tipoFin, 
+            ciclo.numeroGripper,
+            ciclo.lote,
+            ciclo.tiempoTotal,
+            ciclo.fecha_inicio,
+            ciclo.fecha_fin, 
+            receta.pesoProductoXFila * recetaXCiclo.cantidadNivelesCorrectos,
+        ])
+
+    for receta in resultado:
+        sheet.append(receta)
+
+    end_row = sheet.max_row
+    start_col = 1
+    end_col = len(headers)
+    table_range = f"{sheet.cell(row=start_row -1, column=start_col).coordinate}:{sheet.cell(row=end_row, column=end_col).coordinate}"
+    table_nombre = "GraficoPRoductividad"
+    tabla = Table(displayName=table_nombre, ref=table_range)
+    style = TableStyleInfo(showFirstColumn=False, showLastColumn=False, showRowStripes=True, showColumnStripes=True)
+    tabla.tableStyleInfo = style
+
+    # Agregar la tabla a la hoja
+    sheet.add_table(tabla)
+    sheet.append([])
+
+    for col in sheet.columns:
+        max_length = 0
+        column_letter = col[0].column_letter
+        for cell in col:
+            try:
+                max_length = max(max_length, len(str(cell.value)))
+            except:
+                pass
+        sheet.column_dimensions[column_letter].width = max_length + 2
+
+    excel_stream = BytesIO()
+    workbook.save(excel_stream)
+    workbook.close() 
+    excel_stream.seek(0)  
+    return excel_stream
+
+# ELIMINAR METODOS 
 def obtenerRecetasPorFecha(db, fecha_inicio: date, fecha_fin: date):
     #convertir la fecha a timestamp
     fecha_inicio = datetime.combine(fecha_inicio, datetime.min.time())
@@ -374,10 +438,6 @@ def obtenerListaCiclosXProductos(db, fecha_inicio: date, fecha_fin: date):
             registro["PesoTotal"] = listaReceta_dic.get(item.id_recetario).pesoProductoXFila * item.cantidadNivelesCorrectos
             listaPeso.append(registro)
 
-    
-    
-
-
     grouped_by_month = defaultdict(list)
     for item in tablaCiclo:
         print(f"Valor de item.fecha_inicio: {item.fecha_inicio}, Tipo: {type(item.fecha_inicio)}")
@@ -387,26 +447,6 @@ def obtenerListaCiclosXProductos(db, fecha_inicio: date, fecha_fin: date):
         grouped_by_month[mes].append(item)
 
     grouped_by_month = dict(grouped_by_month)
-
-    """
-    def getWeek(fecha_str):
-    # Si fecha_str ya es un objeto datetime, no hacemos nada
-        if isinstance(fecha_str, datetime):
-            fecha = fecha_str
-        else:
-            # Si fecha_str es una cadena, la convertimos a datetime
-            fecha = datetime.strptime(fecha_str, "%Y-%m-%dT%H:%M:%S")
-    
-        return fecha.isocalendar()[1] 
-    
-    semanas = defaultdict(list)
-    for itemData in tablaCiclo:
-        fechaFin = itemData.fecha_fin
-        semana = getWeek(fechaFin)
-        semanas[semana].append(itemData)
-    """
-
-    
 
     def agruparPorDia(datos):
         grouped_by_day = defaultdict(list)
@@ -434,5 +474,3 @@ def obtenerListaCiclosXProductos(db, fecha_inicio: date, fecha_fin: date):
 
 
     return completo
-
-
