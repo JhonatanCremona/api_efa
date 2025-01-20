@@ -161,6 +161,7 @@ def resumenDeProductividad(db, fecha_inicio:date, fecha_fin:date):
     respuestaProductividad = {}
     productosRealizados = {}
     totalPeso = 0
+    cantidadCiclosTotal = 0
 
     tablaCiclos = (
         db.query(Ciclo, RecetaXCiclo, Recetario)
@@ -172,8 +173,10 @@ def resumenDeProductividad(db, fecha_inicio:date, fecha_fin:date):
 
     for ciclo, recetaXCiclo, receta in tablaCiclos:
         totalPeso += recetaXCiclo.cantidadNivelesCorrectos * receta.pesoProductoXFila
+        cantidadCiclosTotal += 1
         if receta.id not in productosRealizados:
             listaBuscarCiclo = buscarCiclos(receta.id, tablaCiclos, {r.id: r for _,_, r in tablaCiclos}, {c.id: c for c, _, _ in tablaCiclos})
+
             pesoFinal = sum(cicloData["pesoTotal"] for cicloData in listaBuscarCiclo)
             tiempoTotalCiclo = sum(cicloData["tiempoTotal"] for cicloData in listaBuscarCiclo)
 
@@ -184,6 +187,7 @@ def resumenDeProductividad(db, fecha_inicio:date, fecha_fin:date):
                 "cantidadCiclos": len(listaBuscarCiclo),
                 "tiempoTotal": tiempoTotalCiclo,
             }
+    respuestaProductividad["CiclosTotales"] = cantidadCiclosTotal
     respuestaProductividad["PesoTotal"] = totalPeso / 1000 # Total en Toneladas
     respuestaProductividad["ProductosRealizados"] = list(productosRealizados.values())
 
