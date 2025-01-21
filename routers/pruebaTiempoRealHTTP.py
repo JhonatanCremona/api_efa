@@ -4,6 +4,8 @@ from service.alarmasService import enviarDatosAlarmas, enviaListaLogsAlarmas
 from service.datosTiempoReal import datosGenerale, resumenEtapaDesmoldeo, datosResumenCelda
 from config.opc import OPCUAClient
 
+from desp import user_dependency
+
 import socket
 
 localIp = socket.gethostbyname(socket.gethostname())
@@ -14,7 +16,7 @@ opc_client.connect()
 RouterLive = APIRouter(prefix="/dev", tags=["PruebaHTTPDatosOPC"], responses={404: {"description": "Sin Acceso al servidor OPC"}})
 
 @RouterLive.get("/celda-completo")
-def read_celda_completo():
+def read_celda_completo(user: user_dependency):
     try:
         return datosResumenCelda(opc_client)
     except Exception as e:

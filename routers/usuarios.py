@@ -6,11 +6,12 @@ from fastapi.security import OAuth2PasswordRequestForm
 from service.useriosService import get_listaUsuarios
 from config import db
 from typing import Annotated
-from models import usuario
+from models.usuario import Usuario
 from dotenv import load_dotenv
 from jose import jwt, JWTError
 import os
-from desp import db_dependency, bcrypt_context
+from desp import db_dependency, bcrypt_context,user_dependency
+
 
 load_dotenv()
 
@@ -28,11 +29,13 @@ class Token(BaseModel):
     token_type: str
 
 def authenticate_user(username: str, password: str, db):
-    user = db.query(usuario).filter(usuario.name == username).first()
+    user = db.query(Usuario).filter(Usuario.name == username).first()
+    print(f"NOMBRE {user.name} {user.password}")
     if not user:
         return False
     if not bcrypt_context.verify(password, user.password):
         return False
+    
     return user
 
 def create_access_token(username: str, user_id: int, expires_delta: timedelta):
@@ -42,16 +45,33 @@ def create_access_token(username: str, user_id: int, expires_delta: timedelta):
     return jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)
 
 @RouterUsers.get("/lista-usuarios")
-def read_lista_usuarios(skip: int = 0, limit: int = 10, db: Session = Depends(db.get_db)):
+def read_lista_usuarios(skip: int = 0, limit: int = 10 ,db: Session = Depends(db.get_db)):
     usuario = get_listaUsuarios(db, skip=skip, limit=limit)
     return usuario
 
+@RouterUsers.get("/test")
+def read_test(user: user_dependency, db: db_dependency):
+    listaUsers = (
+        db.query(Usuario)
+        .all()
+    )
+    return listaUsers
+
+@RouterUsers.post("/registrar", status_code=status.HTTP_201_CREATED)
+async def create_user(db: db_dependency, create_user_request: UserCreateRequest):
+    create_user_model = Usuario(
+        name=create_user_request.username,
+        password=bcrypt_context.hash(create_user_request.password)
+    )
+    db.add(create_user_model)
+    db.commit()
+
 @RouterUsers.post("/login", response_model= Token)
 async def loginAccesoToken(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: db_dependency):
-    user = authenticate_user(form_data.username, form_data.password, db)
+    user = authenticate_user("marcos", "123", db)
     if not user:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid username or password")
     
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    access_token = create_access_token(user.username, user.id , expires_delta=access_token_expires)
+    access_token = create_access_token(user.name, user.id , expires_delta=access_token_expires)
     return {"access_token": access_token, "token_type": "bearer"}
