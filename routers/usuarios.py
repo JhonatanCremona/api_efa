@@ -30,7 +30,6 @@ class Token(BaseModel):
 
 def authenticate_user(username: str, password: str, db):
     user = db.query(Usuario).filter(Usuario.name == username).first()
-    print(f"NOMBRE {user.name} {user.password}")
     if not user:
         return False
     if not bcrypt_context.verify(password, user.password):
@@ -49,7 +48,7 @@ def read_lista_usuarios(skip: int = 0, limit: int = 10 ,db: Session = Depends(db
     usuario = get_listaUsuarios(db, skip=skip, limit=limit)
     return usuario
 
-@RouterUsers.get("/test")
+@RouterUsers.get("/lista-usuarios")
 def read_test(user: user_dependency, db: db_dependency):
     listaUsers = (
         db.query(Usuario)

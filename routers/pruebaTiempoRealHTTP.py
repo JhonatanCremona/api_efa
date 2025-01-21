@@ -16,7 +16,7 @@ opc_client.connect()
 RouterLive = APIRouter(prefix="/dev", tags=["PruebaHTTPDatosOPC"], responses={404: {"description": "Sin Acceso al servidor OPC"}})
 
 @RouterLive.get("/celda-completo")
-def read_celda_completo(user: user_dependency):
+def read_celda_completo():
     try:
         return datosResumenCelda(opc_client)
     except Exception as e:
