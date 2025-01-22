@@ -16,7 +16,7 @@ from models.alarma import Alarma
 from models.kuka import Kuka
 from models.sdda import Sdda
 
-from routers import usuarios, pruebaTiempoRealHTTP, graficosHistorico, resumenProductividad
+from routers import usuariosRouter, pruebaTiempoRealHTTP, graficosHistorico, resumenProductividad
 from service.datosTiempoReal import datosGenerale, resumenEtapaDesmoldeo, datosResumenCelda
 from service.alarmasService import enviarDatosAlarmas, enviaListaLogsAlarmas
 
@@ -95,7 +95,7 @@ app.add_middleware(
     allow_headers=["*"],  # Permite todos los headers
 )
 
-app.include_router(usuarios.RouterUsers)
+app.include_router(usuariosRouter.RouterUsers)
 app.include_router(pruebaTiempoRealHTTP.RouterLive)
 app.include_router(graficosHistorico.RoutersGraficosH)
 app.include_router(resumenProductividad.RouterProductividad)

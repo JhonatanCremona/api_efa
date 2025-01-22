@@ -5,6 +5,7 @@ from fastapi.responses import StreamingResponse
 
 from service.cicloService import obtenerRecetasPorFecha, obtenerListaCiclosXProductos, generarDocumentoXLMSGraficos, graficosHistoricos
 from config import db
+from desp import user_dependency
 
 RoutersGraficosH = APIRouter(prefix="/graficos-historico", tags=["Graficos Historico"]) 
 @RoutersGraficosH.get("/ciclos-productos/")
@@ -22,7 +23,7 @@ def red_productos_realizados(fecha_inicio: date = Query(..., description="Fecha 
     return resupuesta
 
 @RoutersGraficosH.get("/descargar-excel")
-def descargar_documento(fecha_inicio: date = Query(..., description="Fecha de inicio (YYYY-MM-DD)"),fecha_fin: date = Query(..., description="Fecha de fin (YYYY-MM-DD)"), db : Session = Depends(db.get_db)):
+def descargar_documento(user: user_dependency, fecha_inicio: date = Query(..., description="Fecha de inicio (YYYY-MM-DD)"),fecha_fin: date = Query(..., description="Fecha de fin (YYYY-MM-DD)"), db : Session = Depends(db.get_db)):
     if not fecha_inicio:
         raise HTTPException(status_code=400 , detail="Debe especificar una fecha de inicio.")
     if not fecha_fin:
@@ -39,7 +40,7 @@ def descargar_documento(fecha_inicio: date = Query(..., description="Fecha de in
     )
 
 @RoutersGraficosH.get("/lista-datos")
-def red_lista_datos_graficos(fecha_inicio: date = Query(..., description="Fecha de inicio (YYYY-MM-DD)"),fecha_fin: date = Query(..., description="Fecha de fin (YYYY-MM-DD)"), db : Session = Depends(db.get_db)):
+def red_lista_datos_graficos(user: user_dependency, fecha_inicio: date = Query(..., description="Fecha de inicio (YYYY-MM-DD)"),fecha_fin: date = Query(..., description="Fecha de fin (YYYY-MM-DD)"), db : Session = Depends(db.get_db)):
     if not fecha_inicio:
         raise HTTPException(status_code=400 , detail="Debe especificar una fecha de inicio.")
     if not fecha_fin:

@@ -4,8 +4,6 @@ from service.alarmasService import enviarDatosAlarmas, enviaListaLogsAlarmas
 from service.datosTiempoReal import datosGenerale, resumenEtapaDesmoldeo, datosResumenCelda
 from config.opc import OPCUAClient
 
-from desp import user_dependency
-
 import socket
 
 localIp = socket.gethostbyname(socket.gethostname())

@@ -1,9 +1,9 @@
 from fastapi import APIRouter, HTTPException, Depends, Query, status
 from sqlalchemy.orm import Session
 from datetime import datetime, date
+from desp import user_dependency
 
 from fastapi.responses import StreamingResponse
-from io import BytesIO
 
 from service.cicloService import resumenDeProductividad, generarDocumentoXLMS
 
@@ -24,7 +24,7 @@ def read_productividad(
     return resumenDeProductividad(db, fecha_inicio, fecha_fin)
 
 @RouterProductividad.get("/descargar-excel")
-async def descargar_documento(
+async def descargar_documento(user: user_dependency,
     fecha_inicio: date = Query(..., description="Fecha de inicio (YYYY-MM-DD HH:MM:SS)"),
     fecha_fin: date = Query(..., description="Fecha de fin (YYYY-MM-DD)"), 
     db : Session = Depends(db.get_db)):

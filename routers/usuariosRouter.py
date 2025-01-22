@@ -12,10 +12,10 @@ from jose import jwt, JWTError
 import os
 from desp import db_dependency, bcrypt_context,user_dependency
 
-
 load_dotenv()
 
-RouterUsers = APIRouter(prefix="/usuario", tags=["usuarios"])
+RouterUsers = APIRouter(prefix="/usuario", tags=["Usuarios"])
+
 SECRET_KEY = os.getenv("AUTH_SECRET_KEY")
 ALGORITHM = os.getenv("AUTH_ALGORITHM")
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
@@ -26,6 +26,7 @@ class UserCreateRequest(BaseModel):
 
 class Token(BaseModel):
     access_token: str
+    role: str
     token_type: str
 
 def authenticate_user(username: str, password: str, db):
@@ -44,11 +45,6 @@ def create_access_token(username: str, user_id: int, expires_delta: timedelta):
     return jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)
 
 @RouterUsers.get("/lista-usuarios")
-def read_lista_usuarios(skip: int = 0, limit: int = 10 ,db: Session = Depends(db.get_db)):
-    usuario = get_listaUsuarios(db, skip=skip, limit=limit)
-    return usuario
-
-@RouterUsers.get("/lista-usuarios")
 def read_test(user: user_dependency, db: db_dependency):
     listaUsers = (
         db.query(Usuario)
@@ -60,6 +56,7 @@ def read_test(user: user_dependency, db: db_dependency):
 async def create_user(db: db_dependency, create_user_request: UserCreateRequest):
     create_user_model = Usuario(
         name=create_user_request.username,
+        role="ADMIN",  # Por defecto es administrador
         password=bcrypt_context.hash(create_user_request.password)
     )
     db.add(create_user_model)
@@ -67,10 +64,11 @@ async def create_user(db: db_dependency, create_user_request: UserCreateRequest)
 
 @RouterUsers.post("/login", response_model= Token)
 async def loginAccesoToken(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: db_dependency):
-    user = authenticate_user("marcos", "123", db)
+    print(f"DATOS DEL FORMULARIO {form_data.username} {form_data.password}")
+    user = authenticate_user(form_data.username, form_data.password, db)
     if not user:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid username or password")
     
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(user.name, user.id , expires_delta=access_token_expires)
-    return {"access_token": access_token, "token_type": "bearer"}
+    return {"access_token": access_token,"role":user.role ,"token_type": "bearer"}
