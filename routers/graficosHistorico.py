@@ -40,7 +40,7 @@ def descargar_documento(user: user_dependency, fecha_inicio: date = Query(..., d
     )
 
 @RoutersGraficosH.get("/lista-datos")
-def red_lista_datos_graficos(user: user_dependency, fecha_inicio: date = Query(..., description="Fecha de inicio (YYYY-MM-DD)"),fecha_fin: date = Query(..., description="Fecha de fin (YYYY-MM-DD)"), db : Session = Depends(db.get_db)):
+def red_lista_datos_graficos(fecha_inicio: date = Query(..., description="Fecha de inicio (YYYY-MM-DD)"),fecha_fin: date = Query(..., description="Fecha de fin (YYYY-MM-DD)"), db : Session = Depends(db.get_db)):
     if not fecha_inicio:
         raise HTTPException(status_code=400 , detail="Debe especificar una fecha de inicio.")
     if not fecha_fin:
