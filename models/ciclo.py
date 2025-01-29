@@ -5,7 +5,13 @@ from config.db import Base
 class Ciclo(Base):
     __tablename__ = "ciclo"
 
-    id = Column(Integer, primary_key=lse)
+    id = Column(Integer, primary_key=True, index=True)
+    fecha_inicio = Column(DateTime, index=True, nullable=False)
+    fecha_fin = Column(DateTime, index=True, nullable=False)
+    estadoMaquina = Column(String(50), nullable=False)
+    bandaDesmolde = Column(Integer, nullable=False)
+    lote = Column(String(50), nullable=False)
+    tiempoDesmolde = Column(Double, nullable=False)
     pesoDesmontado = Column(Double, nullable=False)
     
 

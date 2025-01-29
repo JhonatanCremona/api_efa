@@ -82,12 +82,12 @@ def buscarCiclosXReceta(idReceta, listaRecetaXCiclo, listaReceta_dic, listaCiclo
             listaCiclos_dic[recetaXCiclo.id_ciclo].id_torre,
             listaCiclos_dic[recetaXCiclo.id_ciclo].fecha_inicio,
             listaCiclos_dic[recetaXCiclo.id_ciclo].fecha_fin,
-            listaCiclos_dic[recetaXCiclo.id_ciclo].tipoFin,
-            recetaXCiclo.cantidadNivelesCorrectos, 
-            listaReceta_dic.get(idReceta).pesoProductoXFila,
-            listaReceta_dic.get(idReceta).pesoProductoXFila * recetaXCiclo.cantidadNivelesCorrectos,
+            listaCiclos_dic[recetaXCiclo.id_ciclo].bandaDesmolde,
+            recetaXCiclo.cantidadNivelesFinalizado, 
+            listaReceta_dic.get(idReceta).pesoPorNivel,
+            listaReceta_dic.get(idReceta).pesoPorNivel * recetaXCiclo.cantidadNivelesFinalizado,
             listaCiclos_dic[recetaXCiclo.id_ciclo].lote, 
-            listaCiclos_dic[recetaXCiclo.id_ciclo].tiempoTotal
+            listaCiclos_dic[recetaXCiclo.id_ciclo].tiempoDesmolde
         ]
         for _, recetaXCiclo, _ in listaRecetaXCiclo  # Desempaquetar la tupla correctamente
         if recetaXCiclo.id_recetario == idReceta
@@ -97,8 +97,8 @@ def buscarCiclos(idReceta, listaRecetaXCiclo, listaReceta_dic, listaCiclos_dic):
     return [
         {
             "id_ciclo": recetaXCiclo.id_ciclo,  # Acceder a recetaXCiclo.id_ciclo
-            "pesoTotal": listaReceta_dic.get(idReceta).pesoProductoXFila * recetaXCiclo.cantidadNivelesCorrectos,
-            "tiempoTotal": listaCiclos_dic[recetaXCiclo.id_ciclo].tiempoTotal
+            "pesoTotal": listaReceta_dic.get(idReceta).pesoPorNivel * recetaXCiclo.cantidadNivelesFinalizado,
+            "tiempoTotal": listaCiclos_dic[recetaXCiclo.id_ciclo].tiempoDesmolde
         }
         for _, recetaXCiclo, _ in listaRecetaXCiclo  # Desempaquetar la tupla correctamente
         if recetaXCiclo.id_recetario == idReceta
@@ -123,7 +123,7 @@ def generarDocumentoXLMS(db, fecha_inicio: date, fecha_fin:date):
             productosRealizados[receta.id] = receta.id
             datosParaExcel.append(
                 {
-                    "nombre": receta.nombre,
+                    "nombre": receta.codigoProducto,
                     "ciclos": buscarCiclosXReceta(receta.id, tablaCiclo, {r.id: r for _,_,r in tablaCiclo}, {c.id: c for c,_,_ in tablaCiclo} )
                 }
             )
@@ -180,7 +180,7 @@ def resumenDeProductividad(db, fecha_inicio:date, fecha_fin:date):
     )
 
     for ciclo, recetaXCiclo, receta in tablaCiclos:
-        totalPeso += recetaXCiclo.cantidadNivelesCorrectos * receta.pesoProductoXFila
+        totalPeso += recetaXCiclo.cantidadNivelesFinalizado * receta.pesoPorNivel
         cantidadCiclosTotal += 1
         if receta.id not in productosRealizados:
             listaBuscarCiclo = buscarCiclos(receta.id, tablaCiclos, {r.id: r for _,_, r in tablaCiclos}, {c.id: c for c, _, _ in tablaCiclos})
@@ -190,7 +190,7 @@ def resumenDeProductividad(db, fecha_inicio:date, fecha_fin:date):
 
             productosRealizados[receta.id] = {
                 "id_recetario": receta.id,
-                "NombreProducto": receta.nombre,
+                "NombreProducto": receta.codigoProducto,
                 "pesoTotal": pesoFinal,
                 "cantidadCiclos": len(listaBuscarCiclo),
                 "tiempoTotal": tiempoTotalCiclo,
@@ -221,18 +221,18 @@ def graficosHistoricos(db, fecha_inicio:date, fecha_fin:date):
     def buscarCiclos(idReceta, tablaDatos):
         return [{
             "idCiclo": ciclo.id,
-            "pesoDesmontado": receta.pesoProductoXFila * recetaXCiclo.cantidadNivelesCorrectos,
+            "pesoDesmontado": receta.pesoPorNivel * recetaXCiclo.cantidadNivelesFinalizado,
             "fecha_fin" : ciclo.fecha_fin.timestamp(),            
         } for ciclo, recetaXCiclo, receta in tablaDatos if idReceta == recetaXCiclo.id_recetario ]
 
     for ciclo, recetaXCiclo, receta in tablaBaseDatos:
         listaPeso.append({
             "fecha_fin": ciclo.fecha_fin.strftime("%Y-%m-%d"),
-            "PesoDiarioProducto": receta.pesoProductoXFila * recetaXCiclo.cantidadNivelesCorrectos
+            "PesoDiarioProducto": receta.pesoPorNivel * recetaXCiclo.cantidadNivelesFinalizado
         })
         if recetaXCiclo.id_recetario not in listaProductos:
             listaProductos[recetaXCiclo.id_recetario] = {
-                "NombreProducto": receta.nombre,
+                "NombreProducto": receta.codigoProducto,
                 "ListaDeCiclos": buscarCiclos(recetaXCiclo.id_recetario, tablaBaseDatos)
             }
 
@@ -312,15 +312,15 @@ def generarDocumentoXLMSGraficos(db, fecha_inicio:date, fecha_fin:date):
     for ciclo, recetaXCiclo, receta in tabalaDatos:
         resultado.append([
             recetaXCiclo.id_recetario,
-            receta.nombre, 
+            receta.codigoProducto, 
             ciclo.id, 
-            ciclo.tipoFin, 
-            ciclo.numeroGripper,
+            ciclo.bandaDesmolde, 
+            receta.nroGripper,
             ciclo.lote,
-            ciclo.tiempoTotal,
+            ciclo.tiempoDesmolde,
             ciclo.fecha_inicio,
             ciclo.fecha_fin, 
-            receta.pesoProductoXFila * recetaXCiclo.cantidadNivelesCorrectos,
+            receta.pesoPorNivel * recetaXCiclo.cantidadNivelesFinalizado,
         ])
 
     for receta in resultado:
@@ -387,13 +387,13 @@ def obtenerRecetasPorFecha(db, fecha_inicio: date, fecha_fin: date):
     resultado = {}
 
     def buscarNombreReceta(id_recetario):
-        return listaReceta_dic.get(id_recetario).nombre
+        return listaReceta_dic.get(id_recetario).codigoProducto
             
     def buscarCiclos(id_recetario):
         return [
             {
                 "id_ciclo": ciclo.id,
-                "pesoTotal": listaReceta_dic.get(id_recetario).pesoProductoXFila * ciclo.cantidadNivelesCorrectos,
+                "pesoTotal": listaReceta_dic.get(id_recetario).pesoPorNivel * ciclo.cantidadNivelesFinalizado,
                 "fecha_fin": listaCiclo_dic.get(ciclo.id).fecha_fin.timestamp()
             }
             for ciclo in data if ciclo.id_recetario == id_recetario
