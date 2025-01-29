@@ -79,6 +79,7 @@ async def central_opc_render():
             await ws_manager.send_message("celda-completo", data["celda"]),
             await ws_manager.send_message("alarmas-datos", data["alarmas"]),
             await ws_manager.send_message("alarmas-logs", data["alarmasLogs"])
+            await ws_manager.send_message("lista-datos-ws", data)
             
             datosGenerales = data["desmoldeo"] 
             estado_actual = datosGenerales["iniciado"] 
