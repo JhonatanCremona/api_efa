@@ -11,7 +11,7 @@ from config import db
 
 RouterProductividad = APIRouter(prefix="/productividad", tags=["Productividad"])
 @RouterProductividad.get("/resumen")
-def read_productividad(
+def read_productividad(user: user_dependency,
     fecha_inicio: date = Query(..., description="Fecha de inicio (YYYY-MM-DD HH:MM:SS)"),
     fecha_fin: date = Query(..., description="Fecha de fin (YYYY-MM-DD)"), 
     db : Session = Depends(db.get_db)):

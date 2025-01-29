@@ -1,20 +1,45 @@
-from models.receta import Recetas
+from service.opcService import ObtenerNodosOpc
 from fastapi import HTTPException
+from datetime import datetime
 
+from models.ciclo import Ciclo
+
+# Nombre de la INterfaz: Server interface_1
+nbreObjeto = "Server interface_1"
+indice = 4
+ulEstado = None
+tiempoCiclo = "00:00 mm:ss"
+fechaInicioCIclo = 0
+def obtenerTiempo(estadoCiclo):
+    global tiempoCiclo, fechaInicioCIclo, ulEstado
+
+    if estadoCiclo != ulEstado:
+        if estadoCiclo:
+            fechaInicioCIclo = datetime.now()
+            ulEstado = estadoCiclo
+    elif estadoCiclo:
+        transcurrido = datetime.now() - fechaInicioCIclo
+        transcurrido = datetime.now() - fechaInicioCIclo
+        minutos = transcurrido.seconds // 60
+        segundos = transcurrido.seconds % 60
+        tiempoCiclo = f"{minutos:02}:{segundos:02} mm:ss"
+        
+    if estadoCiclo == False:
+        tiempoCiclo = 0
+        fechaInicioCIclo = 0
+        ulEstado = None
+    
+    return tiempoCiclo
 def resumenEtapaDesmoldeo(opc_cliente):
-    # agregar PesoTotal (actual) - Objeto TORRE: Nivel Actual - Estado (activo / inactivo / pausa) - tiempo transcurrido / Tag Torre ()
+    
     try:
-        dResumenDatos = Recetas(opc_cliente)
-        nbreObjeto = "RecetaActual"
-        diccinario = ["Nombre", "RecetaProximaDesmolde","NroGriper", "PesoProducto", "TotalNiveles" , "TipoMolde"]
-
-        resultado = dResumenDatos.buscarNodos(2,nbreObjeto, diccinario)
-        datosTorre = dResumenDatos.buscarNodos(2, "datosTorre", ["NivelActual", "torreActual"])
-        resultado = resultado | datosTorre
-        resultado["PesoActual"] = resultado.get("PesoProducto") * resultado.get("NivelActual")
-        resultado["Estado"] = "Activo" if dResumenDatos.buscarNodo(2,"sector_IO", "estadoMaquina") else "Inactivo"
-        resultado["TiempoTranscurrido"] = "00:00 hs"
-
+        dResumenDatos = ObtenerNodosOpc(opc_cliente)
+        diccinario = ["Nombre actual","idRecetaActual", "idRecetaProxima", "PesoProducto", "TotalNiveles", "TipoMolde", "estadoMaquina","desmoldeobanda", "sdda_nivel_actual", "iniciado", "torreActual", "cicloTiempoTotal"]
+        resultado = dResumenDatos.buscarNodos(indice,nbreObjeto, diccinario)
+        resultado["estadoMaquina"] = "Activo" if resultado.get("estadoMaquina") == 1 else "Inactivo" if resultado.get("estadoMaquina") == 2 else "Pausado"
+        resultado["TiempoTranscurrido"] = obtenerTiempo(resultado.get("iniciado"))
+        resultado["PesoActualDesmoldado"] = resultado.get("PesoProducto") * resultado.get("sdda_nivel_actual")
+        
         return resultado
     except Exception as e:
         raise HTTPException(status=500, detail=f"Error al obtener la lista de nodos: {e}")
@@ -26,20 +51,17 @@ def obtenerLista(dGeneral, nivel, objeto, diccionario):
     return dGeneral.buscarNodos(nivel, objeto, diccionario)
 
 def datosGenerale(opc_cliente):
-    # agregar PesoTotal y Estado 
     try:
-        dGeneral = Recetas(opc_cliente)
+        dGeneral = ObtenerNodosOpc(opc_cliente)
         nodos = {
-            "datosGenerales": ("RecetaActual", ["Nombre", "RecetaProximaDesmolde", "PesoProducto"]),
-            "datosGripper": ("datosGripper", ["codGripperActual", "codGripperProximo", "gripperDisponibles"]),
-            "datosKuka": ("datosRobot", ["posicionX", "posicionY", "posicionZ"]),
-            "datosTorre": ("datosTorre", ["desmoldeoBanda", "torreActual","torreProxima"]),
-            "sectorIO": ("sector_IO", ["IO_YY_EQ_XX", "estadoMaquina", "boolean01", "boolean02"]),
-            "datosSdda": ("datosSdda", ["sdda_long_mm", "sdda_vertical_mm", "sdda_nivel_actual"])
+            "datosGripper": (nbreObjeto, ["NGripperActual", "NGripperProximo"]),
+            "datosRobot": (nbreObjeto, ["posicionX", "posicionY", "posicionZ"]),
+            "datosTorre": (nbreObjeto, [ "torreActual","torreProxima", "sdda_nivel_actual"]),
+            "sectorIO": (nbreObjeto, ["estadoMaquina","desmoldeobanda"]),
+            "datosSdda": (nbreObjeto, ["nivel fin", "sdda_long_mm","sdda_vertical_mm"]),
         }
-
         listaDatosTiempoReal = {
-            clave: conversorListaAVectores(obtenerLista(dGeneral, 2, objeto, diccionario)) for clave, (objeto, diccionario) in nodos.items()
+            clave: conversorListaAVectores(obtenerLista(dGeneral, indice, objeto, diccionario)) for clave, (objeto, diccionario) in nodos.items()
         }
         return listaDatosTiempoReal
     except Exception as e:
@@ -47,32 +69,20 @@ def datosGenerale(opc_cliente):
             status_code=500, detail=f"Error al obtener los datos: {str(e)}"
     )
 
+
+
 def datosResumenCelda(opc_cliente):
-    lista = []
     try:
-        dGeneral = Recetas(opc_cliente)
-        datosReceta = dGeneral.buscarNodos(2, "RecetaActual", [
-            "Nombre", "PesoProducto", "totalNiveles"
+        dGeneral = ObtenerNodosOpc(opc_cliente)
+        datosReceta = dGeneral.buscarNodos(indice, nbreObjeto, [
+            "Nombre actual", "PesoProducto", "TotalNiveles", "sdda_nivel_actual", "iniciado", "estadoMaquina"
         ])
+        datosReceta["estadoMaquina"] = "Activo" if datosReceta.get("estadoMaquina") == 1 else "Inactivo" if datosReceta.get("estadoMaquina") == 2 else "Pausado"
 
-        pesoActual = datosReceta.get("PesoProducto") * dGeneral.buscarNodo(2, "datosTorre", "NivelActual")
-        estadoDesmoldeo = "Activo" if dGeneral.buscarNodo(2, "sector_IO", "estadoMaquina") == 1 else "Pausa" if dGeneral.buscarNodo(2, "sector_IO", "estadoMaquina") == 2 else "Inactivo" if dGeneral.buscarNodo(2, "sector_IO", "estadoMaquina") == 3 else "Valor desconocido"
-
-        lista.append(dGeneral.buscarNodo(2, "RecetaActual", "Nombre"))
-        lista.append(pesoActual)
-        lista.append(dGeneral.buscarNodo(2, "RecetaActual", "PesoProducto"))
-        lista.append(dGeneral.buscarNodo(2, "sector_IO", "estadoMaquina"))
-        lista.append("00:00hs")
-
-        diccionario = {}
-        diccionario["NombreReceta"] = dGeneral.buscarNodo(2, "RecetaActual", "RecetaNombre")
-        diccionario["PesoActual"] = pesoActual
-        diccionario["PesoProducto"] = dGeneral.buscarNodo(2, "RecetaActual", "PesoProducto")
-        diccionario["estadoMaquina"] = estadoDesmoldeo
-        diccionario["TiempoTranscurrido"] = "00:00 hs"
-
+        datosReceta["PesoActualDesmoldado"] = datosReceta.get("PesoProducto") * datosReceta.get("sdda_nivel_actual")
+        datosReceta["TiempoTrancurrido"] = obtenerTiempo(datosReceta.get("iniciado"))
         celda = {
-            "Desmoldeo": diccionario,
+            "Desmoldeo": datosReceta,
             "Encajonado": [],
             "Palletizado": []
         }

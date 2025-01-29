@@ -1,13 +1,16 @@
 from typing import Union
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends, HTTPException
+from sqlalchemy.orm import Session
 from starlette.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
+from datetime import datetime
 
 from config import db
 from config.opc import OPCUAClient
 from config.ws import ws_manager
 
-from models.receta import Recetas
+from desp import db_dependency
+
 from models.ciclo import Ciclo 
 from models.etapa import Etapa
 from models.torre import Torre
@@ -16,18 +19,23 @@ from models.alarma import Alarma
 from models.kuka import Kuka
 from models.sdda import Sdda
 
-from routers import usuariosRouter, pruebaTiempoRealHTTP, graficosHistorico, resumenProductividad
+from routers import usuariosRouter, graficosHistorico, resumenProductividad
 from service.datosTiempoReal import datosGenerale, resumenEtapaDesmoldeo, datosResumenCelda
 from service.alarmasService import enviarDatosAlarmas, enviaListaLogsAlarmas
+from service.cicloService import guardarDatosCicloBDD, actualizarDatosCicloActual
 
 import socket
 import asyncio
 import logging
+from dotenv import load_dotenv
+import os
 
+load_dotenv()
 logger = logging.getLogger("uvicorn")
 localIp = socket.gethostbyname(socket.gethostname())
 
-URL = f"opc.tcp://{localIp}:4840"
+URL = f"opc.tcp://192.168.10.240:4840"
+#URL = f"opc.tcp://{os.getenv("OPC_SERVER_IP"):{os.getenv("OPC_SERVER_PORT")}}"
 opc_client = OPCUAClient(URL)
 
 #db.Base.metadata.drop_all(bind=db.engine)
@@ -51,10 +59,14 @@ async def iniciar_evento():
     asyncio.create_task(leer_opc_y_enviar())
 """
 
+ultimo_estado = None 
+ciclo_guardado = None
 async def central_opc_render():
+    global ultimo_estado, ciclo_guardado
     while True:
-        try:
-            logger.info("Leyendo valor del OPC centralmente...")
+        try:    
+            
+            #logger.info("Leyendo valor del OPC centralmente...")
             data = {
                 "desmoldeo": resumenEtapaDesmoldeo(opc_client),
                 "general": datosGenerale(opc_client),
@@ -62,15 +74,82 @@ async def central_opc_render():
                 "alarmas": enviarDatosAlarmas(opc_client),
                 "alarmasLogs": enviaListaLogsAlarmas(),
             }
-            logger.info(f"Datos leídos: {data}")
             await ws_manager.send_message("resumen-desmoldeo", data["desmoldeo"])
             await ws_manager.send_message("lista-tiempo-real", data["general"])
             await ws_manager.send_message("celda-completo", data["celda"]),
             await ws_manager.send_message("alarmas-datos", data["alarmas"]),
             await ws_manager.send_message("alarmas-logs", data["alarmasLogs"])
+            
+            datosGenerales = data["desmoldeo"] 
+            estado_actual = datosGenerales["iniciado"] 
+            print("--------------------------------")
+            logger.info(f"ESTADO ACTUAL {estado_actual} - ULTIMO ESTADO: {ultimo_estado}")
+            if estado_actual != ultimo_estado:
+                logger.info(f"ESTADO DEL CICLO {ultimo_estado}")
+                
+                if estado_actual == True:
+                    logger.info("LLEGUE AL IF GUARDA DATOS")
+                    db_ciclo = Ciclo(
+                        fecha_inicio= datetime.now(),
+                        fecha_fin=None,
+                        estadoMaquina=datosGenerales["estadoMaquina"],
+                        bandaDesmolde=datosGenerales["desmoldeobanda"], 
+                        lote="001",
+                        tiempoDesmolde=datosGenerales["cicloTiempoTotal"],
+                        pesoDesmontado = 0,
+                        id_etapa=1,
+                        id_torre=1 if datosGenerales["torreActual"] == 0 else datosGenerales["torreActual"],
+                    )
+                    
+                    db_session: Session = db.get_db().__next__()
+                    logger.info("ME CONECTE A LOS LOS DATOS A LA BASE")
+                    try:
+                        db_session.add(db_ciclo)
+                        db_session.commit()
+                        logger.info("GUARDE DATOS EN LA BSSSS")
+                        logger.info(f"Ciclo creado con ID: {db_ciclo.id}")
+                        db_session.refresh(db_ciclo) 
+                        ciclo_guardado = db_ciclo 
 
-            await asyncio.sleep(10.0)  # Intervalo de lectura
+
+
+                    except Exception as e:
+                        db_session.rollback()
+                        logger.error(f"Error al guardar el ciclo: {e}")
+                    finally:
+                        db_session.close()
+                elif estado_actual == False:
+                    print("------------------------------------------------")
+                    logger.info("PUEDO ACTUALIZAAAAR EL DATO")
+                    try:
+                        db_session: Session = db.get_db().__next__()
+                        logger.info("ME CONECTE A LA BASE PARA ACTUALIZAR")
+                        ciclo_actual = db_session.query(Ciclo).filter(Ciclo.id == ciclo_guardado.id).first()
+                        db_recetaXCiclo = RecetaXCiclo(
+                            cantidadNivelesFinalizado = datosGenerales["sdda_nivel_actual"], 
+                            id_recetario = datosGenerales["idRecetaActual"],
+                            id_ciclo = ciclo_actual.id,
+                        )
+                        db_session.add(db_recetaXCiclo)
+                        db_session.commit()
+
+                        if ciclo_actual:
+                            ciclo_actual.fecha_fin = datetime.now()
+                            ciclo_actual.pesoDesmontado = datosGenerales["sdda_nivel_actual"] * datosGenerales["PesoProducto"]
+                            ciclo_actual.tiempoDesmolde = datosGenerales["cicloTiempoTotal"]
+                            db_session.commit()
+                            db_session.refresh(ciclo_actual)
+                            logger.info(f"Ciclo actualizado con ID: {ciclo_actual.id}")
+                    except Exception as e:
+                        db_session.rollback()
+                        logger.error(f"Error al actualizar el ciclo: {e}")
+
+
+            ultimo_estado = estado_actual
+            
+            await asyncio.sleep(2.0)  # Intervalo de lectura
         except Exception as e:
+            db.rollback()
             logger.error(f"Error en el lector central del OPC: {e}")
 
 @asynccontextmanager
@@ -85,7 +164,6 @@ async def lifespan(app: FastAPI):
         opc_client.disconnect()
 
 
-
 app = FastAPI(lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
@@ -96,7 +174,7 @@ app.add_middleware(
 )
 
 app.include_router(usuariosRouter.RouterUsers)
-app.include_router(pruebaTiempoRealHTTP.RouterLive)
+#app.include_router(pruebaTiempoRealHTTP.RouterLive)
 app.include_router(graficosHistorico.RoutersGraficosH)
 app.include_router(resumenProductividad.RouterProductividad)
 
@@ -111,10 +189,11 @@ async def resumen_desmoldeo(websocket: WebSocket, id: str):
             await websocket.receive_json()  # Aquí puedes hacer validaciones si es necesario
             data = resumenEtapaDesmoldeo(opc_client)  # Datos específicos para desmoldeo
             await ws_manager.send_message(id, data)
-            await asyncio.sleep(0.300)
+            await asyncio.sleep(0.100)
     except WebSocketDisconnect:
         await ws_manager.disconnect(id, websocket)
 
 @app.get("/")
 def read_root():
-    return {"Hello": "World"}
+        value = opc_client.read_node(f"ns=4;i=22")
+        return {"nodo id": 2, "value": value}

@@ -1,14 +1,12 @@
 from fastapi import APIRouter, HTTPException, Depends, status
 from datetime import timedelta, datetime, timezone
-from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from fastapi.security import OAuth2PasswordRequestForm
-from service.useriosService import get_listaUsuarios
 from config import db
 from typing import Annotated
 from models.usuario import Usuario
 from dotenv import load_dotenv
-from jose import jwt, JWTError
+from jose import jwt
 import os
 from desp import db_dependency, bcrypt_context,user_dependency
 

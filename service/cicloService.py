@@ -5,6 +5,10 @@ from models.recetaxciclo import RecetaXCiclo
 from models.ciclo import Ciclo
 from models.recetaxciclo import Recetario
 
+from fastapi import HTTPException
+
+from desp import db_dependency
+
 from collections import defaultdict
 from datetime import datetime
 
@@ -14,6 +18,10 @@ from openpyxl.styles import Font, Alignment, PatternFill
 from openpyxl.worksheet.table import Table, TableStyleInfo
 
 from io import BytesIO
+
+import logging
+
+logger = logging.getLogger("uvicorn")
 
 def agregarDatosExcel(sheet, producto, ciclos):
 
@@ -183,12 +191,12 @@ def resumenDeProductividad(db, fecha_inicio:date, fecha_fin:date):
             productosRealizados[receta.id] = {
                 "id_recetario": receta.id,
                 "NombreProducto": receta.nombre,
-                "peso": pesoFinal,
+                "pesoTotal": pesoFinal,
                 "cantidadCiclos": len(listaBuscarCiclo),
                 "tiempoTotal": tiempoTotalCiclo,
             }
     respuestaProductividad["CantidadCiclosCorrectos"] = cantidadCiclosTotal
-    respuestaProductividad["PesoTotal"] = totalPeso / 1000 # Total en Toneladas
+    respuestaProductividad["PesoTotalCiclos"] = totalPeso / 1000 # Total en Toneladas
     respuestaProductividad["ProductosRealizados"] = list(productosRealizados.values())
 
     return respuestaProductividad
@@ -213,19 +221,19 @@ def graficosHistoricos(db, fecha_inicio:date, fecha_fin:date):
     def buscarCiclos(idReceta, tablaDatos):
         return [{
             "idCiclo": ciclo.id,
-            "pesoTotal": receta.pesoProductoXFila * recetaXCiclo.cantidadNivelesCorrectos,
-            "fechaFin" : ciclo.fecha_fin.timestamp(),            
+            "pesoDesmontado": receta.pesoProductoXFila * recetaXCiclo.cantidadNivelesCorrectos,
+            "fecha_fin" : ciclo.fecha_fin.timestamp(),            
         } for ciclo, recetaXCiclo, receta in tablaDatos if idReceta == recetaXCiclo.id_recetario ]
 
     for ciclo, recetaXCiclo, receta in tablaBaseDatos:
         listaPeso.append({
             "fecha_fin": ciclo.fecha_fin.strftime("%Y-%m-%d"),
-            "PesoTotal": receta.pesoProductoXFila * recetaXCiclo.cantidadNivelesCorrectos
+            "PesoDiarioProducto": receta.pesoProductoXFila * recetaXCiclo.cantidadNivelesCorrectos
         })
         if recetaXCiclo.id_recetario not in listaProductos:
             listaProductos[recetaXCiclo.id_recetario] = {
-                "nombre": receta.nombre,
-                "ciclo": buscarCiclos(recetaXCiclo.id_recetario, tablaBaseDatos)
+                "NombreProducto": receta.nombre,
+                "ListaDeCiclos": buscarCiclos(recetaXCiclo.id_recetario, tablaBaseDatos)
             }
 
     # AGRUPAR POR DIA
@@ -247,8 +255,8 @@ def graficosHistoricos(db, fecha_inicio:date, fecha_fin:date):
     
     listaCiclos = sorted(listaCiclos, key=lambda x: datetime.strptime(x['fecha_fin'], "%Y-%m-%d"))
     
-    resultado["ciclos"] = listaCiclos
-    resultado["pesoProducto"] = listaPeso
+    resultado["ListaCiclosDiario"] = listaCiclos
+    resultado["pesoTotalDiario "] = listaPeso
     resultado["listaProductos"] = list(listaProductos.values())
 
     return resultado
@@ -475,3 +483,94 @@ def obtenerListaCiclosXProductos(db, fecha_inicio: date, fecha_fin: date):
 
 
     return completo
+
+def guardarDatosCicloBDD(resultadoResumen, db: db_dependency):
+    print("")
+    """
+    esultadoResumen = resumenEtapaDesmoldeo(opc_client)
+            estado_actual = resultadoResumen["Estado"]
+
+            # Solo actuamos si el estado cambia
+            if estado_actual != ultimo_estado:
+                if estado_actual == "Activo":
+
+                    db_ciclo = Ciclo(
+                        fecha_inicio=datetime.now(),
+                        fecha_fin=datetime.now(),
+                        estadoMaquina=resultadoResumen["Estado"],
+                        bandaDesmolde=resultadoResumen["BandaDesmolde"], 
+                        lote="001",
+                        tiempoDesmolde=1,
+                        id_etapa=1,
+                        id_torre=resultadoResumen["torreActual"],
+                    )
+
+                    # Obtener la sesión de la base de datos
+                    db_session: Session = db.get_db().__next__()
+
+                    try:
+                        # Intentar guardar el ciclo en la base de datos
+                        db_session.add(db_ciclo)
+                        db_session.commit()  # Confirmar la transacción
+                        db_session.refresh(db_ciclo)  # Obtener el id generado
+                        logger.info(f"Ciclo guardado con ID: {db_ciclo.id}")
+                        ciclo_guardado = db_ciclo  # Guardar la referencia al ciclo creado
+                    except Exception as e:
+                        db_session.rollback()  # Revertir si ocurre un error
+                        logger.error(f"Error al guardar el ciclo: {e}")
+                        raise HTTPException(status_code=500, detail=f"Error al guardar el ciclo: {e}")
+                    finally:
+                        db_session.close()  # Cerrar la sesión de la base de datos
+
+                    # Verificamos si ciclo_guardado no es None después de la transacción
+                    if ciclo_guardado is None:
+                        logger.error("No se pudo guardar el ciclo correctamente.")
+                        raise HTTPException(status_code=500, detail="Error al guardar el ciclo: ciclo_guardado es None.")
+
+                    # Log de confirmación
+                    logger.info(f"Ciclo guardado: {ciclo_guardado.id}")
+
+                elif resultadoResumen["NivelActual"] == 2:
+                    # Verificamos si ciclo_guardado no es None antes de intentar actualizarlo
+                    print("ENTRE AL IF -AAAAAAAAAAAA")
+                    if ciclo_guardado is not None:
+                        try:
+                            logger.info("Actualizando datos del ciclo...")
+
+                            # Actualizamos la fecha de fin para el ciclo guardado
+                            ciclo_guardado.fecha_fin = datetime.now()
+
+                            # Obtener la sesión de la base de datos
+                            db_session: Session = db.get_db().__next__()
+
+                            # Confirmar la transacción de actualización
+                            db_session.commit()
+                            db_session.refresh(ciclo_guardado)
+                            print("ACTUALICE EL DATO Y LLEGUEEE")
+                            logger.info(f"Ciclo actualizado con ID: {ciclo_guardado.id}")
+                        except Exception as e:
+                            logger.error(f"Error al actualizar el ciclo: {e}")
+                            db_session.rollback()  # En caso de error, revertir
+                            raise HTTPException(status_code=500, detail=f"Error al actualizar el ciclo: {e}")
+                        finally:
+                            db_session.close()
+
+                    else:
+                        logger.error("No se puede actualizar el ciclo: ciclo_guardado es None.")
+                        raise HTTPException(status_code=500, detail="No se ha guardado un ciclo previamente.")
+
+                # Actualizamos el último estado
+                ultimo_estado = estado_actual
+                
+    """
+def actualizarDatosCicloActual(ciclo: Ciclo, resultadoResumen, db):
+    try:
+        ciclo.fecha_fin = datetime.now().strftime("%Y-%m-%d-%H-%M") 
+        db.commit()
+        db.refresh(ciclo) 
+
+        logger.info(f"Ciclo actualizado con ID: {ciclo.id}")
+    except Exception as e:
+        # Si ocurre un error, haz rollback
+        logger.error(f"Error en el lector central del OPC: {e}")
+        
