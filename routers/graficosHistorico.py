@@ -9,7 +9,7 @@ from desp import user_dependency
 
 RoutersGraficosH = APIRouter(prefix="/graficos-historico", tags=["Graficos Historico"]) 
 @RoutersGraficosH.get("/ciclos-productos/")
-def red_lista_ciclos_productos(
+def red_lista_ciclos_productos(user: user_dependency, 
     fecha_inicio: date = Query(..., description="Fecha de inicio (YYYY-MM-DD HH:MM:SS)"),
     fecha_fin: date = Query(..., description="Fecha de fin (YYYY-MM-DD)"), 
     db : Session = Depends(db.get_db)):
@@ -18,7 +18,7 @@ def red_lista_ciclos_productos(
     return resupuesta
 
 @RoutersGraficosH.get("/productos-realizados/")
-def red_productos_realizados(fecha_inicio: date = Query(..., description="Fecha de inicio (YYYY-MM-DD)"),fecha_fin: date = Query(..., description="Fecha de fin (YYYY-MM-DD)"), db : Session = Depends(db.get_db)):
+def red_productos_realizados(user: user_dependency, fecha_inicio: date = Query(..., description="Fecha de inicio (YYYY-MM-DD)"),fecha_fin: date = Query(..., description="Fecha de fin (YYYY-MM-DD)"), db : Session = Depends(db.get_db)):
     resupuesta = obtenerListaCiclosXProductos(db, fecha_inicio, fecha_fin)
     return resupuesta
 
@@ -40,7 +40,7 @@ def descargar_documento(user: user_dependency, fecha_inicio: date = Query(..., d
     )
 
 @RoutersGraficosH.get("/lista-datos")
-def red_lista_datos_graficos(fecha_inicio: date = Query(..., description="Fecha de inicio (YYYY-MM-DD)"),fecha_fin: date = Query(..., description="Fecha de fin (YYYY-MM-DD)"), db : Session = Depends(db.get_db)):
+def red_lista_datos_graficos(user: user_dependency, fecha_inicio: date = Query(..., description="Fecha de inicio (YYYY-MM-DD)"),fecha_fin: date = Query(..., description="Fecha de fin (YYYY-MM-DD)"), db : Session = Depends(db.get_db)):
     if not fecha_inicio:
         raise HTTPException(status_code=400 , detail="Debe especificar una fecha de inicio.")
     if not fecha_fin:

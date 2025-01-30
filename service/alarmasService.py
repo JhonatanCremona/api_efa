@@ -368,7 +368,6 @@ listaAlarmas = [
 
 listaLogsAlarmas = []
 def enviarDatosAlarmas(opc_cliente):
-
     try:
         dbDatosAlarmas = ObtenerNodosOpc(opc_cliente)
         todasAlarmas = dbDatosAlarmas.leerNodoAlarma(5, "Server interface_2", "Alarma")

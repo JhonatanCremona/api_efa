@@ -24,7 +24,7 @@ def read_productividad(user: user_dependency,
     return resumenDeProductividad(db, fecha_inicio, fecha_fin)
 
 @RouterProductividad.get("/descargar-excel")
-async def descargar_documento(
+async def descargar_documento(user: user_dependency,
     fecha_inicio: date = Query(..., description="Fecha de inicio (YYYY-MM-DD HH:MM:SS)"),
     fecha_fin: date = Query(..., description="Fecha de fin (YYYY-MM-DD)"), 
     db : Session = Depends(db.get_db)):

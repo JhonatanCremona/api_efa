@@ -1,5 +1,5 @@
 from typing import Union
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends, HTTPException
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from sqlalchemy.orm import Session
 from starlette.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
@@ -8,8 +8,6 @@ from datetime import datetime
 from config import db
 from config.opc import OPCUAClient
 from config.ws import ws_manager
-
-from desp import db_dependency
 
 from models.ciclo import Ciclo 
 from models.etapa import Etapa
@@ -22,7 +20,6 @@ from models.sdda import Sdda
 from routers import usuariosRouter, graficosHistorico, resumenProductividad
 from service.datosTiempoReal import datosGenerale, resumenEtapaDesmoldeo, datosResumenCelda
 from service.alarmasService import enviarDatosAlarmas, enviaListaLogsAlarmas
-from service.cicloService import guardarDatosCicloBDD, actualizarDatosCicloActual
 
 import socket
 import asyncio
@@ -34,8 +31,10 @@ load_dotenv()
 logger = logging.getLogger("uvicorn")
 localIp = socket.gethostbyname(socket.gethostname())
 
-URL = f"opc.tcp://192.168.10.240:4840"
-#URL = f"opc.tcp://{os.getenv("OPC_SERVER_IP"):{os.getenv("OPC_SERVER_PORT")}}"
+opc_ip = os.getenv("OPC_SERVER_IP")
+opc_port = os.getenv("OPC_SERVER_PORT")
+
+URL = f"opc.tcp://{opc_ip}:{opc_port}"
 opc_client = OPCUAClient(URL)
 
 #db.Base.metadata.drop_all(bind=db.engine)
@@ -145,7 +144,6 @@ async def central_opc_render():
                         db_session.rollback()
                         logger.error(f"Error al actualizar el ciclo: {e}")
 
-
             ultimo_estado = estado_actual
             
             await asyncio.sleep(2.0)  # Intervalo de lectura
@@ -158,7 +156,6 @@ async def lifespan(app: FastAPI):
     try:
         opc_client.connect()
         logger.info("Conectado al servidor OPC UA.")
-        #await iniciar_evento()
         asyncio.create_task(central_opc_render())
         yield
     finally:
@@ -186,9 +183,8 @@ async def resumen_desmoldeo(websocket: WebSocket, id: str):
     await ws_manager.connect(id, websocket)
     try:
         while True:
-            # Esperar mensajes del cliente, si es necesario
             await websocket.receive_json()  # Aquí puedes hacer validaciones si es necesario
-            data = resumenEtapaDesmoldeo(opc_client)  # Datos específicos para desmoldeo
+            data = resumenEtapaDesmoldeo(opc_client)  #SE PUEDE ELIMINAR ?
             await ws_manager.send_message(id, data)
             await asyncio.sleep(0.100)
     except WebSocketDisconnect:
