@@ -295,7 +295,7 @@ def generarDocumentoXLMSGraficos(db, fecha_inicio:date, fecha_fin:date):
     fechaFin_cell = sheet.cell(row=sheet.max_row, column=1)
     fechaFin_cell.font = Font(bold=True, size=12)
 
-    headers = ["IdRecetario", "NombreProducto", "IdCiclo","TipoFin","NumeroGripper","Lote","TiempoTotal (minutos)","FechaInicio", "FechaRegistro", "PesoTotalProducto"]
+    headers = ["IdRecetario", "Codigo Producto", "Estado Maquina","IdCiclo","BandaDesmolde","NumeroGripper","Lote", "PesoDesmoldado (KG)","Tiempo total desmolde (minutos)","FechaInicio", "FechaRegistro"]
     sheet.append(headers)
 
     header_fill = PatternFill(start_color="145f82", end_color="145f82", fill_type="solid")
@@ -313,14 +313,15 @@ def generarDocumentoXLMSGraficos(db, fecha_inicio:date, fecha_fin:date):
         resultado.append([
             recetaXCiclo.id_recetario,
             receta.codigoProducto, 
+            ciclo.estadoMaquina,
             ciclo.id, 
             ciclo.bandaDesmolde, 
             receta.nroGripper,
             ciclo.lote,
+            ciclo.pesoDesmontado,
             ciclo.tiempoDesmolde,
             ciclo.fecha_inicio,
             ciclo.fecha_fin, 
-            receta.pesoPorNivel * recetaXCiclo.cantidadNivelesFinalizado,
         ])
 
     for receta in resultado:
@@ -444,7 +445,7 @@ def obtenerListaCiclosXProductos(db, fecha_inicio: date, fecha_fin: date):
         idReceta = item.id_recetario
         if item.id_recetario not in registro:
             registro["fecha_fin"] = listaCiclos_dic.get(item.id_ciclo).fecha_fin.strftime("%Y-%m-%d")
-            registro["PesoTotal"] = listaReceta_dic.get(item.id_recetario).pesoProductoXFila * item.cantidadNivelesCorrectos
+            registro["PesoTotal"] = listaReceta_dic.get(item.id_recetario).pesoPorNivel * item.cantidadNivelesFinalizado
             listaPeso.append(registro)
 
     grouped_by_month = defaultdict(list)
