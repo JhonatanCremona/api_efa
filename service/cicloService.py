@@ -484,7 +484,7 @@ def obtenerListaCiclosXProductos(db, fecha_inicio: date, fecha_fin: date):
     for clave, valor in listaXDia.items():
         elemento = {}
         elemento["fecha_fin"]= clave
-        elemento["CantidadCiclos"]= len(valor)
+        elemento["CiclosCompletados"]= len(valor)
         grupo.append(elemento)
 
     completo = {}
