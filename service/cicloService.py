@@ -491,8 +491,9 @@ def obtenerListaCiclosXProductos(db, fecha_inicio: date, fecha_fin: date):
             if fecha in registro:
                 registro[fecha]["PesoDiarioProducto"] += item["PesoDiarioProducto"]
             else:
-                # Si no está en el diccionario, agregamos la fecha con el peso
-                registro[fecha] = {"fecha_fin": fecha, "PesoDiarioProducto": item["PesoDiarioProducto"]}
+                fecha_sin_hora = fecha.split(" ")[0]
+                registro[fecha_sin_hora] = {"fecha_fin": fecha_sin_hora, "PesoDiarioProducto": item["PesoDiarioProducto"]}
+    
         
         # Retornar solo los valores, con el formato correcto (sin fechas duplicadas)
         return [{"fecha_fin": fecha, "PesoDiarioProducto": registro[fecha]["PesoDiarioProducto"]} for fecha in registro]
@@ -500,7 +501,7 @@ def obtenerListaCiclosXProductos(db, fecha_inicio: date, fecha_fin: date):
 
     for clave, valor in listaXDia.items():
         elemento = {}
-        elemento["fecha_fin"]= clave
+        elemento["fecha_fin"]= clave.split(" ")[0]
         elemento["CiclosCompletados"]= len(valor)
         grupo.append(elemento)
 
