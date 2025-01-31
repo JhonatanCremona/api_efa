@@ -444,7 +444,7 @@ def obtenerListaCiclosXProductos(db, fecha_inicio: date, fecha_fin: date):
         registro = {}
         idReceta = item.id_recetario
         if item.id_recetario not in registro:
-            registro["fecha_fin"] = listaCiclos_dic.get(item.id_ciclo).fecha_fin.strftime("%Y-%m-%d %H")
+            registro["fecha_fin"] = listaCiclos_dic.get(item.id_ciclo).fecha_fin.strftime("%Y-%m-%d")
             registro["PesoDiarioProducto"] = listaReceta_dic.get(item.id_recetario).pesoPorNivel * item.cantidadNivelesFinalizado
             listaPeso.append(registro)
 
@@ -478,7 +478,7 @@ def obtenerListaCiclosXProductos(db, fecha_inicio: date, fecha_fin: date):
         return dict(grouped_by_minute)
 
 
-    listaXDia = agruparPorHora(tablaCiclo)
+    listaXDia = agruparPorDia(tablaCiclo)
     grupo = []
 
     def agruparDats(datos):
@@ -491,7 +491,7 @@ def obtenerListaCiclosXProductos(db, fecha_inicio: date, fecha_fin: date):
             if fecha in registro:
                 registro[fecha]["PesoDiarioProducto"] += item["PesoDiarioProducto"]
             else:
-                fecha_sin_hora = fecha.split(" ")[0]
+                fecha_sin_hora = fecha
                 registro[fecha_sin_hora] = {"fecha_fin": fecha_sin_hora, "PesoDiarioProducto": item["PesoDiarioProducto"]}
     
         
@@ -501,7 +501,7 @@ def obtenerListaCiclosXProductos(db, fecha_inicio: date, fecha_fin: date):
 
     for clave, valor in listaXDia.items():
         elemento = {}
-        elemento["fecha_fin"]= clave.split(" ")[0]
+        elemento["fecha_fin"]= clave
         elemento["CiclosCompletados"]= len(valor)
         grupo.append(elemento)
 
