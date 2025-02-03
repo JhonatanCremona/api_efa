@@ -16,7 +16,7 @@ RouterUsers = APIRouter(prefix="/usuario", tags=["Usuarios"])
 
 SECRET_KEY = os.getenv("AUTH_SECRET_KEY")
 ALGORITHM = os.getenv("AUTH_ALGORITHM")
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+ACCESS_TOKEN_EXPIRE_MINUTES = 120
 
 class UserCreateRequest(BaseModel):
     username: str
