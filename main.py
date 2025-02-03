@@ -60,8 +60,9 @@ async def iniciar_evento():
 
 ultimo_estado = None 
 ciclo_guardado = None
+pesoActual = 0
 async def central_opc_render():
-    global ultimo_estado, ciclo_guardado
+    global ultimo_estado, ciclo_guardado, pesoActual
     while True:
         try:    
             
@@ -86,9 +87,10 @@ async def central_opc_render():
             logger.info(f"ESTADO ACTUAL {estado_actual} - ULTIMO ESTADO: {ultimo_estado}")
             if estado_actual != ultimo_estado:
                 logger.info(f"ESTADO DEL CICLO {ultimo_estado}")
-                
+                pesoActual = datosGenerales["PesoActualDesmoldado"]
                 if estado_actual == True:
                     logger.info("LLEGUE AL IF GUARDA DATOS")
+                    pesoActual = datosGenerales["PesoActualDesmoldado"]
                     db_ciclo = Ciclo(
                         fecha_inicio= datetime.now(),
                         fecha_fin=None,
@@ -132,19 +134,22 @@ async def central_opc_render():
                         db_session.commit()
 
                         if ciclo_actual:
+                            print(f"-----------DATO PESO {datosGenerales["PesoActualDesmoldado"]}")
+                            print(f"-----------DATO PESO {pesoActual}------------")
                             ciclo_actual.fecha_fin = datetime.now()
-                            ciclo_actual.pesoDesmontado = datosGenerales["sdda_nivel_actual"] * datosGenerales["PesoProducto"]
+                            ciclo_actual.pesoDesmontado = pesoActual
                             ciclo_actual.tiempoDesmolde = datosGenerales["cicloTiempoTotal"]
                             db_session.commit()
                             db_session.refresh(ciclo_actual)
                             logger.info(f"Ciclo actualizado con ID: {ciclo_actual.id}")
+                            pesoActual = 0;
                     except Exception as e:
                         db_session.rollback()
                         logger.error(f"Error al actualizar el ciclo: {e}")
 
             ultimo_estado = estado_actual
             
-            await asyncio.sleep(2.0)  # Intervalo de lectura
+            await asyncio.sleep(0.5) 
         except Exception as e:
             db.rollback()
             logger.error(f"Error en el lector central del OPC: {e}")
@@ -184,7 +189,7 @@ async def resumen_desmoldeo(websocket: WebSocket, id: str):
             await websocket.receive_json()  # Aquí puedes hacer validaciones si es necesario
             data = resumenEtapaDesmoldeo(opc_client)  #SE PUEDE ELIMINAR ?
             await ws_manager.send_message(id, data)
-            await asyncio.sleep(0.100)
+            await asyncio.sleep(0.10)
     except WebSocketDisconnect:
         await ws_manager.disconnect(id, websocket)
 
