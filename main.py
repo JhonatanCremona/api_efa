@@ -135,9 +135,9 @@ async def central_opc_render():
 
                         if ciclo_actual:
                             print(f"-----------DATO PESO {datosGenerales["PesoActualDesmoldado"]}")
-                            print(f"-----------DATO PESO {pesoActual}------------")
+                            print(f"-----------DATO PESO {datosGenerales["PesoProducto"] * datosGenerales["sdda_nivel_actual"]}------------")
                             ciclo_actual.fecha_fin = datetime.now()
-                            ciclo_actual.pesoDesmontado = pesoActual
+                            ciclo_actual.pesoDesmoldado = datosGenerales["PesoProducto"] * datosGenerales["sdda_nivel_actual"]
                             ciclo_actual.tiempoDesmolde = datosGenerales["cicloTiempoTotal"]
                             db_session.commit()
                             db_session.refresh(ciclo_actual)
