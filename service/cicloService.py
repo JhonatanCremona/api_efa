@@ -4,10 +4,7 @@ from datetime import date, datetime
 from models.recetaxciclo import RecetaXCiclo
 from models.ciclo import Ciclo
 from models.recetaxciclo import Recetario
-
-from fastapi import HTTPException
-
-from desp import db_dependency
+from models.torre import Torre
 
 from collections import defaultdict
 from datetime import datetime
@@ -84,8 +81,8 @@ def buscarCiclosXReceta(idReceta, listaRecetaXCiclo, listaReceta_dic, listaCiclo
             listaCiclos_dic[recetaXCiclo.id_ciclo].fecha_fin,
             listaCiclos_dic[recetaXCiclo.id_ciclo].bandaDesmolde,
             recetaXCiclo.cantidadNivelesFinalizado, 
-            listaReceta_dic.get(idReceta).pesoPorNivel,
-            listaReceta_dic.get(idReceta).pesoPorNivel * recetaXCiclo.cantidadNivelesFinalizado,
+            recetaXCiclo.pesoPorNivel,
+            recetaXCiclo.pesoPorNivel * recetaXCiclo.cantidadNivelesFinalizado,
             listaCiclos_dic[recetaXCiclo.id_ciclo].lote, 
             listaCiclos_dic[recetaXCiclo.id_ciclo].tiempoDesmolde
         ]
@@ -97,7 +94,7 @@ def buscarCiclos(idReceta, listaRecetaXCiclo, listaReceta_dic, listaCiclos_dic):
     return [
         {
             "id_ciclo": recetaXCiclo.id_ciclo,  # Acceder a recetaXCiclo.id_ciclo
-            "pesoTotal": listaReceta_dic.get(idReceta).pesoPorNivel * recetaXCiclo.cantidadNivelesFinalizado,
+            "pesoTotal": recetaXCiclo.pesoPorNivel * recetaXCiclo.cantidadNivelesFinalizado,
             "tiempoTotal": listaCiclos_dic[recetaXCiclo.id_ciclo].tiempoDesmolde
         }
         for _, recetaXCiclo, _ in listaRecetaXCiclo  # Desempaquetar la tupla correctamente
@@ -131,7 +128,6 @@ def generarDocumentoXLMS(db, fecha_inicio: date, fecha_fin:date):
     workbook = Workbook()
     sheet = workbook.active
     sheet.title = "Reporte Productividad"
-
     logoPath = "cremona.png"
     img = Image(logoPath)
     img.width = 280
@@ -162,6 +158,8 @@ def generarDocumentoXLMS(db, fecha_inicio: date, fecha_fin:date):
     excel_stream.seek(0)  
     return excel_stream
 
+
+### -------------------------DATOS CONSERVAR ------------------------
 def resumenDeProductividad(db, fecha_inicio:date, fecha_fin:date):
     fecha_inicio = datetime.combine(fecha_inicio, datetime.min.time())
     fecha_fin = datetime.combine(fecha_fin, datetime.max.time())
@@ -180,7 +178,7 @@ def resumenDeProductividad(db, fecha_inicio:date, fecha_fin:date):
     )
 
     for ciclo, recetaXCiclo, receta in tablaCiclos:
-        totalPeso += recetaXCiclo.cantidadNivelesFinalizado * receta.pesoPorNivel
+        totalPeso += recetaXCiclo.cantidadNivelesFinalizado * recetaXCiclo.pesoPorNivel
         cantidadCiclosTotal += 1
         if receta.id not in productosRealizados:
             listaBuscarCiclo = buscarCiclos(receta.id, tablaCiclos, {r.id: r for _,_, r in tablaCiclos}, {c.id: c for c, _, _ in tablaCiclos})
@@ -200,6 +198,133 @@ def resumenDeProductividad(db, fecha_inicio:date, fecha_fin:date):
     respuestaProductividad["ProductosRealizados"] = list(productosRealizados.values())
 
     return respuestaProductividad
+
+def generarDocumentoXLMSProductividad(db, fecha_inicio:date, fecha_fin:date):
+    fecha_inicio = datetime.combine(fecha_inicio, datetime.min.time())
+    fecha_fin = datetime.combine(fecha_fin, datetime.max.time())
+    
+    tablaBaseDatos = (
+        db.query(Ciclo, RecetaXCiclo, Recetario, Torre)
+        .join(RecetaXCiclo, Ciclo.id == RecetaXCiclo.id_ciclo)
+        .join(Recetario, RecetaXCiclo.id_recetario == Recetario.id)
+        .join(Torre, Ciclo.id_torre == Torre.id)
+        .filter(Ciclo.fecha_fin.between(fecha_inicio, fecha_fin))
+        .all()
+    )
+    workbook = Workbook()
+    sheet = workbook.active
+    sheet.title = "Reporte Productividad"
+    logoPath = "cremona.png"
+    img = Image(logoPath)
+    img.width = 280
+    img.height = 70
+    sheet.add_image(img, 'D1')
+
+    sheet.append(["LISTA PRODUCTOS"])
+    producto_cell = sheet.cell(row=sheet.max_row, column=1)
+    producto_cell.font = Font(bold= True, size=20)
+
+    sheet.append(["Fecha Inicio:", fecha_inicio.strftime("%Y-%m-%d")])
+    fechaInicio_cell = sheet.cell(row=sheet.max_row, column=1)
+    fechaInicio_cell.font = Font(bold=True, size=12)
+    sheet.append(["Fecha Fin:", fecha_fin.strftime("%Y-%m-%d")])
+    fechaFin_cell = sheet.cell(row=sheet.max_row, column=1)
+    fechaFin_cell.font = Font(bold=True, size=12)
+
+    headers = ["id_recetario", "CodigoProducto","id_etapa","Cantidad Ciclos","PesoTotalDesmoldado","TiempoTotalDesmoldado","NivelesTorre", "NivelesDesmoldadoCorrectamente"]
+    sheet.append(headers)
+
+    header_fill = PatternFill(start_color="145f82", end_color="145f82", fill_type="solid")
+    header_font = Font(color="FFFFFF", bold=True)  
+
+    for col in range(1, len(headers) + 1):
+        cell = sheet.cell(row=sheet.max_row, column=col)
+        cell.fill = header_fill
+        cell.font = header_font
+        cell.alignment = Alignment(horizontal="center")
+    
+    start_row = sheet.max_row + 1
+    resultado = []
+    productosRealizados = {}
+
+    def sumarDatosCiclos(id_recetario, recetaXCiclo, torre_dic, ciclo_dic):
+        return [
+            [
+                ciclo_dic[recetaCiclo.id_ciclo].pesoDesmoldado, 
+                ciclo_dic[recetaCiclo.id_ciclo].tiempoDesmolde,
+                torre_dic[ciclo_dic[recetaCiclo.id_ciclo].id_torre].cantidadNiveles,
+                recetaCiclo.cantidadNivelesFinalizado,
+            ] 
+            for _, recetaCiclo,_,_ in recetaXCiclo
+            if recetaCiclo.id_recetario == id_recetario
+        ]
+    for ciclo, recetaXCiclo, receta, torre in tablaBaseDatos:
+        if receta.id not in productosRealizados:
+            productosRealizados[receta.id] = receta.id
+            
+            resultadoCiclo = sumarDatosCiclos(
+                receta.id,
+                tablaBaseDatos,
+                {r.id: r for _, _, _, r in tablaBaseDatos},
+                {c.id: c for c, _, _, _ in tablaBaseDatos}
+            )
+            
+            # Inicializa una fila con los datos básicos
+            fila = [
+                receta.id,
+                receta.codigoProducto,
+                ciclo.id_etapa,
+                len(resultadoCiclo)  # Cantidad de ciclos
+            ]
+            
+            # Calcula los totales de cada columna adicional
+            if resultadoCiclo:
+                sumarCiclos = [0] * len(resultadoCiclo[0])
+                for vector in resultadoCiclo:
+                    sumarCiclos = [x + y for x, y in zip(sumarCiclos, vector)]
+                fila.extend(sumarCiclos)
+            else:
+                fila.extend([0, 0, 0, 0])  # Rellena con ceros si no hay datos
+            
+            # Agrega la fila completa a `resultado`
+            resultado.append(fila)
+    for receta in resultado:
+        if isinstance(receta, (list, tuple)):
+            sheet.append(receta)
+        else:
+            print(f"Fila inválida: {receta}")
+
+
+    
+    end_row = sheet.max_row
+    start_col = 1
+    end_col = len(headers)
+    table_range = f"{sheet.cell(row=start_row -1, column=start_col).coordinate}:{sheet.cell(row=end_row, column=end_col).coordinate}"
+    table_nombre = "ReporteProductividad"
+    tabla = Table(displayName=table_nombre, ref=table_range)
+    style = TableStyleInfo(showFirstColumn=False, showLastColumn=False, showRowStripes=True, showColumnStripes=True)
+    tabla.tableStyleInfo = style
+
+    # Agregar la tabla a la hoja
+    sheet.add_table(tabla)
+    sheet.append([])
+
+    for col in sheet.columns:
+        max_length = 0
+        column_letter = col[0].column_letter
+        for cell in col:
+            try:
+                max_length = max(max_length, len(str(cell.value)))
+            except:
+                pass
+        sheet.column_dimensions[column_letter].width = max_length + 2
+
+    excel_stream = BytesIO()
+    workbook.save(excel_stream)
+    workbook.close() 
+    excel_stream.seek(0)  
+    return excel_stream
+
 
 def graficosHistoricos(db, fecha_inicio:date, fecha_fin:date):
     fecha_inicio = datetime.combine(fecha_inicio, datetime.min.time())
@@ -318,7 +443,7 @@ def generarDocumentoXLMSGraficos(db, fecha_inicio:date, fecha_fin:date):
             ciclo.bandaDesmolde, 
             receta.nroGripper,
             ciclo.lote,
-            ciclo.pesoDesmontado,
+            ciclo.pesoDesmoldado,
             ciclo.tiempoDesmolde,
             ciclo.fecha_inicio,
             ciclo.fecha_fin, 
@@ -331,7 +456,7 @@ def generarDocumentoXLMSGraficos(db, fecha_inicio:date, fecha_fin:date):
     start_col = 1
     end_col = len(headers)
     table_range = f"{sheet.cell(row=start_row -1, column=start_col).coordinate}:{sheet.cell(row=end_row, column=end_col).coordinate}"
-    table_nombre = "GraficoPRoductividad"
+    table_nombre = "GraficoPoductividad"
     tabla = Table(displayName=table_nombre, ref=table_range)
     style = TableStyleInfo(showFirstColumn=False, showLastColumn=False, showRowStripes=True, showColumnStripes=True)
     tabla.tableStyleInfo = style
@@ -363,54 +488,30 @@ def obtenerRecetasPorFecha(db, fecha_inicio: date, fecha_fin: date):
     fecha_fin = datetime.combine(fecha_fin, datetime.max.time())
     
 
-    data = (
-        db.query(RecetaXCiclo)
-        .join(Ciclo, RecetaXCiclo.id_ciclo == Ciclo.id)
+    tablaBaseDatos = (
+        db.query(Ciclo, RecetaXCiclo, Recetario)
+        .join(RecetaXCiclo, Ciclo.id == RecetaXCiclo.id_ciclo)
+        .join(Recetario, RecetaXCiclo.id_recetario == Recetario.id)
         .filter(Ciclo.fecha_fin.between(fecha_inicio, fecha_fin))
         .all()
-        )
-    listaCiclo= []
-    listaReceta = []
+    )
+    def buscarCiclos(idReceta, tablaDatos):
+        return [{
+            "idCiclo": ciclo.id,
+            "pesoDesmontado": recetaXCiclo.pesoPorNivel * recetaXCiclo.cantidadNivelesFinalizado,
+            "fecha_fin" : ciclo.fecha_fin.timestamp(),            
+        } for ciclo, recetaXCiclo, receta in tablaDatos if idReceta == recetaXCiclo.id_recetario ]
 
-    for item in data:
-        listaCiclo.append(
-            db.query(Ciclo).filter(Ciclo.id == item.id_ciclo).first()
-        )
-        listaReceta.append(
-            db.query(Recetario).filter(Recetario.id == item.id_recetario).first()
-        )
-
-    listaReceta_dic = {receta.id: receta for receta in listaReceta}
-    listaCiclo_dic = {ciclo.id: ciclo for ciclo in listaCiclo}
-
-
-
-    resultado = {}
-
-    def buscarNombreReceta(id_recetario):
-        return listaReceta_dic.get(id_recetario).codigoProducto
-            
-    def buscarCiclos(id_recetario):
-        return [
-            {
-                "id_ciclo": ciclo.id,
-                "pesoTotal": listaReceta_dic.get(id_recetario).pesoPorNivel * ciclo.cantidadNivelesFinalizado,
-                "fecha_fin": listaCiclo_dic.get(ciclo.id).fecha_fin.timestamp()
+    listaProductos = {}
+    for ciclo, recetaXCiclo, receta in tablaBaseDatos:
+        if recetaXCiclo.id_recetario not in listaProductos:
+            listaProductos[recetaXCiclo.id_recetario] = {
+                "NombreProducto": receta.codigoProducto,
+                "ListaDeCiclos": buscarCiclos(recetaXCiclo.id_recetario, tablaBaseDatos)
             }
-            for ciclo in data if ciclo.id_recetario == id_recetario
-        ]
-    
 
-    for item in data:
-        idReceta = item.id_recetario
-        if item.id_recetario not in resultado:
-            resultado[idReceta] = {
-                "nombre": buscarNombreReceta(idReceta),
-                "ciclo": buscarCiclos(idReceta)
-            }
-    
     #return listaCiclo_dic
-    return list(resultado.values())
+    return list(listaProductos.values())
 
 def obtenerListaCiclosXProductos(db, fecha_inicio: date, fecha_fin: date):
     fecha_inicio = datetime.combine(fecha_inicio, datetime.min.time())
@@ -445,7 +546,7 @@ def obtenerListaCiclosXProductos(db, fecha_inicio: date, fecha_fin: date):
         idReceta = item.id_recetario
         if item.id_recetario not in registro:
             registro["fecha_fin"] = listaCiclos_dic.get(item.id_ciclo).fecha_fin.strftime("%Y-%m-%d")
-            registro["PesoDiarioProducto"] = listaReceta_dic.get(item.id_recetario).pesoPorNivel * item.cantidadNivelesFinalizado
+            registro["PesoDiarioProducto"] = item.pesoPorNivel * item.cantidadNivelesFinalizado
             listaPeso.append(registro)
 
     grouped_by_month = defaultdict(list)
@@ -512,94 +613,3 @@ def obtenerListaCiclosXProductos(db, fecha_inicio: date, fecha_fin: date):
 
 
     return completo
-
-def guardarDatosCicloBDD(resultadoResumen, db: db_dependency):
-    print("")
-    """
-    esultadoResumen = resumenEtapaDesmoldeo(opc_client)
-            estado_actual = resultadoResumen["Estado"]
-
-            # Solo actuamos si el estado cambia
-            if estado_actual != ultimo_estado:
-                if estado_actual == "Activo":
-
-                    db_ciclo = Ciclo(
-                        fecha_inicio=datetime.now(),
-                        fecha_fin=datetime.now(),
-                        estadoMaquina=resultadoResumen["Estado"],
-                        bandaDesmolde=resultadoResumen["BandaDesmolde"], 
-                        lote="001",
-                        tiempoDesmolde=1,
-                        id_etapa=1,
-                        id_torre=resultadoResumen["torreActual"],
-                    )
-
-                    # Obtener la sesión de la base de datos
-                    db_session: Session = db.get_db().__next__()
-
-                    try:
-                        # Intentar guardar el ciclo en la base de datos
-                        db_session.add(db_ciclo)
-                        db_session.commit()  # Confirmar la transacción
-                        db_session.refresh(db_ciclo)  # Obtener el id generado
-                        logger.info(f"Ciclo guardado con ID: {db_ciclo.id}")
-                        ciclo_guardado = db_ciclo  # Guardar la referencia al ciclo creado
-                    except Exception as e:
-                        db_session.rollback()  # Revertir si ocurre un error
-                        logger.error(f"Error al guardar el ciclo: {e}")
-                        raise HTTPException(status_code=500, detail=f"Error al guardar el ciclo: {e}")
-                    finally:
-                        db_session.close()  # Cerrar la sesión de la base de datos
-
-                    # Verificamos si ciclo_guardado no es None después de la transacción
-                    if ciclo_guardado is None:
-                        logger.error("No se pudo guardar el ciclo correctamente.")
-                        raise HTTPException(status_code=500, detail="Error al guardar el ciclo: ciclo_guardado es None.")
-
-                    # Log de confirmación
-                    logger.info(f"Ciclo guardado: {ciclo_guardado.id}")
-
-                elif resultadoResumen["NivelActual"] == 2:
-                    # Verificamos si ciclo_guardado no es None antes de intentar actualizarlo
-                    print("ENTRE AL IF -AAAAAAAAAAAA")
-                    if ciclo_guardado is not None:
-                        try:
-                            logger.info("Actualizando datos del ciclo...")
-
-                            # Actualizamos la fecha de fin para el ciclo guardado
-                            ciclo_guardado.fecha_fin = datetime.now()
-
-                            # Obtener la sesión de la base de datos
-                            db_session: Session = db.get_db().__next__()
-
-                            # Confirmar la transacción de actualización
-                            db_session.commit()
-                            db_session.refresh(ciclo_guardado)
-                            print("ACTUALICE EL DATO Y LLEGUEEE")
-                            logger.info(f"Ciclo actualizado con ID: {ciclo_guardado.id}")
-                        except Exception as e:
-                            logger.error(f"Error al actualizar el ciclo: {e}")
-                            db_session.rollback()  # En caso de error, revertir
-                            raise HTTPException(status_code=500, detail=f"Error al actualizar el ciclo: {e}")
-                        finally:
-                            db_session.close()
-
-                    else:
-                        logger.error("No se puede actualizar el ciclo: ciclo_guardado es None.")
-                        raise HTTPException(status_code=500, detail="No se ha guardado un ciclo previamente.")
-
-                # Actualizamos el último estado
-                ultimo_estado = estado_actual
-                
-    """
-def actualizarDatosCicloActual(ciclo: Ciclo, resultadoResumen, db):
-    try:
-        ciclo.fecha_fin = datetime.now().strftime("%Y-%m-%d-%H-%M") 
-        db.commit()
-        db.refresh(ciclo) 
-
-        logger.info(f"Ciclo actualizado con ID: {ciclo.id}")
-    except Exception as e:
-        # Si ocurre un error, haz rollback
-        logger.error(f"Error en el lector central del OPC: {e}")
-        

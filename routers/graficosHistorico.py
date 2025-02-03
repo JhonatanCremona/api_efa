@@ -8,7 +8,7 @@ from config import db
 from desp import user_dependency
 
 RoutersGraficosH = APIRouter(prefix="/graficos-historico", tags=["Graficos Historico"]) 
-@RoutersGraficosH.get("/ciclos-productos/")
+@RoutersGraficosH.get("/productos-realizados/")
 def red_lista_ciclos_productos(user: user_dependency, 
     fecha_inicio: date = Query(..., description="Fecha de inicio (YYYY-MM-DD HH:MM:SS)"),
     fecha_fin: date = Query(..., description="Fecha de fin (YYYY-MM-DD)"), 
@@ -17,7 +17,7 @@ def red_lista_ciclos_productos(user: user_dependency,
     resupuesta = obtenerRecetasPorFecha(db, fecha_inicio, fecha_fin)
     return resupuesta
 
-@RoutersGraficosH.get("/productos-realizados/")
+@RoutersGraficosH.get("/ciclos-productos/")
 def red_productos_realizados(user: user_dependency, fecha_inicio: date = Query(..., description="Fecha de inicio (YYYY-MM-DD)"),fecha_fin: date = Query(..., description="Fecha de fin (YYYY-MM-DD)"), db : Session = Depends(db.get_db)):
     resupuesta = obtenerListaCiclosXProductos(db, fecha_inicio, fecha_fin)
     return resupuesta

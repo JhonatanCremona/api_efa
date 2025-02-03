@@ -6,7 +6,6 @@ class OPCUAClient:
         self.server_url = server_url
         self.client = None
 
-
     def connect(self):
         if not self.client:
             self.client = Client(self.server_url)

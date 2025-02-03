@@ -34,7 +34,7 @@ def resumenEtapaDesmoldeo(opc_cliente):
         dResumenDatos = ObtenerNodosOpc(opc_cliente)
         diccinario = ["Nombre actual","idRecetaActual", "idRecetaProxima", "PesoProducto", "TotalNiveles", "TipoMolde", "estadoMaquina","desmoldeobanda", "sdda_nivel_actual", "iniciado", "torreActual", "cicloTiempoTotal", "NGripperActual"]
         resultado = dResumenDatos.buscarNodos(indice,nbreObjeto, diccinario)
-        #resultado["estadoMaquina"] = "Activo" if resultado.get("estadoMaquina") == 1 else "Inactivo" if resultado.get("estadoMaquina") == 2 else "Pausado"
+        resultado["estadoMaquina"] = "Activo" if resultado.get("estadoMaquina") == 1 else "Inactivo" if resultado.get("estadoMaquina") == 2 else "Pausado"
         resultado["TiempoTranscurrido"] = obtenerTiempo(resultado.get("iniciado"))
         resultado["PesoActualDesmoldado"] = resultado.get("PesoProducto") * resultado.get("sdda_nivel_actual")
         
@@ -76,7 +76,7 @@ def datosResumenCelda(opc_cliente):
         datosReceta = dGeneral.buscarNodos(indice, nbreObjeto, [
             "Nombre actual", "PesoProducto", "TotalNiveles", "sdda_nivel_actual", "iniciado", "estadoMaquina"
         ])
-        #datosReceta["estadoMaquina"] = "Activo" if datosReceta.get("estadoMaquina") == 1 else "Inactivo" if datosReceta.get("estadoMaquina") == 2 else "Pausado"
+        datosReceta["estadoMaquina"] = "Activo" if datosReceta.get("estadoMaquina") == 1 else "Inactivo" if datosReceta.get("estadoMaquina") == 2 else "Pausado"
 
         datosReceta["PesoActualDesmoldado"] = datosReceta.get("PesoProducto") * datosReceta.get("sdda_nivel_actual")
         datosReceta["TiempoTrancurrido"] = obtenerTiempo(datosReceta.get("iniciado"))

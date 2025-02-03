@@ -95,10 +95,10 @@ async def central_opc_render():
                         estadoMaquina=datosGenerales["estadoMaquina"],
                         bandaDesmolde=datosGenerales["desmoldeobanda"], 
                         lote="001",
-                        tiempoDesmolde=datosGenerales["cicloTiempoTotal"],
-                        pesoDesmontado = 0,
+                        tiempoDesmolde=0.0,
+                        pesoDesmoldado = 0,
                         id_etapa=1,
-                        id_torre=1 if datosGenerales["torreActual"] == 0 else datosGenerales["torreActual"],
+                        id_torre= 1 if datosGenerales["torreActual"] == 0 else datosGenerales["torreActual"],
                     )
                     
                     db_session: Session = db.get_db().__next__()
@@ -110,9 +110,6 @@ async def central_opc_render():
                         logger.info(f"Ciclo creado con ID: {db_ciclo.id}")
                         db_session.refresh(db_ciclo) 
                         ciclo_guardado = db_ciclo 
-
-
-
                     except Exception as e:
                         db_session.rollback()
                         logger.error(f"Error al guardar el ciclo: {e}")
@@ -127,6 +124,7 @@ async def central_opc_render():
                         ciclo_actual = db_session.query(Ciclo).filter(Ciclo.id == ciclo_guardado.id).first()
                         db_recetaXCiclo = RecetaXCiclo(
                             cantidadNivelesFinalizado = datosGenerales["sdda_nivel_actual"], 
+                            pesoPorNivel = datosGenerales["PesoProducto"],
                             id_recetario = datosGenerales["idRecetaActual"],
                             id_ciclo = ciclo_actual.id,
                         )

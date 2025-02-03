@@ -5,7 +5,7 @@ from desp import user_dependency
 
 from fastapi.responses import StreamingResponse
 
-from service.cicloService import resumenDeProductividad, generarDocumentoXLMS
+from service.cicloService import resumenDeProductividad, generarDocumentoXLMSProductividad
 
 from config import db
 
@@ -34,7 +34,7 @@ async def descargar_documento(
     if not fecha_fin:
         raise HTTPException(status_code=400, detail="Debe especificar una fecha de fin.")
     
-    excel_stream = generarDocumentoXLMS(db, fecha_inicio, fecha_fin)
+    excel_stream = generarDocumentoXLMSProductividad(db, fecha_inicio, fecha_fin)
 
     fecha_actual = datetime.now().strftime("%Y-%m-%d_%H-%M")
     nombreArchivo = f"resumen_productividad_{fecha_actual}.xlsx"
