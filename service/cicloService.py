@@ -281,7 +281,9 @@ def generarDocumentoXLMSProductividad(db, fecha_inicio:date, fecha_fin:date):
             if resultadoCiclo:
                 sumarCiclos = [0] * len(resultadoCiclo[0])
                 for vector in resultadoCiclo:
-                    sumarCiclos = [x + y for x, y in zip(sumarCiclos, vector)]
+                    #sumarCiclos = [x + y for x, y in zip(sumarCiclos, vector)]
+                    sumarCiclos = [x + y for x, y in zip(sumarCiclos, (v if v is not None else 0 for v in vector))]
+
                 fila.extend(sumarCiclos)
             else:
                 fila.extend([0, 0, 0, 0])  # Rellena con ceros si no hay datos
