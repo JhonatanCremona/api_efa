@@ -127,7 +127,7 @@ async def central_opc_render():
                         db_recetaXCiclo = RecetaXCiclo(
                             cantidadNivelesFinalizado = datosGenerales["sdda_nivel_actual"], 
                             pesoPorNivel = datosGenerales["PesoProducto"],
-                            id_recetario = 1,
+                            id_recetario = datosGenerales["idRecetaActual"] if datosGenerales["idRecetaActual"]<=5 else 2,
                             id_ciclo = ciclo_actual.id,
                         )
                         db_session.add(db_recetaXCiclo)
@@ -137,7 +137,7 @@ async def central_opc_render():
                             print(f"-----------DATO PESO {datosGenerales["PesoActualDesmoldado"]}")
                             print(f"-----------DATO PESO {datosGenerales["PesoProducto"] * datosGenerales["sdda_nivel_actual"]}------------")
                             ciclo_actual.fecha_fin = datetime.now()
-                            ciclo_actual.pesoDesmoldado = datosGenerales["PesoProducto"] * datosGenerales["sdda_nivel_actual"]
+                            ciclo_actual.pesoDesmoldado = 10
                             ciclo_actual.tiempoDesmolde = datosGenerales["cicloTiempoTotal"]
                             db_session.commit()
                             db_session.refresh(ciclo_actual)
