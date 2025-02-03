@@ -127,7 +127,7 @@ async def central_opc_render():
                         db_recetaXCiclo = RecetaXCiclo(
                             cantidadNivelesFinalizado = datosGenerales["sdda_nivel_actual"], 
                             pesoPorNivel = datosGenerales["PesoProducto"],
-                            id_recetario = datosGenerales["idRecetaActual"],
+                            id_recetario = 1,
                             id_ciclo = ciclo_actual.id,
                         )
                         db_session.add(db_recetaXCiclo)
