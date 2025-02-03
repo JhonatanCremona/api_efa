@@ -90,7 +90,7 @@ async def central_opc_render():
                 pesoActual = datosGenerales["PesoActualDesmoldado"]
                 if estado_actual == True:
                     logger.info("LLEGUE AL IF GUARDA DATOS")
-                    pesoActual = datosGenerales["PesoActualDesmoldado"]
+                    pesoActual = datosGenerales["PesoActualDesmoldado"] if datosGenerales["PesoActualDesmoldado"] > 0 else pesoActual;
                     db_ciclo = Ciclo(
                         fecha_inicio= datetime.now(),
                         fecha_fin=None,
@@ -137,7 +137,7 @@ async def central_opc_render():
                             print(f"-----------DATO PESO {datosGenerales["PesoActualDesmoldado"]}")
                             print(f"-----------DATO PESO {datosGenerales["PesoProducto"] * datosGenerales["sdda_nivel_actual"]}------------")
                             ciclo_actual.fecha_fin = datetime.now()
-                            ciclo_actual.pesoDesmoldado = 10
+                            ciclo_actual.pesoDesmoldado = pesoActual
                             ciclo_actual.tiempoDesmolde = datosGenerales["cicloTiempoTotal"]
                             db_session.commit()
                             db_session.refresh(ciclo_actual)
