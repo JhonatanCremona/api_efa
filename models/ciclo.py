@@ -11,7 +11,7 @@ class Ciclo(Base):
     estadoMaquina = Column(String(50), nullable=False)
     bandaDesmolde = Column(Integer, nullable=False)
     lote = Column(String(50), nullable=False)
-    tiempoDesmolde = Column(Double, nullable=False)
+    tiempoDesmolde = Column(Integer, nullable=False)
     pesoDesmoldado = Column(Double, nullable=False)
     
 

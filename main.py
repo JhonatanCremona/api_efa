@@ -88,7 +88,7 @@ async def central_opc_render():
             logger.info(f"ESTADO ACTUAL {estado_actual} - ULTIMO ESTADO: {ultimo_estado}")
             if datosGenerales["PesoActualDesmoldado"] > 5 and datosGenerales["sdda_nivel_actual"] > ultimo_nivel:
                     ultimo_nivel = datosGenerales["sdda_nivel_actual"]
-                    pesoActual = datosGenerales["PesoActualDesmoldado"] * 10
+                    pesoActual = datosGenerales["PesoActualDesmoldado"] * 10 # PARCHE QUITAR EL X10 
             if estado_actual != ultimo_estado:
                 logger.info(f"ESTADO DEL CICLO {ultimo_estado}")
                 
@@ -141,7 +141,7 @@ async def central_opc_render():
                             print(f"-DATO PESO{datosGenerales["PesoProducto"]} + {datosGenerales["sdda_nivel_actual"]} :  {datosGenerales["PesoProducto"] * datosGenerales["sdda_nivel_actual"]}-")
                             ciclo_actual.fecha_fin = datetime.now()
                             ciclo_actual.pesoDesmoldado = pesoActual
-                            ciclo_actual.tiempoDesmolde = datosGenerales["cicloTiempoTotal"]
+                            ciclo_actual.tiempoDesmolde = datosGenerales["cicloTiempoTotal"] / 1000 #PARCHE QUITAR EL % 1000
                             db_session.commit()
                             db_session.refresh(ciclo_actual)
                             logger.info(f"Ciclo actualizado con ID: {ciclo_actual.id}")
