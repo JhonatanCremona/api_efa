@@ -32,7 +32,7 @@ def obtenerTiempo(estadoCiclo):
 def resumenEtapaDesmoldeo(opc_cliente):
     try:
         dResumenDatos = ObtenerNodosOpc(opc_cliente)
-        diccinario = ["Nombre actual","idRecetaActual", "idRecetaProxima", "PesoProducto", "TotalNiveles", "TipoMolde", "estadoMaquina","desmoldeobanda", "sdda_nivel_actual", "iniciado", "torreActual", "cicloTiempoTotal", "NGripperActual"]
+        diccinario = ["Nombre actual","idRecetaActual", "idRecetaProxima", "PesoProducto", "TotalNiveles", "TipoMolde", "estadoMaquina","desmoldeobanda", "sdda_nivel_actual", "iniciado", "finalizado", "torreActual", "cicloTiempoTotal", "NGripperActual"]
         resultado = dResumenDatos.buscarNodos(indice,nbreObjeto, diccinario)
         resultado["estadoMaquina"] = "Activo" if resultado.get("estadoMaquina") == 1 else "Inactivo" if resultado.get("estadoMaquina") == 2 else "Pausado"
         resultado["TiempoTranscurrido"] = obtenerTiempo(resultado.get("iniciado"))

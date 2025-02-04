@@ -61,8 +61,9 @@ async def iniciar_evento():
 ultimo_estado = None 
 ciclo_guardado = None
 pesoActual = 0
+ultimo_nivel = 0
 async def central_opc_render():
-    global ultimo_estado, ciclo_guardado, pesoActual
+    global ultimo_estado, ciclo_guardado, pesoActual, ultimo_nivel
     while True:
         try:    
             
@@ -85,12 +86,14 @@ async def central_opc_render():
             estado_actual = datosGenerales["iniciado"] 
             print("--------------------------------")
             logger.info(f"ESTADO ACTUAL {estado_actual} - ULTIMO ESTADO: {ultimo_estado}")
+            if datosGenerales["PesoActualDesmoldado"] > 5 and datosGenerales["sdda_nivel_actual"] > ultimo_nivel:
+                    ultimo_nivel = datosGenerales["sdda_nivel_actual"]
+                    pesoActual = datosGenerales["PesoActualDesmoldado"] * 10
             if estado_actual != ultimo_estado:
                 logger.info(f"ESTADO DEL CICLO {ultimo_estado}")
-                pesoActual = datosGenerales["PesoActualDesmoldado"]
+                
                 if estado_actual == True:
                     logger.info("LLEGUE AL IF GUARDA DATOS")
-                    pesoActual = datosGenerales["PesoActualDesmoldado"] if datosGenerales["PesoActualDesmoldado"] > 0 else pesoActual;
                     db_ciclo = Ciclo(
                         fecha_inicio= datetime.now(),
                         fecha_fin=None,
@@ -137,12 +140,13 @@ async def central_opc_render():
                             print(f"-----------DATO PESO {datosGenerales["PesoActualDesmoldado"]}")
                             print(f"-DATO PESO{datosGenerales["PesoProducto"]} + {datosGenerales["sdda_nivel_actual"]} :  {datosGenerales["PesoProducto"] * datosGenerales["sdda_nivel_actual"]}-")
                             ciclo_actual.fecha_fin = datetime.now()
-                            ciclo_actual.pesoDesmoldado = pesoActual * 10
+                            ciclo_actual.pesoDesmoldado = pesoActual
                             ciclo_actual.tiempoDesmolde = datosGenerales["cicloTiempoTotal"]
                             db_session.commit()
                             db_session.refresh(ciclo_actual)
                             logger.info(f"Ciclo actualizado con ID: {ciclo_actual.id}")
                             pesoActual = 0;
+                            ultimo_nivel= 0;
                     except Exception as e:
                         db_session.rollback()
                         logger.error(f"Error al actualizar el ciclo: {e}")
