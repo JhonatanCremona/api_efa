@@ -94,7 +94,7 @@ def buscarCiclos(idReceta, listaRecetaXCiclo, listaReceta_dic, listaCiclos_dic):
     return [
         {
             "id_ciclo": recetaXCiclo.id_ciclo,  # Acceder a recetaXCiclo.id_ciclo
-            "pesoTotal": recetaXCiclo.pesoPorNivel * recetaXCiclo.cantidadNivelesFinalizado,
+            "pesoTotal": listaCiclos_dic[recetaXCiclo.id_ciclo].pesoDesmoldado,
             "tiempoTotal": listaCiclos_dic[recetaXCiclo.id_ciclo].tiempoDesmolde
         }
         for _, recetaXCiclo, _ in listaRecetaXCiclo  # Desempaquetar la tupla correctamente
@@ -548,7 +548,7 @@ def obtenerListaCiclosXProductos(db, fecha_inicio: date, fecha_fin: date):
         idReceta = item.id_recetario
         if item.id_recetario not in registro:
             registro["fecha_fin"] = listaCiclos_dic.get(item.id_ciclo).fecha_fin.strftime("%Y-%m-%d")
-            registro["PesoDiarioProducto"] = item.pesoPorNivel * item.cantidadNivelesFinalizado
+            registro["PesoDiarioProducto"] = listaCiclos_dic.get(item.id_ciclo).pesoDesmoldado
             listaPeso.append(registro)
 
     grouped_by_month = defaultdict(list)
