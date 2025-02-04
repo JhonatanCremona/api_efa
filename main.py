@@ -128,7 +128,7 @@ async def central_opc_render():
                         logger.info("ME CONECTE A LA BASE PARA ACTUALIZAR")
                         ciclo_actual = db_session.query(Ciclo).filter(Ciclo.id == ciclo_guardado.id).first()
                         db_recetaXCiclo = RecetaXCiclo(
-                            cantidadNivelesFinalizado = datosGenerales["sdda_nivel_actual"], 
+                            cantidadNivelesFinalizado = ultimo_nivel, 
                             pesoPorNivel = datosGenerales["PesoProducto"],
                             id_recetario = datosGenerales["idRecetaActual"] if datosGenerales["idRecetaActual"]<=5 else 2,
                             id_ciclo = ciclo_actual.id,
@@ -141,7 +141,7 @@ async def central_opc_render():
                             print(f"-DATO PESO{datosGenerales["PesoProducto"]} + {datosGenerales["sdda_nivel_actual"]} :  {datosGenerales["PesoProducto"] * datosGenerales["sdda_nivel_actual"]}-")
                             ciclo_actual.fecha_fin = datetime.now()
                             ciclo_actual.pesoDesmoldado = pesoActual
-                            ciclo_actual.tiempoDesmolde = datosGenerales["cicloTiempoTotal"] / 1000 #PARCHE QUITAR EL % 1000
+                            ciclo_actual.tiempoDesmolde = int((datetime.now() - ciclo_actual.fecha_inicio).total_seconds() // 60)
                             db_session.commit()
                             db_session.refresh(ciclo_actual)
                             logger.info(f"Ciclo actualizado con ID: {ciclo_actual.id}")

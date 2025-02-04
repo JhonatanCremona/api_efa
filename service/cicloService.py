@@ -422,7 +422,7 @@ def generarDocumentoXLMSGraficos(db, fecha_inicio:date, fecha_fin:date):
     fechaFin_cell = sheet.cell(row=sheet.max_row, column=1)
     fechaFin_cell.font = Font(bold=True, size=12)
 
-    headers = ["IdRecetario", "Codigo Producto", "Estado Maquina","IdCiclo","BandaDesmolde","NumeroGripper","Lote", "PesoDesmoldado (KG)","Tiempo total desmolde (minutos)","FechaInicio", "FechaRegistro"]
+    headers = ["IdRecetario", "Codigo Producto", "Estado Maquina","IdCiclo","BandaDesmolde","NumeroGripper","Lote", "PesoDesmoldado (KG)","Tiempo total desmolde (minutos)","FechaInicio", "FechaFin"]
     sheet.append(headers)
 
     header_fill = PatternFill(start_color="145f82", end_color="145f82", fill_type="solid")
