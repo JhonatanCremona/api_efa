@@ -56,7 +56,7 @@ def datosGenerale(opc_cliente):
             "datosRobot": (nbreObjeto, ["posicionX", "posicionY", "posicionZ"]),
             "datosTorre": (nbreObjeto, [ "torreActual","torreProxima", "sdda_nivel_actual"]),
             "sectorIO": (nbreObjeto, ["estadoMaquina","desmoldeobanda"]),
-            "datosSdda": (nbreObjeto, ["nivel fin", "sdda_long_mm","sdda_vertical_mm"]),
+            "datosSdda": (nbreObjeto, ["TotalNiveles", "sdda_long_mm","sdda_vertical_mm"]),
         }
         listaDatosTiempoReal = {
             clave: conversorListaAVectores(obtenerLista(dGeneral, indice, objeto, diccionario)) for clave, (objeto, diccionario) in nodos.items()
