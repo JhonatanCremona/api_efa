@@ -178,7 +178,7 @@ def resumenDeProductividad(db, fecha_inicio:date, fecha_fin:date):
     )
 
     for ciclo, recetaXCiclo, receta in tablaCiclos:
-        totalPeso += recetaXCiclo.cantidadNivelesFinalizado * recetaXCiclo.pesoPorNivel
+        totalPeso += ciclo.pesoDesmoldado
         cantidadCiclosTotal += 1
         if receta.id not in productosRealizados:
             listaBuscarCiclo = buscarCiclos(receta.id, tablaCiclos, {r.id: r for _,_, r in tablaCiclos}, {c.id: c for c, _, _ in tablaCiclos})
