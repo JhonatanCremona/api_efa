@@ -500,7 +500,7 @@ def obtenerRecetasPorFecha(db, fecha_inicio: date, fecha_fin: date):
     def buscarCiclos(idReceta, tablaDatos):
         return [{
             "idCiclo": ciclo.id,
-            "pesoDesmontado": recetaXCiclo.pesoPorNivel * recetaXCiclo.cantidadNivelesFinalizado,
+            "pesoDesmontado": ciclo.pesoDesmoldado,
             "fecha_fin" : ciclo.fecha_fin.timestamp(),            
         } for ciclo, recetaXCiclo, receta in tablaDatos if idReceta == recetaXCiclo.id_recetario ]
 
