@@ -30,7 +30,6 @@ import os
 load_dotenv()
 logger = logging.getLogger("uvicorn")
 localIp = socket.gethostbyname(socket.gethostname())
-
 opc_ip = os.getenv("OPC_SERVER_IP")
 opc_port = os.getenv("OPC_SERVER_PORT")
 
@@ -65,6 +64,7 @@ ultimo_nivel = 0
 async def central_opc_render():
     global ultimo_estado, ciclo_guardado, pesoActual, ultimo_nivel
     while True:
+        print("ejecutar codigo")
         try:    
             
             #logger.info("Leyendo valor del OPC centralmente...")
@@ -81,14 +81,16 @@ async def central_opc_render():
             await ws_manager.send_message("alarmas-datos", data["alarmas"]),
             await ws_manager.send_message("alarmas-logs", data["alarmasLogs"])
             await ws_manager.send_message("lista-datos-ws", data)
-            
+
             datosGenerales = data["desmoldeo"] 
             estado_actual = datosGenerales["iniciado"] 
             print("--------------------------------")
             logger.info(f"ESTADO ACTUAL {estado_actual} - ULTIMO ESTADO: {ultimo_estado}")
+
             if datosGenerales["PesoActualDesmoldado"] > 5 and datosGenerales["sdda_nivel_actual"] > ultimo_nivel:
                     ultimo_nivel = datosGenerales["sdda_nivel_actual"]
                     pesoActual = datosGenerales["PesoActualDesmoldado"] * 10 # PARCHE QUITAR EL X10 
+                    
             if estado_actual != ultimo_estado:
                 logger.info(f"ESTADO DEL CICLO {ultimo_estado}")
                 
@@ -153,7 +155,7 @@ async def central_opc_render():
 
             ultimo_estado = estado_actual
             
-            await asyncio.sleep(0.5) 
+            await asyncio.sleep(0.1) 
         except Exception as e:
             db.rollback()
             logger.error(f"Error en el lector central del OPC: {e}")
@@ -193,11 +195,11 @@ async def resumen_desmoldeo(websocket: WebSocket, id: str):
             await websocket.receive_json()  # Aquí puedes hacer validaciones si es necesario
             data = resumenEtapaDesmoldeo(opc_client)  #SE PUEDE ELIMINAR ?
             await ws_manager.send_message(id, data)
-            await asyncio.sleep(0.10)
+            await asyncio.sleep(0.1)
     except WebSocketDisconnect:
         await ws_manager.disconnect(id, websocket)
 
 @app.get("/")
 def read_root():
-        value = opc_client.read_node(f"ns=4;i=22")
+        value = opc_client.read_node(f"ns=2;i=22")
         return {"nodo id": 2, "value": value}

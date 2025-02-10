@@ -23,3 +23,4 @@ class Ciclo(Base):
 
     alarma = relationship("Alarma", back_populates="ciclo")
     recetaXCiclo = relationship("RecetaXCiclo", back_populates="ciclo")
+    historicoAlarma = relationship("HistoricoAlarma", back_populates="ciclo")

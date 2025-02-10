@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from datetime import datetime, date
 from fastapi.responses import StreamingResponse
 
-from service.cicloService import obtenerRecetasPorFecha, obtenerListaCiclosXProductos, generarDocumentoXLMSGraficos, graficosHistoricos
+from service.cicloService import get_lista_productos, generarDocumentoXLMSGraficos, get_lista_total_ciclos_productos
 from config import db
 from desp import user_dependency
 
@@ -14,12 +14,12 @@ def red_lista_ciclos_productos(user: user_dependency,
     fecha_fin: date = Query(..., description="Fecha de fin (YYYY-MM-DD)"), 
     db : Session = Depends(db.get_db)):
 
-    resupuesta = obtenerRecetasPorFecha(db, fecha_inicio, fecha_fin)
+    resupuesta = get_lista_productos(db, fecha_inicio, fecha_fin)
     return resupuesta
 
 @RoutersGraficosH.get("/ciclos-productos/")
 def red_productos_realizados(user: user_dependency, fecha_inicio: date = Query(..., description="Fecha de inicio (YYYY-MM-DD)"),fecha_fin: date = Query(..., description="Fecha de fin (YYYY-MM-DD)"), db : Session = Depends(db.get_db)):
-    resupuesta = obtenerListaCiclosXProductos(db, fecha_inicio, fecha_fin)
+    resupuesta = get_lista_total_ciclos_productos(db, fecha_inicio, fecha_fin)
     return resupuesta
 
 @RoutersGraficosH.get("/descargar-excel")

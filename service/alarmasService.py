@@ -1,11 +1,14 @@
 from service.opcService import ObtenerNodosOpc
 from fastapi import HTTPException
+from sqlalchemy.orm import Session
 
 import websockets
 import datetime
 import logging
 import gc
 
+from models.historicoAlarma import HistoricoAlarma
+from config import db
 logger = logging.getLogger("uvicorn")
 
 listaAlarmas = [
@@ -367,6 +370,10 @@ listaAlarmas = [
 ]
 
 listaLogsAlarmas = []
+db_session: Session = db.get_db().__next__()
+
+historico_alarmas = {}
+
 def enviarDatosAlarmas(opc_cliente):
     try:
         dbDatosAlarmas = ObtenerNodosOpc(opc_cliente)
@@ -378,12 +385,31 @@ def enviarDatosAlarmas(opc_cliente):
                 alarma["estadoAlarma"] = "Activo"
                 alarma["fechaActual"] = fecha_actual.strftime("%Y-%m-%d-%H-%M")
                 alarma["fechaInicio"] = fecha_actual.strftime("%Y-%m-%d-%H-%M")
+                if alarma["id_alarma"] not in historico_alarmas:
+                    historico_alarmas[alarma["id_alarma"]] = alarma["id_alarma"]
+                    print(f"ALARMA NUEVA AGREGADA: {alarma["id_alarma"]}estado: {alarma["estadoAlarma"]} --- LISTA: {historico_alarmas}")
+                    try:
+                        historicoAlarma = HistoricoAlarma(
+                            id_alarma = 1,
+                            id_ciclo = 1
+                        )
+                        db_session.add(historicoAlarma)
+                        logger.info("************GUARDE DATOS EN LA BDD ALARMAS********************")
+                        db_session.commit()
+                    except Exception as e:
+                        db_session.rollback()
+                        print("Error", e)
+                        raise HTTPException(status=500, detail=f"Error al agregar historico de alarma: {e}")
+
                 listaLogsAlarmas.append(alarma)
             else:
+                print(f"ELimine registros {alarma["id_alarma"]} estado: {alarma["estadoAlarma"]} - lista acta{historico_alarmas}")
+                if historico_alarmas.get("id") == alarma["id_alarma"]:
+                    del historico_alarmas["id"]
                 alarma.pop("fechaInicio", None)
                 alarma["estadoAlarma"] = "Inactivo"
                 alarma["fechaActual"] = fecha_actual.strftime("%Y-%m-%d-%H-%M")
-        return listaAlarmas
+        return listaAlarmas, listaLogsAlarmas
     
     except Exception as e:
         raise HTTPException(status=500, detail=f"Error al obtener la lista de nodos: {e}")

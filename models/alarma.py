@@ -15,3 +15,4 @@ class Alarma(Base):
 
     sdda = relationship("Sdda", back_populates="alarma")
     kuka = relationship("Kuka", back_populates="alarma")
+    historicoAlarma = relationship("HistoricoAlarma", back_populates="alarma")

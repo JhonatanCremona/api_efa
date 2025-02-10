@@ -4,14 +4,14 @@ from datetime import datetime
 from config.db import Base
 
 
-class historicoAlarma(Base):
+class HistoricoAlarma(Base):
     __tablename__ = "historicoalarma"
 
     id = Column(Integer, primary_key=True, unique=True)
     fechaRegistro = Column(DateTime, default=datetime.now())
 
-    id_alarma = Column(Integer, ForeignKey("alarma_id"), nullable=False)
-    alarma = relationship("Alarma", back_populates="historicoalarma")
+    id_alarma = Column(Integer, ForeignKey("alarma.id"), nullable=False)
+    alarma = relationship("Alarma", back_populates="historicoAlarma")
 
-    id_ciclo = Column(Integer, ForeignKey("ciclo_id"), nullable=False)
+    id_ciclo = Column(Integer, ForeignKey("ciclo.id"), nullable=False)
     ciclo = relationship("Ciclo", back_populates="historicoAlarma")

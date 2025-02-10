@@ -13,7 +13,7 @@ class ObtenerNodosOpc:
             root_node = self.conexion_servidor.get_objects_nodos()
             objects_node = root_node.get_child(["0:Objects"])
             server_interface_node = objects_node.get_child(["3:ServerInterfaces"])
-            receta_node = server_interface_node.get_child([f"4:{nbreObjeto}"])
+            receta_node = server_interface_node.get_child([f"{indice}:{nbreObjeto}"])
 
             logger.info(f"Conectado al servidor. Nodo raíz: {root_node}")
             
@@ -76,4 +76,3 @@ class ObtenerNodosOpc:
         except Exception as e:
             print(f"Error al buscar el nodo: {e}")
             return None
-    

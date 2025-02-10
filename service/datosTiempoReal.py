@@ -37,7 +37,6 @@ def resumenEtapaDesmoldeo(opc_cliente):
         resultado["estadoMaquina"] = "Activo" if resultado.get("estadoMaquina") == 1 else "Inactivo" if resultado.get("estadoMaquina") == 2 else "Pausado"
         resultado["TiempoTranscurrido"] = obtenerTiempo(resultado.get("iniciado"))
         resultado["PesoActualDesmoldado"] = resultado.get("PesoProducto") * resultado.get("sdda_nivel_actual")
-        
         return resultado
     except Exception as e:
         raise HTTPException(status=500, detail=f"Error al obtener la lista de nodos: {e}")
