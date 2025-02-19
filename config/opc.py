@@ -1,21 +1,34 @@
 from opcua import Client
+import logging 
+import time
 
+logger = logging.getLogger("uvicorn")
 class OPCUAClient:
 
-    def __init__(self, server_url):
+    def __init__(self, server_url, max_retries=5, retry_delay=10):
         self.server_url = server_url
         self.client = None
+        self.max_retries = max_retries
+        self.retry_delay = retry_delay
 
     def connect(self):
-        if not self.client:
-            self.client = Client(self.server_url)
-            self.client.connect()
-            print("Conectado al servidor OPC UA.")
+        retries = 0
+        while retries < self.max_retries:
+            try:
+                self.client = Client(self.server_url)
+                self.client.connect()
+                logger.info("Conectado al servidor OPC UA.")
+                return
+            except Exception as e:
+                retries += 1
+                logger.error(f"🔄 Error al conectar al servidor OPC UA. Intento {retries}/{self.max_retries}: {e}")
+                time.sleep(self.retry_delay) 
+        logger.warning("⚠️ No se pudo conectar al servidor después de varios intentos.")
 
     def disconnect(self):
         if self.client:
             self.client.disconnect()
-            print("Conexión cerrada.")
+            logger.warning("Conexión cerrada.")
             self.client = None
 
     def read_node(self, node_id):

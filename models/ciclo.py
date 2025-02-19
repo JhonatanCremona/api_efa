@@ -21,6 +21,5 @@ class Ciclo(Base):
     id_torre = Column(Integer, ForeignKey("torre.id"), nullable=False)
     torre = relationship("Torre", back_populates="ciclo")
 
-    alarma = relationship("Alarma", back_populates="ciclo")
     recetaXCiclo = relationship("RecetaXCiclo", back_populates="ciclo")
     historicoAlarma = relationship("HistoricoAlarma", back_populates="ciclo")

@@ -2,6 +2,7 @@ from typing import Union
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from sqlalchemy.orm import Session
 from starlette.middleware.cors import CORSMiddleware
+from sqlalchemy import text
 from contextlib import asynccontextmanager
 from datetime import datetime
 
@@ -16,10 +17,12 @@ from models.recetaxciclo import RecetaXCiclo
 from models.alarma import Alarma
 from models.kuka import Kuka
 from models.sdda import Sdda
+from models.usuario import Usuario
 
 from routers import usuariosRouter, graficosHistorico, resumenProductividad
 from service.datosTiempoReal import datosGenerale, resumenEtapaDesmoldeo, datosResumenCelda
 from service.alarmasService import enviarDatosAlarmas, enviaListaLogsAlarmas
+from desp import bcrypt_context
 
 import socket
 import asyncio
@@ -32,11 +35,14 @@ logger = logging.getLogger("uvicorn")
 localIp = socket.gethostbyname(socket.gethostname())
 opc_ip = os.getenv("OPC_SERVER_IP")
 opc_port = os.getenv("OPC_SERVER_PORT")
+path_sql_alarma = os.getenv("PATH_QUERY_ALARMA")
+password_admin = os.getenv("CREDENCIAL_SQL_USER_ADMIN")
+password_cliente = os.getenv("CREDENCIAL_SQL_USER_CLIENT")
 
 URL = f"opc.tcp://{opc_ip}:{opc_port}"
 opc_client = OPCUAClient(URL)
 
-#db.Base.metadata.drop_all(bind=db.engine)
+db.Base.metadata.drop_all(bind=db.engine)
 db.Base.metadata.create_all(bind=db.engine)
 
 """
@@ -56,6 +62,23 @@ async def iniciar_evento():
     logger.info("Creando tarea para leer OPC y enviar mensajes.")
     asyncio.create_task(leer_opc_y_enviar())
 """
+
+import os
+
+def cargar_archivo_sql(file_path: str):
+    try:
+        if os.path.exists(file_path):
+            with open(file_path, 'r', encoding="utf-8") as file:
+                sql_cript_alarma = file.read()
+            
+            with db.engine.connect() as conn:
+                conn.execute(text(sql_cript_alarma))  
+                conn.commit()
+                logger.info(f"Archivo SQL ejecutado correctamente desde {file_path}")
+        else:
+            logger.error(f"El archivo {file_path} no existe.")
+    except Exception as e:
+        logger.error(f"Error al cargar el archivo SQL: {e}")
 
 ultimo_estado = None 
 ciclo_guardado = None
@@ -162,7 +185,30 @@ async def central_opc_render():
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    session = db.SessionLocal()
     try:
+        if session.query(Usuario).count() == 0:
+            usuario1 = Usuario(
+                name = "Creminox",
+                role = "ADMIN",
+                password = bcrypt_context.hash(password_admin)
+            )
+            usuario2 = Usuario(
+                name = "Cliente",
+                role = "CLIENTE",
+                password = bcrypt_context.hash(password_cliente)
+            )
+            session.add_all([usuario1, usuario2])
+            session.commit()
+            logger.info("Base de datos inicializada con usuarios admin y cliente.")
+        else:
+            logger.info("Base de datos inicializada.")
+    except Exception as e:
+        logger.error(f"Error inicializando la base de datos: {e}")
+        raise e
+
+    try:
+        cargar_archivo_sql(path_sql_alarma)
         opc_client.connect()
         logger.info("Conectado al servidor OPC UA.")
         asyncio.create_task(central_opc_render())

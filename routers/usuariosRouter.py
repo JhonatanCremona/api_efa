@@ -21,6 +21,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 120
 class UserCreateRequest(BaseModel):
     username: str
     password: str
+    rol: str
 
 class Token(BaseModel):
     access_token: str
@@ -54,7 +55,7 @@ def read_test(user: user_dependency, db: db_dependency):
 async def create_user(db: db_dependency, create_user_request: UserCreateRequest):
     create_user_model = Usuario(
         name=create_user_request.username,
-        role="ADMIN",  # Por defecto es administrador
+        role=create_user_request.rol, 
         password=bcrypt_context.hash(create_user_request.password)
     )
     db.add(create_user_model)

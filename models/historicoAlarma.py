@@ -9,6 +9,7 @@ class HistoricoAlarma(Base):
 
     id = Column(Integer, primary_key=True, unique=True)
     fechaRegistro = Column(DateTime, default=datetime.now())
+    estadoAlarma = Column(String(20), index=True)
 
     id_alarma = Column(Integer, ForeignKey("alarma.id"), nullable=False)
     alarma = relationship("Alarma", back_populates="historicoAlarma")
