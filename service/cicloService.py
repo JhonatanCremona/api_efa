@@ -406,6 +406,7 @@ def get_lista_productos(db, fecha_inicio: date, fecha_fin: date):
     for ciclo, recetaXCiclo, receta in tablaBDD:
         if recetaXCiclo.id_recetario not in listaProductos:
             listaProductos[recetaXCiclo.id_recetario] = {
+                "id_recetario": receta.id,
                 "NombreProducto": receta.codigoProducto,
                 "ListaDeCiclos": buscarCiclos(recetaXCiclo.id_recetario, tablaBDD)
             }
