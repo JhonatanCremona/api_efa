@@ -35,14 +35,17 @@ logger = logging.getLogger("uvicorn")
 localIp = socket.gethostbyname(socket.gethostname())
 opc_ip = os.getenv("OPC_SERVER_IP")
 opc_port = os.getenv("OPC_SERVER_PORT")
-path_sql_alarma = os.getenv("PATH_QUERY_ALARMA")
+path_sql_alarma = os.getenv("PATH_QUERY_ALARMA_LAP")
 password_admin = os.getenv("CREDENCIAL_SQL_USER_ADMIN")
 password_cliente = os.getenv("CREDENCIAL_SQL_USER_CLIENT")
-
+ultimo_estado = None 
+ciclo_guardado = None
+pesoActual = 0
+ultimo_nivel = 0
 URL = f"opc.tcp://{opc_ip}:{opc_port}"
 opc_client = OPCUAClient(URL)
 
-db.Base.metadata.drop_all(bind=db.engine)
+#db.Base.metadata.drop_all(bind=db.engine)
 db.Base.metadata.create_all(bind=db.engine)
 
 """
@@ -63,8 +66,6 @@ async def iniciar_evento():
     asyncio.create_task(leer_opc_y_enviar())
 """
 
-import os
-
 def cargar_archivo_sql(file_path: str):
     try:
         if os.path.exists(file_path):
@@ -80,17 +81,12 @@ def cargar_archivo_sql(file_path: str):
     except Exception as e:
         logger.error(f"Error al cargar el archivo SQL: {e}")
 
-ultimo_estado = None 
-ciclo_guardado = None
-pesoActual = 0
-ultimo_nivel = 0
 async def central_opc_render():
     global ultimo_estado, ciclo_guardado, pesoActual, ultimo_nivel
     while True:
         print("ejecutar codigo")
         try:    
             
-            #logger.info("Leyendo valor del OPC centralmente...")
             data = {
                 "desmoldeo": resumenEtapaDesmoldeo(opc_client),
                 "general": datosGenerale(opc_client),
@@ -189,12 +185,12 @@ async def lifespan(app: FastAPI):
     try:
         if session.query(Usuario).count() == 0:
             usuario1 = Usuario(
-                name = "Creminox",
+                name = "creminox",
                 role = "ADMIN",
                 password = bcrypt_context.hash(password_admin)
             )
             usuario2 = Usuario(
-                name = "Cliente",
+                name = "cliente",
                 role = "CLIENTE",
                 password = bcrypt_context.hash(password_cliente)
             )

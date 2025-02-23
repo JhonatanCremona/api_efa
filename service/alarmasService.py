@@ -409,6 +409,12 @@ def enviarDatosAlarmas(opc_cliente):
                 alarma.pop("fechaInicio", None)
                 alarma["estadoAlarma"] = "Inactivo"
                 alarma["fechaActual"] = fecha_actual.strftime("%Y-%m-%d-%H-%M")
+        
+        listaAlarmas.sort(key=lambda x: (
+            x["estadoAlarma"] != "Activo",  # Ordena primero los "Activo"
+            datetime.strptime(x["fechaActual"], "%Y/%m/%d %H:%M:%S")  # Luego ordena por fecha
+        ))  
+        
         return listaAlarmas, listaLogsAlarmas
     
     except Exception as e:
@@ -432,8 +438,8 @@ def eliminarRegistroLogsAlarma(listaAlarmas):
 
     return estadoEliminarAlarma
 
-
 def enviaListaLogsAlarmas():
+
     if eliminarRegistroLogsAlarma(listaLogsAlarmas):
         logger.info(f"SE ELIMINARON DATOS DE LA LISTA DE LOGS ALARMAS: {listaLogsAlarmas}")
     else:
