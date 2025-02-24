@@ -20,6 +20,17 @@ import logging
 
 logger = logging.getLogger("uvicorn")
 ### -------------------------DATOS CONSERVAR ------------------------
+def buscarCiclos1(idReceta, listaRecetaXCiclo, listaReceta_dic, listaCiclos_dic):
+    return [
+        {
+            "id_ciclo": recetaXCiclo.id_ciclo,  # Acceder a recetaXCiclo.id_ciclo
+            "pesoTotal": listaCiclos_dic[recetaXCiclo.id_ciclo].pesoDesmoldado,
+            "tiempoTotal": listaCiclos_dic[recetaXCiclo.id_ciclo].tiempoDesmolde
+        }
+        for _, recetaXCiclo, _ in listaRecetaXCiclo  # Desempaquetar la tupla correctamente
+        if recetaXCiclo.id_recetario == idReceta
+    ]
+
 def resumenDeProductividad(db, fecha_inicio:date, fecha_fin:date):
     fecha_inicio = datetime.combine(fecha_inicio, datetime.min.time())
     fecha_fin = datetime.combine(fecha_fin, datetime.max.time())
@@ -41,7 +52,7 @@ def resumenDeProductividad(db, fecha_inicio:date, fecha_fin:date):
         totalPeso += ciclo.pesoDesmoldado
         cantidadCiclosTotal += 1
         if receta.id not in productosRealizados:
-            listaBuscarCiclo = buscarCiclos(receta.id, tablaCiclos, {r.id: r for _,_, r in tablaCiclos}, {c.id: c for c, _, _ in tablaCiclos})
+            listaBuscarCiclo = buscarCiclos1(receta.id, tablaCiclos, {r.id: r for _,_, r in tablaCiclos}, {c.id: c for c, _, _ in tablaCiclos})
 
             pesoFinal = sum(cicloData["pesoTotal"] for cicloData in listaBuscarCiclo)
             tiempoTotalCiclo = sum(cicloData["tiempoTotal"] for cicloData in listaBuscarCiclo)
@@ -107,6 +118,8 @@ def generarDocumentoXLMSProductividad(db, fecha_inicio:date, fecha_fin:date):
     resultado = []
     productosRealizados = {}
 
+    
+    """
     def sumarDatosCiclos(id_recetario, recetaXCiclo, torre_dic, ciclo_dic):
         return [
             [
@@ -118,6 +131,50 @@ def generarDocumentoXLMSProductividad(db, fecha_inicio:date, fecha_fin:date):
             for _, recetaCiclo,_,_ in recetaXCiclo
             if recetaCiclo.id_recetario == id_recetario
         ]
+    """
+    def sumarDatosCiclos(id_recetario, recetaXCiclo, torre_dic, ciclo_dic):
+        print(f"\n🔍 Filtrando datos para id_recetario: {id_recetario}")
+
+        resultado = []
+        
+        for _, recetaCiclo, _, _ in recetaXCiclo:
+            if recetaCiclo.id_recetario == id_recetario:
+                id_ciclo = recetaCiclo.id_ciclo
+                ciclo = ciclo_dic.get(id_ciclo)
+
+                if not ciclo:
+                    print(f"⚠️ Ciclo {id_ciclo} no encontrado en ciclo_dic")
+                    continue  # Evita errores si el ciclo no existe
+
+                peso_desmoldado = ciclo.pesoDesmoldado
+                tiempo_desmolde = ciclo.tiempoDesmolde
+                id_torre = ciclo.id_torre
+                torre = torre_dic.get(id_torre)
+
+                if not torre:
+                    print(f"⚠️ Torre {id_torre} no encontrada en torre_dic")
+                    cantidad_niveles = 0  # Valor por defecto
+                else:
+                    cantidad_niveles = torre.cantidadNiveles
+                
+                cantidad_niveles_finalizado = recetaCiclo.cantidadNivelesFinalizado
+
+                print(f"✔️ Receta {id_recetario}: Ciclo {id_ciclo} -> "
+                    f"Peso: {peso_desmoldado}, Tiempo: {tiempo_desmolde}, "
+                    f"Torre: {id_torre}, Niveles: {cantidad_niveles}, "
+                    f"Niveles Finalizado: {cantidad_niveles_finalizado}")
+
+                resultado.append([
+                    peso_desmoldado,
+                    tiempo_desmolde,
+                    cantidad_niveles,
+                    cantidad_niveles_finalizado
+                ])
+        
+        print(f"🔹 Resultado de sumarDatosCiclos({id_recetario}): {resultado}")
+        return resultado
+
+
     for ciclo, recetaXCiclo, receta, torre in tablaBaseDatos:
         if receta.id not in productosRealizados:
             productosRealizados[receta.id] = receta.id
@@ -128,7 +185,8 @@ def generarDocumentoXLMSProductividad(db, fecha_inicio:date, fecha_fin:date):
                 {r.id: r for _, _, _, r in tablaBaseDatos},
                 {c.id: c for c, _, _, _ in tablaBaseDatos}
             )
-            
+            print(f"Resultado: Print {resultadoCiclo}")
+
             # Inicializa una fila con los datos básicos
             fila = [
                 receta.id,
