@@ -33,7 +33,7 @@ def resumenEtapaDesmoldeo(opc_cliente):
     try:
         dResumenDatos = ObtenerNodosOpc(opc_cliente)
         diccinario = ["Nombre actual","idRecetaActual", "idRecetaProxima", "PesoProducto", "TotalNiveles", "TipoMolde", "estadoMaquina","desmoldeobanda", "sdda_nivel_actual", "iniciado", "finalizado", "torreActual", "cicloTiempoTotal", "NGripperActual"]
-        resultado = dResumenDatos.buscarNodos(indice,nbreObjeto, diccinario)
+        resultado = dResumenDatos.buscarNodoOpcVirtual(indice,nbreObjeto, diccinario)
         resultado["estadoMaquina"] = "Activo" if resultado.get("estadoMaquina") == 1 else "Inactivo" if resultado.get("estadoMaquina") == 2 else "Pausado"
         resultado["TiempoTranscurrido"] = obtenerTiempo(resultado.get("iniciado"))
         resultado["PesoActualDesmoldado"] = resultado.get("PesoProducto") * resultado.get("sdda_nivel_actual")
@@ -45,7 +45,7 @@ def conversorListaAVectores(lista):
     return list(lista.values())
 
 def obtenerLista(dGeneral, nivel, objeto, diccionario):
-    return dGeneral.buscarNodos(nivel, objeto, diccionario)
+    return dGeneral.buscarNodoOpcVirtual(nivel, objeto, diccionario)
 
 def datosGenerale(opc_cliente):
     try:
@@ -72,7 +72,7 @@ def datosResumenCelda(opc_cliente):
     #REVISAR NOMBRE ACTUAL
     try:
         dGeneral = ObtenerNodosOpc(opc_cliente)
-        datosReceta = dGeneral.buscarNodos(indice, nbreObjeto, [
+        datosReceta = dGeneral.buscarNodoOpcVirtual(indice, nbreObjeto, [
             "Nombre actual", "PesoProducto", "TotalNiveles", "sdda_nivel_actual", "iniciado", "estadoMaquina"
         ])
         datosReceta["estadoMaquina"] = "Activo" if datosReceta.get("estadoMaquina") == 1 else "Inactivo" if datosReceta.get("estadoMaquina") == 2 else "Pausado"

@@ -42,7 +42,8 @@ ultimo_estado = None
 ciclo_guardado = None
 pesoActual = 0
 ultimo_nivel = 0
-URL = f"opc.tcp://{opc_ip}:{opc_port}"
+#URL = f"opc.tcp://{opc_ip}:{opc_port}"
+URL = f"opc.tcp://192.168.0.191:4841"
 opc_client = OPCUAClient(URL)
 
 #db.Base.metadata.drop_all(bind=db.engine)
@@ -174,7 +175,7 @@ async def central_opc_render():
 
             ultimo_estado = estado_actual
             
-            await asyncio.sleep(0.1) 
+            await asyncio.sleep(3.0) 
         except Exception as e:
             db.rollback()
             logger.error(f"Error en el lector central del OPC: {e}")
@@ -237,7 +238,7 @@ async def resumen_desmoldeo(websocket: WebSocket, id: str):
             await websocket.receive_json()  # Aquí puedes hacer validaciones si es necesario
             data = resumenEtapaDesmoldeo(opc_client)  #SE PUEDE ELIMINAR ?
             await ws_manager.send_message(id, data)
-            await asyncio.sleep(0.1)
+            await asyncio.sleep(0.2)
     except WebSocketDisconnect:
         await ws_manager.disconnect(id, websocket)
 

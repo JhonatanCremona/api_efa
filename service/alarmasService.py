@@ -377,7 +377,9 @@ historico_alarmas = {}
 def enviarDatosAlarmas(opc_cliente):
     try:
         dbDatosAlarmas = ObtenerNodosOpc(opc_cliente)
-        todasAlarmas = dbDatosAlarmas.leerNodoAlarma(5, "Server interface_2", "Alarma")
+        todasAlarmas = dbDatosAlarmas.leerNodoAlarmaOpcVirtual(5, "Server interface_2", "Alarma")
+
+        logger.info(f"DATOS DE ALARMAS: {todasAlarmas}")
 
         for alarma in listaAlarmas:
             fecha_actual = datetime.datetime.now()
@@ -410,12 +412,13 @@ def enviarDatosAlarmas(opc_cliente):
                 alarma["estadoAlarma"] = "Inactivo"
                 alarma["fechaActual"] = fecha_actual.strftime("%Y-%m-%d-%H-%M")
         
+        print(f"LISTA DE ALARMAS DESDE DEL SERVICE {listaAlarmas}")
+
         listaAlarmas.sort(key=lambda x: (
             x["estadoAlarma"] != "Activo",  # Ordena primero los "Activo"
-            datetime.strptime(x["fechaActual"], "%Y/%m/%d %H:%M:%S")  # Luego ordena por fecha
         ))  
         
-        return listaAlarmas, listaLogsAlarmas
+        return listaAlarmas
     
     except Exception as e:
         raise HTTPException(status=500, detail=f"Error al obtener la lista de nodos: {e}")

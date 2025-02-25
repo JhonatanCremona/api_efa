@@ -119,7 +119,6 @@ def generarDocumentoXLMSProductividad(db, fecha_inicio:date, fecha_fin:date):
     productosRealizados = {}
 
     
-    """
     def sumarDatosCiclos(id_recetario, recetaXCiclo, torre_dic, ciclo_dic):
         return [
             [
@@ -131,6 +130,7 @@ def generarDocumentoXLMSProductividad(db, fecha_inicio:date, fecha_fin:date):
             for _, recetaCiclo,_,_ in recetaXCiclo
             if recetaCiclo.id_recetario == id_recetario
         ]
+  
     """
     def sumarDatosCiclos(id_recetario, recetaXCiclo, torre_dic, ciclo_dic):
         print(f"\n🔍 Filtrando datos para id_recetario: {id_recetario}")
@@ -173,7 +173,7 @@ def generarDocumentoXLMSProductividad(db, fecha_inicio:date, fecha_fin:date):
         
         print(f"🔹 Resultado de sumarDatosCiclos({id_recetario}): {resultado}")
         return resultado
-
+    """
 
     for ciclo, recetaXCiclo, receta, torre in tablaBaseDatos:
         if receta.id not in productosRealizados:
@@ -201,7 +201,7 @@ def generarDocumentoXLMSProductividad(db, fecha_inicio:date, fecha_fin:date):
                 for vector in resultadoCiclo:
                     #sumarCiclos = [x + y for x, y in zip(sumarCiclos, vector)]
                     sumarCiclos = [x + y for x, y in zip(sumarCiclos, (v if v is not None else 0 for v in vector))]
-
+                    
                 fila.extend(sumarCiclos)
             else:
                 fila.extend([0, 0, 0, 0])  # Rellena con ceros si no hay datos
