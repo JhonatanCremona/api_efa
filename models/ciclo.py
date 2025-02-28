@@ -9,7 +9,7 @@ class Ciclo(Base):
     fecha_inicio = Column(DateTime, index=True, nullable=False)
     fecha_fin = Column(DateTime, index=True, nullable=True)
     estadoMaquina = Column(String(50), nullable=False)
-    bandaDesmolde = Column(Integer, nullable=False)
+    bandaDesmolde = Column(String(50), nullable=False)
     lote = Column(String(50), nullable=False)
     tiempoDesmolde = Column(Integer, nullable=False)
     pesoDesmoldado = Column(Double, nullable=False)

@@ -67,20 +67,13 @@ class ObtenerNodosOpc:
             objects_node = root_node.get_child(["0:Objects"])
             server_interface_node = objects_node.get_child(["2:ServerInterfaces"])
             server_interface_2 = server_interface_node.get_child(["2:Server interface_2"])
-            print(f"Nodo Server interface_2: {server_interface_2}")
             alarmaArray = server_interface_2.get_child(["2:Alarma"])
-            print("Listando hijos de Server interface_2:")
 
             children = alarmaArray.get_children()
 
-            for child in children:
-                browse_name = child.get_browse_name().Name
-                print(f"Hijo: {child}, BrowseName: {browse_name}")
-
             listaAlarma = []
-            index = 0
             for child in children:
-                print(f"VALOR {child.get_value()} - Nombre {child.get_browse_name().Name}")
+                #print(f"VALOR {child.get_value()} - Nombre {child.get_browse_name().Name}")
                 listaAlarma.append(child.get_value())
 
         except Exception as e:

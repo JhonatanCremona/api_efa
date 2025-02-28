@@ -85,7 +85,6 @@ def cargar_archivo_sql(file_path: str):
 async def central_opc_render():
     global ultimo_estado, ciclo_guardado, pesoActual, ultimo_nivel
     while True:
-        print("ejecutar codigo")
         try:    
             
             data = {

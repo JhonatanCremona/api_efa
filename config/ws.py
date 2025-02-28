@@ -1,6 +1,8 @@
 from fastapi import WebSocket
 from typing import Dict, Any, Set
+import logging
 
+logger = logging.getLogger("uvicorn")
 TMessagePayload = Any
 TActiveConnections = Dict[str, Set[WebSocket]]
 
@@ -19,12 +21,11 @@ class WSManager:
             websockets = self.active_connections[poll_id]
             for websocket in websockets:
                 try:
-                    print(f"Enviando mensaje a {poll_id}: {message}")  # Mensaje de depuración
                     await websocket.send_json(message)
                 except Exception as e:
-                    print(f"Error al enviar mensaje a WebSocket: {e}")
+                    logger.error(f"Error al enviar mensaje a WebSocket: {e}")
         else:
-            print(f"No se encontró la conexión para poll_id: {poll_id}")
+            logger.info(f"No se encontró la conexión para poll_id: {poll_id}")
 
 ws_manager = WSManager() 
 
