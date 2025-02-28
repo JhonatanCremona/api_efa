@@ -6,11 +6,16 @@ from dotenv import load_dotenv
 import os
 
 load_dotenv()
-user = os.getenv("MY_SQL_USERNAME")
-password = os.getenv("MY_SQL_PASSWORD")
-port = os.getenv("MY_SQL_PORT")
+db_user = os.getenv("MYSQL_USER")
+db_password = os.getenv("MYSQL_PASSWORD")
+db_host = os.getenv("MYSQL_HOST", "localhost")  # Por defecto usa localhost si no está en Docker
+db_port = os.getenv("MYSQL_PORT", "3306")
+db_name = os.getenv("MYSQL_DATABASE")
 
-engine = create_engine(f"mysql+pymysql://{user}:{password}@localhost:{port}/efadb")
+# Crear la URL de conexión a MySQL
+DATABASE_URL = f"mysql+pymysql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
+
+engine = create_engine(DATABASE_URL)
 
 Base = declarative_base()
 
