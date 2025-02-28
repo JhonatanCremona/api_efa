@@ -30,11 +30,6 @@ A continuación se detallan los requisitos necesarios para ejecutar el proyecto:
 
 Sigue los siguientes pasos para instalar y ejecutar el proyecto:
 
-1. **Clonar el repositorio**:
-    ```bash
-    git clone https://github.com/tu-usuario/plc-data-logger.git
-    cd plc-data-logger
-    ```
 
 2. **Crear y activar un entorno virtual**:
     ```bash
@@ -46,6 +41,9 @@ Sigue los siguientes pasos para instalar y ejecutar el proyecto:
 3. **Instalar las dependencias**:
     ```bash
     pip install -r requirements.txt
+    pip install --upgrade pip
+    pip install pandas openpyxl
+    pip install python-jose
     ```
 
 4. **Configurar la base de datos**:
