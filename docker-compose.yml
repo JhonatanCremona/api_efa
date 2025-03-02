@@ -1,22 +1,55 @@
-version: '3.8'
-
-services:
-  mysql:
-    image: mysql:8.0.32
-    container_name: mysql-container
-    environment:
-      MYSQL_ROOT_PASSWORD: echo3241
-      MYSQL_DATABASE: mi_base_de_datos
-    ports:
-      - "3306:3306"
-    networks:
-      - mysql-network
-    volumes:
-      - mysql-data:/var/lib/mysql
+version: "3.8"
 
 networks:
-  mysql-network:
+  bridge_network:
     driver: bridge
 
+  ipvlan_network:
+    driver: ipvlan
+    driver_opts:
+      parent: eth0  # Reemplaza "eth0" con la interfaz de red de tu máquina
+    ipam:
+      config:
+        - subnet: 192.168.10.1/24  # Define tu rango de red (ajústalo según tu LAN)
+          gateway: 192.168.1.110  # La puerta de enlace de tu red
+
+services:
+  db:
+    image: mysql:8.0.32
+    container_name: mysql_container
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - bridge_network  # MySQL solo en la red interna de Docker
+
+  fastapi_app:
+    build: .
+    container_name: fastapi_container
+    restart: always
+    depends_on:
+      - db
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: mysql+pymysql://${MYSQL_USER}:${MYSQL_PASSWORD}@db:3306/${MYSQL_DATABASE}
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    command: >
+      sh -c "pip install -r requirements.txt && uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
+    networks:
+      bridge_network:
+      ipvlan_network:
+        ipv4_address: 192.168.10.230  # IP fija en tu red local (ajústala)
+
 volumes:
-  mysql-data:
+  mysql_data:
