@@ -18,8 +18,10 @@ from models.alarma import Alarma
 from models.kuka import Kuka
 from models.sdda import Sdda
 from models.usuario import Usuario
+from models.torreconfiguraciones import TorreConfiguraciones
 
-from routers import usuariosRouter, graficosHistorico, resumenProductividad
+from routers import usuariosRouter, graficosHistorico, resumenProductividad, configuracionesHTTP
+from service.configService import listarRecetas, listarTorres, obtenerTorre, datosRecetasConfiguraciones
 from service.datosTiempoReal import datosGenerale, resumenEtapaDesmoldeo, datosResumenCelda
 from service.alarmasService import enviarDatosAlarmas, enviaListaLogsAlarmas
 from desp import bcrypt_context
@@ -226,6 +228,7 @@ app.include_router(usuariosRouter.RouterUsers)
 #app.include_router(pruebaTiempoRealHTTP.RouterLive)
 app.include_router(graficosHistorico.RoutersGraficosH)
 app.include_router(resumenProductividad.RouterProductividad)
+app.include_router(configuracionesHTTP.RouterConfiguraciones)
 
 
 @app.websocket("/ws/{id}")

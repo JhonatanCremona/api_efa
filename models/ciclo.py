@@ -18,7 +18,7 @@ class Ciclo(Base):
     id_etapa = Column(Integer, ForeignKey("etapa.id"), nullable=False)
     etapa = relationship("Etapa", back_populates="ciclo")
 
-    id_torre = Column(Integer, ForeignKey("torre.id"), nullable=False)
+    id_torre = Column(Integer, ForeignKey("torre.NTorre"), nullable=False)
     torre = relationship("Torre", back_populates="ciclo")
 
     recetaXCiclo = relationship("RecetaXCiclo", back_populates="ciclo")
