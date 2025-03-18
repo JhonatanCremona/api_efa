@@ -130,50 +130,6 @@ def generarDocumentoXLMSProductividad(db, fecha_inicio:date, fecha_fin:date):
             for _, recetaCiclo,_,_ in recetaXCiclo
             if recetaCiclo.id_recetario == id_recetario
         ]
-  
-    """
-    def sumarDatosCiclos(id_recetario, recetaXCiclo, torre_dic, ciclo_dic):
-        print(f"\n🔍 Filtrando datos para id_recetario: {id_recetario}")
-
-        resultado = []
-        
-        for _, recetaCiclo, _, _ in recetaXCiclo:
-            if recetaCiclo.id_recetario == id_recetario:
-                id_ciclo = recetaCiclo.id_ciclo
-                ciclo = ciclo_dic.get(id_ciclo)
-
-                if not ciclo:
-                    print(f"⚠️ Ciclo {id_ciclo} no encontrado en ciclo_dic")
-                    continue  # Evita errores si el ciclo no existe
-
-                peso_desmoldado = ciclo.pesoDesmoldado
-                tiempo_desmolde = ciclo.tiempoDesmolde
-                id_torre = ciclo.id_torre
-                torre = torre_dic.get(id_torre)
-
-                if not torre:
-                    print(f"⚠️ Torre {id_torre} no encontrada en torre_dic")
-                    cantidad_niveles = 0  # Valor por defecto
-                else:
-                    cantidad_niveles = torre.cantidadNiveles
-                
-                cantidad_niveles_finalizado = recetaCiclo.cantidadNivelesFinalizado
-
-                print(f"✔️ Receta {id_recetario}: Ciclo {id_ciclo} -> "
-                    f"Peso: {peso_desmoldado}, Tiempo: {tiempo_desmolde}, "
-                    f"Torre: {id_torre}, Niveles: {cantidad_niveles}, "
-                    f"Niveles Finalizado: {cantidad_niveles_finalizado}")
-
-                resultado.append([
-                    peso_desmoldado,
-                    tiempo_desmolde,
-                    cantidad_niveles,
-                    cantidad_niveles_finalizado
-                ])
-        
-        print(f"🔹 Resultado de sumarDatosCiclos({id_recetario}): {resultado}")
-        return resultado
-    """
 
     for ciclo, recetaXCiclo, receta, torre in tablaBaseDatos:
         if receta.id not in productosRealizados:

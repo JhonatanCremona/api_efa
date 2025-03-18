@@ -73,7 +73,7 @@ class ObtenerNodosOpc:
 
             listaAlarma = []
             for child in children:
-                #print(f"VALOR {child.get_value()} - Nombre {child.get_browse_name().Name}")
+                print(f"VALOR {child.get_value()} - Nombre {child.get_browse_name().Name}")
                 listaAlarma.append(child.get_value())
 
         except Exception as e:
@@ -143,4 +143,61 @@ class ObtenerNodosOpc:
         except Exception as e:
             logger.error(f"Error al buscar nodos Lista valores: {e}")
             return lista
+
+    def leerRecetaOpc(self, indice, nbreNodo, listaNodos):
+        lista = {}
+        try:
+            root_node = self.conexion_servidor.get_objects_nodos()
+            objects_node = root_node.get_child(["0:Objects"])
+            server_interface_node = objects_node.get_child(["2:ServerInterfaces"])
+            logger.info(f"Receta Node: {server_interface_node}")
+
+            server_interface_1 = server_interface_node.get_child(["2:Server interface_1"])
+            server_interface_2 = server_interface_node.get_child(["2:Server interface_2"])
+
+            if not server_interface_1 or not server_interface_2:
+                logger.error("No se encontraron los nodos 'Server interface_1' o 'Server interface_2'.")
+                return lista
+
+            namespace_index = server_interface_1.nodeid.NamespaceIndex
+
+            try:
+                nodos_disponibles = [child.get_browse_name().to_string() for child in server_interface_1.get_children()]
+            except Exception as e:
+                logger.error(f"Error al obtener la lista de nodos disponibles: {e}")
+
+            try:
+                # Obtener el objeto de receta desde el servidor OPC
+                receta_obj = server_interface_2.get_child(["2:Receta"])
+
+                # Obtener valores de configuración
+                valores = {
+                    "alto_de_molde": receta_obj.get_child(["2:ALTO_DE_MOLDE"]).get_value(),
+                    "alto_de_producto": receta_obj.get_child(["2:ALTO_DE_PRODUCTO"]).get_value(),
+                    "altura_ajuste": receta_obj.get_child(["2:ALTURA_AJUSTE"]).get_value(),
+                    "altura_ajuste_n1": receta_obj.get_child(["2:ALTURA_AJUSTE_N1"]).get_value(),
+                    "altura_de_bastidor": receta_obj.get_child(["2:ALTURA_DE_BASTIDOR"]).get_value(),
+                    "altura_n1": receta_obj.get_child(["2:ALTURA_N1"]).get_value(),
+                    "ancho_producto": receta_obj.get_child(["2:ANCHO_PRODUCTO"]).get_value(),
+                    "cantidad_niveles": receta_obj.get_child(["2:CANTIDAD_NIVELES"]).get_value(),
+                    "delta_entre_niveles": receta_obj.get_child(["2:DELTA_ENTRE_NIVELES"]).get_value(),
+                    "largo_de_molde": receta_obj.get_child(["2:LARGO_DE_MOLDE"]).get_value(),
+                    "largo_de_producto": receta_obj.get_child(["2:LARGO_DE_PRODUCTO"]).get_value(),
+                    "moldes_por_nivel": receta_obj.get_child(["2:MOLDES_POR_NIVEL"]).get_value(),
+                    "nombre": receta_obj.get_child(["2:NOMBRE"]).get_value(),
+                    "numero_de_gripper": receta_obj.get_child(["2:NUMERO_DE_GRIPPER"]).get_value(),
+                    "peso_del_producto": receta_obj.get_child(["2:PESO_DEL_PRODUCTO"]).get_value(),
+                    "tipo_de_molde": receta_obj.get_child(["2:TIPO_DE_MOLDE"]).get_value(),
+                    "receta_proxima": receta_obj.get_child(["2:receta_proxima"]).get_value(),
+                    "torre_proxima": receta_obj.get_child(["2:torre_proxima"]).get_value(),
+                }
+                lista.update(valores)
+            except Exception as e:
+                logger.error(f"Error al obtener los valores de la receta: {e}")
+                lista.update({"torre_proxima": None, "receta_proxima": None})
+
+        except Exception as e:
+            logger.error(f"Error en la lectura de la receta OPC: {e}")
+        
+        return lista
 

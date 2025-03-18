@@ -17,6 +17,8 @@ db_url = os.getenv("DATABASE_URL")
 
 DATABASE_URL = f"mysql+pymysql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
 
+print(f"Usuario: {db_user}, Password: {db_password}, Host: {db_host}, Puerto: {db_port}, DB: {db_name}")
+
 def try_connect(db_url):
     print(f"DATO ULR: {db_url}")
     try:
