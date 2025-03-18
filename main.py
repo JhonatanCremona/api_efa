@@ -35,9 +35,16 @@ import os
 load_dotenv()
 logger = logging.getLogger("uvicorn")
 localIp = socket.gethostbyname(socket.gethostname())
+ruta_principal = os.path.dirname(os.path.abspath(__file__))
+
 opc_ip = os.getenv("OPC_SERVER_IP")
 opc_port = os.getenv("OPC_SERVER_PORT")
+
 path_sql_alarma = os.getenv("PATH_QUERY_ALARMA_LAP")
+
+ruta_sql = os.path.join(ruta_principal, 'query', 'insert_alarmas.sql')
+ruta_sql_etapas = os.path.join(ruta_principal, 'query', 'etapas.sql')
+
 password_admin = os.getenv("CREDENCIAL_SQL_USER_ADMIN")
 password_cliente = os.getenv("CREDENCIAL_SQL_USER_CLIENT")
 ultimo_estado = None 
@@ -206,7 +213,8 @@ async def lifespan(app: FastAPI):
         raise e
 
     try:
-        cargar_archivo_sql(path_sql_alarma)
+        cargar_archivo_sql(ruta_sql_etapas)
+        cargar_archivo_sql(ruta_sql)
         opc_client.connect()
         logger.info("Conectado al servidor OPC UA.")
         asyncio.create_task(central_opc_render())
@@ -246,5 +254,4 @@ async def resumen_desmoldeo(websocket: WebSocket, id: str):
 
 @app.get("/")
 def read_root():
-        value = opc_client.read_node(f"ns=2;i=22")
-        return {"nodo id": 2, "value": value}
+        return "Hola Mundo"

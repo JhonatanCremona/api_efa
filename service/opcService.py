@@ -73,7 +73,6 @@ class ObtenerNodosOpc:
 
             listaAlarma = []
             for child in children:
-                print(f"VALOR {child.get_value()} - Nombre {child.get_browse_name().Name}")
                 listaAlarma.append(child.get_value())
 
         except Exception as e:

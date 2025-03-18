@@ -376,8 +376,11 @@ db_session: Session = db.get_db().__next__()
 historico_alarmas = {}
 
 def get_ultimo_ciclo():
-    ultimo_ciclo = db_session.query(Ciclo).order_by(Ciclo.id.desc()).first()
-    return ultimo_ciclo.id
+    try:
+        return db_session.query(Ciclo).order_by(Ciclo.id.desc()).first()
+    except Exception as e:
+        logger.error("Ocurrió un error al obtener el último ciclo.", exc_info=True)
+        return None
 
 def enviarDatosAlarmas(opc_cliente):
     try:
@@ -393,20 +396,21 @@ def enviarDatosAlarmas(opc_cliente):
                 if alarma["id_alarma"] not in historico_alarmas:
                     historico_alarmas[alarma["id_alarma"]] = alarma["id_alarma"]
                     logger.info(f"ALARMA NUEVA AGREGADA: {alarma["id_alarma"]}estado: {alarma["estadoAlarma"]} --- LISTA: {historico_alarmas}")
-                    try:
+                    if get_ultimo_ciclo() is not None:
                         logger.info(f"ID CICLO DESDE ALARMA SERV: {get_ultimo_ciclo()}")
-                        historicoAlarma = HistoricoAlarma(
-                            id_alarma = alarma["id_alarma"],
-                            id_ciclo = get_ultimo_ciclo(),
-                            estadoAlarma = alarma["estadoAlarma"]
-                        )
-                        db_session.add(historicoAlarma)
-                        logger.info("************GUARDE DATOS EN LA BDD ALARMAS********************")
-                        db_session.commit()
-                    except Exception as e:
-                        db_session.rollback()
-                        logger.error("Error", e)
-                        raise HTTPException(status=500, detail=f"Error al agregar historico de alarma: {e}")
+                        try:
+                            historicoAlarma = HistoricoAlarma(
+                                id_alarma = alarma["id_alarma"],
+                                id_ciclo = get_ultimo_ciclo(),
+                                estadoAlarma = alarma["estadoAlarma"]
+                            )
+                            db_session.add(historicoAlarma)
+                            logger.info("************GUARDE DATOS EN LA BDD ALARMAS********************")
+                            db_session.commit()
+                        except Exception as e:
+                            db_session.rollback()
+                            logger.error("Error", e)
+                            raise HTTPException(status=500, detail=f"Error al agregar historico de alarma: {e}")
 
                 listaLogsAlarmas.append(alarma)
             else:

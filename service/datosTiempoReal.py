@@ -137,7 +137,6 @@ def leerDatosReceta(opc_cliente):
         print(f"Consultando en la base de datos para la torre con id: {torre_proxima} y id_recetario: {receta_proxima}")
 
         torres = db.query(Torre).filter(Torre.id_recetario == receta_proxima).all()
-        torresconfiguraciones
 
         if not torres:
             print("No se encontraron torres para el recetario proporcionado.")

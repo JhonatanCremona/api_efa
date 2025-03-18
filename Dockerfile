@@ -11,6 +11,7 @@ RUN pip install opcua
 RUN pip install python-jose
 RUN pip install pandas openpyxl
 RUN pip install passlib
+RUN pip install bcrypt
 RUN pip install --upgrade pip
 
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
