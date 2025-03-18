@@ -15,10 +15,10 @@ class Ciclo(Base):
     pesoDesmoldado = Column(Double, nullable=False)
     
 
-    id_etapa = Column(Integer, ForeignKey("etapa.id"), nullable=False)
+    id_etapa = Column(Integer, ForeignKey("etapa.id"), nullable=True)
     etapa = relationship("Etapa", back_populates="ciclo")
 
-    id_torre = Column(Integer, ForeignKey("torre.NTorre"), nullable=False)
+    id_torre = Column(Integer, ForeignKey("torre.NTorre"), nullable=True)
     torre = relationship("Torre", back_populates="ciclo")
 
     recetaXCiclo = relationship("RecetaXCiclo", back_populates="ciclo")

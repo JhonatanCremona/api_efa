@@ -86,7 +86,6 @@ class ObtenerNodosOpc:
             root_node = self.conexion_servidor.get_objects_nodos()
             objects_node = root_node.get_child(["0:Objects"])
             server_interface_node = objects_node.get_child(["2:ServerInterfaces"])
-            logger.info(f"Receta Node: {server_interface_node}")
 
             server_interface_1 = server_interface_node.get_child(["2:Server interface_1"])
             if not server_interface_1:
