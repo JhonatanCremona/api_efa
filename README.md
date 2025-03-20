@@ -40,10 +40,16 @@ Sigue los siguientes pasos para instalar y ejecutar el proyecto:
 
 3. **Instalar las dependencias**:
     ```bash
-    pip install -r requirements.txt
-    pip install --upgrade pip
-    pip install pandas openpyxl
-    pip install python-jose
+    pip install "fastapi[standard]"
+    pip install PyMySQL
+    pip install sqlalchemy
+    pip install cryptography
+    pip install opcua
+    RUN pip install python-jose
+    RUN pip install pandas openpyxl
+    RUN pip install passlib
+    RUN pip install bcrypt
+    RUN pip install --upgrade pip
     ```
 
 4. **Configurar la base de datos**:
