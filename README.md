@@ -45,11 +45,11 @@ Sigue los siguientes pasos para instalar y ejecutar el proyecto:
     pip install sqlalchemy
     pip install cryptography
     pip install opcua
-    RUN pip install python-jose
-    RUN pip install pandas openpyxl
-    RUN pip install passlib
-    RUN pip install bcrypt
-    RUN pip install --upgrade pip
+    pip install python-jose
+    pip install pandas openpyxl
+    pip install passlib
+    pip install bcrypt
+    pip install --upgrade pip
     ```
 
 4. **Configurar la base de datos**:

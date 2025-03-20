@@ -122,8 +122,7 @@ def leerDatosReceta(opc_cliente):
         
         print("Leyendo receta del OPC...")
         datosReceta = dGeneral.leerRecetaOpc(indice, nbreObjeto2, diccionario)
-        
-        print(f"Datos de receta obtenidos: {datosReceta}")
+        print(f"Datos de receta obtenidos del PLC: {datosReceta}")
         guardarRecetaEnBD(datosReceta)
         
         torre_proxima = datosReceta.get("torre_proxima")
@@ -137,8 +136,13 @@ def leerDatosReceta(opc_cliente):
         print(f"Consultando en la base de datos para la torre con id: {torre_proxima} y id_recetario: {receta_proxima}")
 
         torres = db.query(Torre).filter(Torre.id_recetario == receta_proxima).all()
+        torresconfiguraciones = db.query(TorreConfiguraciones).all()
 
         if not torres:
+            print("No se encontraron torres para el recetario proporcionado.")
+            return {"mensaje": "No se encontraron torres para el recetario proporcionado."}
+
+        if not torresconfiguraciones:
             print("No se encontraron torres para el recetario proporcionado.")
             return {"mensaje": "No se encontraron torres para el recetario proporcionado."}
 
@@ -172,14 +176,92 @@ def leerDatosReceta(opc_cliente):
                         else:
                             print("Error al escribir datos de la torre en los nodos OPC.")
 
-                        return datosTorres
-
                 except Exception as e:
                     print(f"Se produjo un error al procesar la torre: {e}")
                     continue  
 
-            print("Torre o receta no encontrada.")
-            return {"mensaje": "Torre o receta no encontrada"}
+            # Crear un diccionario para almacenar los valores por tipo y nivel
+            correccionesHN = [0] * 11  # Inicializamos un arreglo de 11 elementos para "HN"
+            correccionesFallas = [0] * 11  # Para "Fallas"
+            correccionesuHN = [0] * 11  # Para "uHN"
+            correccionesChG = [0] * 11  # Para "ChG"
+            correccionesChB = [0] * 11  # Para "ChB"
+
+            for torreconfiguraciones in torresconfiguraciones:
+                try:
+                    torre_ntorre = int(torreconfiguraciones.id_torreNum)
+                    tipo = str(torreconfiguraciones.tipo)
+                    nivel = int(torreconfiguraciones.nivel)  # Nivel de la corrección
+                    valor = int(torreconfiguraciones.valor)  # Valor para ese nivel
+
+                    if torre_ntorre == ntorre_comparacion:  # Comparamos con la torre correspondiente
+                        if tipo == "HN":
+                            correccionesHN[nivel - 1] = valor
+                        
+                        if tipo == "Fallas":
+                            correccionesFallas[nivel - 1] = valor
+                        
+                        if tipo == "uHN":
+                            correccionesuHN[nivel - 1] = valor
+                        
+                        if tipo == "ChG":
+                            correccionesChG[nivel - 1] = valor
+                        
+                        if tipo == "ChB":
+                            correccionesChB[nivel - 1] = valor
+
+                    # Desestructuración de los arrays para asignarlos a las variables específicas
+                    if tipo == "HN":
+                        CorrecionHN1, CorrecionHN2, CorrecionHN3, CorrecionHN4, CorrecionHN5, CorrecionHN6, CorrecionHN7, CorrecionHN8, CorrecionHN9, CorrecionHN10, CorrecionHN11 = correccionesHN
+
+                    if tipo == "Fallas":
+                        CorrecionFallas1, CorrecionFallas2, CorrecionFallas3, CorrecionFallas4, CorrecionFallas5, CorrecionFallas6, CorrecionFallas7, CorrecionFallas8, CorrecionFallas9, CorrecionFallas10, CorrecionFallas11 = correccionesFallas
+
+                    if tipo == "uHN":
+                        CorrecionuHN1, CorrecionuHN2, CorrecionuHN3, CorrecionuHN4, CorrecionuHN5, CorrecionuHN6, CorrecionuHN7, CorrecionuHN8, CorrecionuHN9, CorrecionuHN10, CorrecionuHN11 = correccionesuHN
+
+                    if tipo == "ChG":
+                        CorrecionChG1, CorrecionChG2, CorrecionChG3, CorrecionChG4, CorrecionChG5, CorrecionChG6, CorrecionChG7, CorrecionChG8, CorrecionChG9, CorrecionChG10, CorrecionChG11 = correccionesChG
+
+                    if tipo == "ChB":
+                        CorrecionChB1, CorrecionChB2, CorrecionChB3, CorrecionChB4, CorrecionChB5, CorrecionChB6, CorrecionChB7, CorrecionChB8, CorrecionChB9, CorrecionChB10, CorrecionChB11 = correccionesChB
+
+                except Exception as e:
+                    print(f"Se produjo un error al procesar las correciones: {e}")
+                    continue
+
+            if escribirCorreccionesHN(opc_cliente, correccionesHN):
+                print("Correcciones HN escritas correctamente en los nodos OPC.")
+            else:
+                print("Error al escribir correcciones HN en los nodos OPC.")
+
+            if escribirCorreccionesuHN(opc_cliente, correccionesuHN):
+                print("Correcciones uHN escritas correctamente en los nodos OPC.")
+            else:
+                print("Error al escribir correcciones uHN en los nodos OPC.")
+
+            if escribirCorreccionesChG(opc_cliente, correccionesChG):
+                print("Correcciones ChG escritas correctamente en los nodos OPC.")
+            else:
+                print("Error al escribir correcciones ChG en los nodos OPC.")
+
+            if escribirCorreccionesChB(opc_cliente, correccionesChB):
+                print("Correcciones ChB escritas correctamente en los nodos OPC.")
+            else:
+                print("Error al escribir correcciones ChB en los nodos OPC.")
+
+            if escribirCorreccionesFA(opc_cliente, correccionesFallas):
+                print("Correcciones FA escritas correctamente en los nodos OPC.")
+            else:
+                print("Error al escribir correcciones FA en los nodos OPC.")
+
+            print(f"Datos de correciones:\n"
+                f"CORRECION HN: {correccionesHN},\n"
+                f"CORRECION uHN: {correccionesuHN},\n"
+                f"CORRECION FA TORRE: {correccionesFallas},\n"
+                f"CORRECION ChG TORRE: {correccionesChG},\n"
+                f"CORRECION ChB TORRE: {correccionesChB}\n")
+            return {"mensaje": "ASD123123"}
 
         except Exception as e:
             print(f"Se produjo un error: {e}")
@@ -237,6 +319,166 @@ def escribirDatosTorreOpc(opc_cliente, datos_torre):
         logger.error(f"Error en la escritura de datos en OPC: {e}")
         return False
 
+def escribirCorreccionesHN(opc_cliente, correccionesHN):
+    try:
+        root_node = opc_cliente.get_objects_nodos()
+        objects_node = root_node.get_child(["0:Objects"])
+        server_interface_node = objects_node.get_child(["2:ServerInterfaces"])
+        server_interface_2 = server_interface_node.get_child(["2:Server interface_2"])
+
+        if not server_interface_2:
+            logger.error("No se encontró 'Server interface_2'.")
+            return False
+
+        nivelesHN_node = server_interface_2.get_child(["2:DatosNivelesHN"])
+        if not nivelesHN_node:
+            logger.error("No se encontró el nodo 'DatosNivelesHN'.")
+            return False
+
+        for i, valor in enumerate(correccionesHN):
+            if valor is not None:  # Solo escribir valores que no sean None
+                nodo_correcion = nivelesHN_node.get_child([f"2:Correcion_hN{i+1}"])
+                if nodo_correcion:
+                    nodo_correcion.set_value(valor)
+                    print(f"Escrito Correcion_hN{i+1} con valor: {valor}")
+                else:
+                    logger.error(f"No se encontró el nodo 'Correcion_hN{i+1}'.")
+
+        return True
+
+    except Exception as e:
+        print(f"Error al escribir correcciones HN en OPC: {e}")
+        return False
+
+def escribirCorreccionesuHN(opc_cliente, correccionesuHN):
+    try:
+        root_node = opc_cliente.get_objects_nodos()
+        objects_node = root_node.get_child(["0:Objects"])
+        server_interface_node = objects_node.get_child(["2:ServerInterfaces"])
+        server_interface_2 = server_interface_node.get_child(["2:Server interface_2"])
+
+        if not server_interface_2:
+            logger.error("No se encontró 'Server interface_2'.")
+            return False
+
+        # Acceder al nodo donde se almacenarán las correcciones
+        nivelesuHN_node = server_interface_2.get_child(["2:DatosNivelesuHN"])
+        if not nivelesuHN_node:
+            logger.error("No se encontró el nodo 'DatosNivelesuHN'.")
+            return False
+
+        # Iterar sobre los valores de correccionesHN y escribir en los nodos OPC
+        for i, valor in enumerate(correccionesuHN):
+            if valor is not None:  # Solo escribir valores que no sean None
+                nodo_correcion = nivelesuHN_node.get_child([f"2:ultimo_hNivel{i+1}"])
+                if nodo_correcion:
+                    nodo_correcion.set_value(valor)
+                    print(f"Escrito ultimo_hNivel{i+1} con valor: {valor}")
+                else:
+                    logger.error(f"No se encontró el nodo 'ultimo_hNivel{i+1}'.")
+
+        return True
+
+    except Exception as e:
+        print(f"Error al escribir correcciones uHN en OPC: {e}")
+        return False
+
+def escribirCorreccionesChG(opc_cliente, correccionesChG):
+    try:
+        root_node = opc_cliente.get_objects_nodos()
+        objects_node = root_node.get_child(["0:Objects"])
+        server_interface_node = objects_node.get_child(["2:ServerInterfaces"])
+        server_interface_2 = server_interface_node.get_child(["2:Server interface_2"])
+
+        if not server_interface_2:
+            logger.error("No se encontró 'Server interface_2'.")
+            return False
+
+        # Acceder al nodo donde se almacenarán las correcciones
+        nivelesChG_node = server_interface_2.get_child(["2:DatosNivelesChG"])
+        if not nivelesChG_node:
+            logger.error("No se encontró el nodo 'DatosNivelesChG'.")
+            return False
+
+        for i, valor in enumerate(correccionesChG):
+            if valor is not None:  # Solo escribir valores que no sean None
+                nodo_correcion = nivelesChG_node.get_child([f"2:Correcion_hguardado_N{i+1}"])
+                if nodo_correcion:
+                    nodo_correcion.set_value(valor)
+                    print(f"Escrito Correcion_hguardado_N{i+1} con valor: {valor}")
+                else:
+                    logger.error(f"No se encontró el nodo 'Correcion_hguardado_N{i+1}'.")
+
+        return True
+
+    except Exception as e:
+        print(f"Error al escribir correcciones ChG en OPC: {e}")
+        return False
+
+def escribirCorreccionesChB(opc_cliente, correccionesChB):
+    try:
+        root_node = opc_cliente.get_objects_nodos()
+        objects_node = root_node.get_child(["0:Objects"])
+        server_interface_node = objects_node.get_child(["2:ServerInterfaces"])
+        server_interface_2 = server_interface_node.get_child(["2:Server interface_2"])
+
+        if not server_interface_2:
+            logger.error("No se encontró 'Server interface_2'.")
+            return False
+
+        # Acceder al nodo donde se almacenarán las correcciones
+        nivelesChB_node = server_interface_2.get_child(["2:DatosNivelesChB"])
+        if not nivelesChB_node:
+            logger.error("No se encontró el nodo 'DatosNivelesChB'.")
+            return False
+
+        for i, valor in enumerate(correccionesChB):
+            if valor is not None:  # Solo escribir valores que no sean None
+                nodo_correcion = nivelesChB_node.get_child([f"2:Correcion_hbusqueda_N{i+1}"])
+                if nodo_correcion:
+                    nodo_correcion.set_value(valor)
+                    print(f"Escrito Correcion_hbusqueda_N{i+1} con valor: {valor}")
+                else:
+                    logger.error(f"No se encontró el nodo 'Correcion_hbusqueda_N{i+1}'.")
+
+        return True
+
+    except Exception as e:
+        print(f"Error al escribir correcciones ChB en OPC: {e}")
+        return False
+
+def escribirCorreccionesFA(opc_cliente, correccionesFA):
+    try:
+        root_node = opc_cliente.get_objects_nodos()
+        objects_node = root_node.get_child(["0:Objects"])
+        server_interface_node = objects_node.get_child(["2:ServerInterfaces"])
+        server_interface_2 = server_interface_node.get_child(["2:Server interface_2"])
+
+        if not server_interface_2:
+            logger.error("No se encontró 'Server interface_2'.")
+            return False
+
+        # Acceder al nodo donde se almacenarán las correcciones
+        nivelesFA_node = server_interface_2.get_child(["2:DatosNivelesFA"])
+        if not nivelesFA_node:
+            logger.error("No se encontró el nodo 'DatosNivelesFA'.")
+            return False
+
+        for i, valor in enumerate(correccionesFA):
+            if valor is not None:  # Solo escribir valores que no sean None
+                nodo_correcion = nivelesFA_node.get_child([f"2:FallasN{i+1}"])
+                if nodo_correcion:
+                    nodo_correcion.set_value(valor)
+                    print(f"Escrito FallasN{i+1} con valor: {valor}")
+                else:
+                    logger.error(f"No se encontró el nodo 'FallasN{i+1}'.")
+
+        return True
+
+    except Exception as e:
+        print(f"Error al escribir correcciones FA en OPC: {e}")
+        return False
+
 def guardarRecetaEnBD(datosReceta):
     try:
         db: Session = next(get_db())
@@ -244,6 +486,10 @@ def guardarRecetaEnBD(datosReceta):
 
         if receta_id is None:
             print("Error: receta_proxima es None, no se puede actualizar la receta.")
+            return
+
+        if receta_id > 20:
+            print("El maximo numero de recetas es de 20.")
             return
 
         receta_existente = db.query(Recetario).filter(Recetario.id == receta_id).first()

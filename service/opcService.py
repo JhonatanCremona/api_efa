@@ -196,6 +196,6 @@ class ObtenerNodosOpc:
 
         except Exception as e:
             logger.error(f"Error en la lectura de la receta OPC: {e}")
+            return lista
         
-        return lista
-
+        

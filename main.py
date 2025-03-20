@@ -22,7 +22,7 @@ from models.torreconfiguraciones import TorreConfiguraciones
 
 from routers import usuariosRouter, graficosHistorico, resumenProductividad, configuracionesHTTP
 from service.configService import listarRecetas, listarTorres, obtenerTorre, datosRecetasConfiguraciones
-from service.datosTiempoReal import datosGenerale, resumenEtapaDesmoldeo, datosResumenCelda
+from service.datosTiempoReal import datosGenerale, resumenEtapaDesmoldeo, datosResumenCelda, leerDatosReceta
 from service.alarmasService import enviarDatosAlarmas, enviaListaLogsAlarmas
 from desp import bcrypt_context
 
@@ -94,20 +94,22 @@ def cargar_archivo_sql(file_path: str):
 async def central_opc_render():
     global ultimo_estado, ciclo_guardado, pesoActual, ultimo_nivel
     while True:
-        try:    
-            
+        try:
             data = {
                 "desmoldeo": resumenEtapaDesmoldeo(opc_client),
                 "general": datosGenerale(opc_client),
                 "celda": datosResumenCelda(opc_client),
                 "alarmas": enviarDatosAlarmas(opc_client),
                 "alarmasLogs": enviaListaLogsAlarmas(),
+                "recetas": leerDatosReceta(opc_client),
             }
+
             await ws_manager.send_message("resumen-desmoldeo", data["desmoldeo"])
             await ws_manager.send_message("lista-tiempo-real", data["general"])
             await ws_manager.send_message("celda-completo", data["celda"]),
             await ws_manager.send_message("alarmas-datos", data["alarmas"]),
-            await ws_manager.send_message("alarmas-logs", data["alarmasLogs"])
+            await ws_manager.send_message("alarmas-logs", data["alarmasLogs"]),
+            await ws_manager.send_message("lista-receta", data["recetas"]),
             await ws_manager.send_message("lista-datos-ws", data)
 
             datosGenerales = data["desmoldeo"] 
