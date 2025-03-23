@@ -40,8 +40,6 @@ ruta_principal = os.path.dirname(os.path.abspath(__file__))
 opc_ip = os.getenv("OPC_SERVER_IP")
 opc_port = os.getenv("OPC_SERVER_PORT")
 
-path_sql_alarma = os.getenv("PATH_QUERY_ALARMA_LAP")
-
 ruta_sql = os.path.join(ruta_principal, 'query', 'insert_alarmas.sql')
 ruta_sql_etapas = os.path.join(ruta_principal, 'query', 'etapas.sql')
 
@@ -57,24 +55,6 @@ opc_client = OPCUAClient(URL)
 
 #db.Base.metadata.drop_all(bind=db.engine)
 db.Base.metadata.create_all(bind=db.engine)
-
-"""
-async def iniciar_evento():
-    logger.info("Entré al método iniciar_evento")
-    
-    async def leer_opc_y_enviar():
-        while True:
-            try:
-                logger.info("Leyendo valor del OPC...")
-                data = resumenEtapaDesmoldeo(opc_client)
-                await ws_manager.send_message("123", {"value": data})
-                await asyncio.sleep(1.0)
-            except Exception as e:
-                logger.error(f"Error al leer o enviar el valor: {e}")
-    
-    logger.info("Creando tarea para leer OPC y enviar mensajes.")
-    asyncio.create_task(leer_opc_y_enviar())
-"""
 
 def cargar_archivo_sql(file_path: str):
     try:

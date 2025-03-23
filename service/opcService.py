@@ -125,7 +125,7 @@ class ObtenerNodosOpc:
                     if nodo == "desmoldeobanda":
                         lista[nodo] = "Banda A" if valor == 1 else "Banda B"
                     elif nodo == "estadoMaquina":
-                        lista[nodo] = "Activo" if valor == 1 else "Inactivo" if valor == 2 else "Pausado"
+                        lista[nodo] = valor
                     else:
                         lista[nodo] = valor
 
