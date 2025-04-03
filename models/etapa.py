@@ -8,4 +8,4 @@ class Etapa(Base):
     id = Column(Integer, primary_key=True, index=True)
     nombre = Column(String(30), index=True)
 
-    ciclo = relationship("Ciclo", back_populates="etapa")
+    ciclodesmoldeo = relationship("CicloDesmoldeo", back_populates="etapa")

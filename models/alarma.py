@@ -12,5 +12,5 @@ class Alarma(Base):
     fechaRegistro = Column(DateTime, default=datetime)
 
     sdda = relationship("Sdda", back_populates="alarma")
-    kuka = relationship("Kuka", back_populates="alarma")
+    robot = relationship("Robot", back_populates="alarma")
     historicoAlarma = relationship("HistoricoAlarma", back_populates="alarma")

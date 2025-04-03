@@ -21,6 +21,6 @@ class Torre(Base):
     DisteNivel = Column(Integer, index=True)
     ActualizarTAG = Column(String(30), index=True)
     
-    ciclo = relationship("Ciclo", back_populates="torre")
+    ciclodesmoldeo = relationship("CicloDesmoldeo", back_populates="torre")
 
     torreconfiguraciones = relationship("TorreConfiguraciones", back_populates="torre")

@@ -18,5 +18,16 @@ networks:
   mysql-network:
     driver: bridge
 
+nextjs-app:
+    build:
+      context: ../proyecta-efa  # La carpeta donde está el Dockerfile
+      dockerfile: web.Dockerfile  
+      - "3000:3000"
+    volumes:
+      - ../app:/app  
+      - /app/node_modules  # Evitar sobrescribir `node_modules`
+    environment:
+      - NODE_ENV=production
+
 volumes:
   mysql-data:
