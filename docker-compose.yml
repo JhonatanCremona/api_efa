@@ -5,11 +5,11 @@ networks:
   macvlan_network:
     driver: macvlan
     driver_opts:
-      parent: enp0s31f6
+      parent: eno1
     ipam:
       config:
-        - subnet: 192.168.0.0/24
-          gateway: 192.168.0.2
+        - subnet: 192.168.10.0/24
+          gateway: 192.168.10.1
 
 services:
   db:
@@ -50,7 +50,36 @@ services:
     networks:
       bridge_network:
       macvlan_network:
-        ipv4_address: 192.168.0.249
+        ipv4_address: 192.168.10.105
+  nextjs-app:
+    build:
+      context: ../proyecto-efa  # La carpeta donde está el Dockerfile
+      dockerfile: web.Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ../proyecto-efa:/app 
+    restart: always
+    depends_on:
+      - fastapi_app
+    networks:
+      - bridge_network
+
+  volumes:
+    mysql_data:
+    nextjs-app:
+      build:
+        context: ../proyecto-efa  # La carpeta donde está el Dockerfile
+        dockerfile: web.Dockerfile
+      ports:
+        - "3000:3000"
+      volumes:
+        - ../proyecto-efa:/app 
+      restart: always
+      depends_on:
+        - fastapi_app
+      networks:
+        - bridge_network
 
 volumes:
-  mysql_data:
+    mysql_data:
