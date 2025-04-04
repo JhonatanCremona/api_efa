@@ -46,6 +46,12 @@ lista_resumen_general = {
     "PesoActualDesmoldado": 0,
     "TorreActual": 0
 }
+lista_sector_io = {
+    "banda_desmoldeo": "",       # string vacío
+    "estado_ciclo": False        # valor booleano, por ejemplo False
+}
+PANTALLA_ENCENDIDA = False
+ULTIMO_ESTADO_PANTALLA = None
 
 
 ulEstado = None
@@ -109,7 +115,6 @@ def get_ultimo_ciclo():
             logger.error(f"No hay datos en la BDD-CICLO")
         return None
 
-
 class ObtenerNodosOpc:
     def __init__(self, conexion_servidor):
         self.conexion_servidor = conexion_servidor
@@ -120,7 +125,7 @@ class ObtenerNodosOpc:
         global ESTADO_CICLO_DESMOLDEO, LISTA_DATOS_CICLO
         global LOGS_ALARMA_CICLO
         global TIEMPO_TRANSCURRIDO
-        global RECETA_ACTUAL, lista_resumen_general
+        global RECETA_ACTUAL, lista_resumen_general, lista_sector_io
         global ultimo_estado, ciclo_guardado, ULTIMO_NIVEL, PESO_ACTUAL_DESMOLDADO
 
         try:
@@ -243,14 +248,17 @@ class ObtenerNodosOpc:
             TIEMPO_TRANSCURRIDO = obtenerTiempo(ESTADO_CICLO_DESMOLDEO)
             listaRespuesta.append(lista_resumen_general)
 
+            lista_sector_io["banda_desmoldeo"] = banda_desmolde.get(e_desmoldeo.get_child([f"4:desmoldeobanda"]).get_value(), error)
+            lista_sector_io["estado_ciclo"] = ESTADO_CICLO_DESMOLDEO
+
             listaCelda, listaDatosGeneral = await asyncio.gather(
                 self.obtenerDatosCelda(
                     estado_equipo.get_child(f"4:Estado_actual").get_value(), 
                     e_sdda.get_child(f"4:sdda_nivel_actual").get_value()
                 ),
-                self.obtenerListaGeneral(e_datosRobot, e_datosGripper, e_desmoldeo, e_datosSeleccionado, e_sdda)
+                self.obtenerListaGeneral(e_datosRobot, e_datosGripper, e_desmoldeo, e_datosSeleccionado, e_sdda, lista_sector_io)
             )
-
+            
             listaRespuesta.append(listaCelda)
             listaRespuesta.append(listaDatosGeneral)
 
@@ -319,6 +327,59 @@ class ObtenerNodosOpc:
             logger.error(f"Error al buscar nodos ALARMASSSSS: {e}")  
             return None
 
+    async def ConexionAlarmas(self, ):
+        return ""
+
+
+    async def actualizarRecetas(self):
+        global PANTALLA_ENCENDIDA, ULTIMO_ESTADO_PANTALLA
+        lista_recetas = {}
+        
+        try:
+            root_node = await self.conexion_servidor.get_objects_nodos()
+            objects_node = root_node.get_child(["0:Objects"])
+            server_interface_node = objects_node.get_child(["3:ServerInterfaces"])
+
+            server_interface_1 = server_interface_node.get_child(["4:Server interface_1"])
+            if not server_interface_1:
+                logger.error("No se encontró el nodo 'Server interface_1'.")
+                return None
+
+            datos_opc_a_enviar = server_interface_1.get_child(["4:DATOS OPC A ENVIAR"])
+            e_datosSeleccionado = datos_opc_a_enviar.get_child([f"4:datosSeleccionados"])
+            e_listaRecetario = datos_opc_a_enviar.get_child([f"4:RECETARIO"])
+
+
+
+            PANTALLA_ENCENDIDA = e_datosSeleccionado.get_child([f"4:patalla_receta"]).get_value()
+            logger.error(f"PANTALLA OPC: {PANTALLA_ENCENDIDA}")
+            
+
+            if PANTALLA_ENCENDIDA != ULTIMO_ESTADO_PANTALLA :
+                if PANTALLA_ENCENDIDA == False:
+
+                    try:
+                        for child in e_listaRecetario.get_children():
+                            if not child:
+                                logger.error(f"No se pudo acceder a la redec")
+                            receta = {}
+                            for elem in child.get_children():
+                                receta[elem.get_browse_name().Name ]= elem.get_value()
+                            lista_recetas[child.get_browse_name().Name] = receta
+                            logger.info(f"Receta {child.get_browse_name().Name} obtenida con {len(receta)} valores.")
+                    except Exception as e:
+                        logger.error(f"Nose puedo acceder a la estructura de recetario")                            
+
+                    self.guardarRecetaEnBD(lista_recetas)
+
+                
+            ULTIMO_ESTADO_PANTALLA = PANTALLA_ENCENDIDA
+
+
+        except Exception as e:
+            logger.error(f"Error al intertar ACTUALIZAR RECETAS {e}")    
+
+
     async def obtenerDatosCelda(self, estadoActual, sddaNivelActual):
         resultado = {}
         global TIEMPO_TRANSCURRIDO
@@ -354,7 +415,7 @@ class ObtenerNodosOpc:
             logger.exception("Error al obtener los datos de la celda:")
             return None
         
-    async def obtenerListaGeneral(self, datosRobotNODO, datosGripperNODO, desmoldeoNODO, datosSeleccionadoNODO, datosSddaNODO):
+    async def obtenerListaGeneral(self, datosRobotNODO, datosGripperNODO, desmoldeoNODO, datosSeleccionadoNODO, datosSddaNODO, lista_sector_io):
         global RECETA_ACTUAL
         datosGripper = {}
         datosRobot = {}
@@ -382,11 +443,14 @@ class ObtenerNodosOpc:
             for child in datosSddaOPC:
                 datosSdda[child.get_browse_name().Name] = child.get_value()
 
+            datosSeleccionado["TotalNiveles"] = RECETA_ACTUAL.get("CANTIDAD NIVELES")
+
             listaDatos["datosGripper"] = datosGripper
             listaDatos["datosRobot"] = datosRobot
             listaDatos["datosDesmoldeo"] = datosDesmoldeo
             listaDatos["datosTorre"] = datosSeleccionado
             listaDatos["datosSdda"] = datosSdda
+            listaDatos["sector_IO"] = lista_sector_io
 
             return listaDatos
 
@@ -397,6 +461,7 @@ class ObtenerNodosOpc:
     async def ConexionPLCRecetas(self):
         lista_datos_seleccionados = {}
         try:
+            db: Session = next(get_db())
             root_node = await self.conexion_servidor.get_objects_nodos()
             objects_node = root_node.get_child(["0:Objects"])
             server_interface_node = objects_node.get_child(["3:ServerInterfaces"])
@@ -424,9 +489,9 @@ class ObtenerNodosOpc:
                 value = child.get_value()
                 lista_datos_seleccionados[browse_name] = value
             
-            torres = db_session.query(Torre).filter(Torre.id_recetario == lista_datos_seleccionados.get("N_receta_actual")).all()
+            torres = db.query(Torre).filter(Torre.id_recetario == lista_datos_seleccionados.get("N_receta_proxima")).all()
 
-            torresconfiguraciones = db_session.query(TorreConfiguraciones).all()
+            torresconfiguraciones = db.query(TorreConfiguraciones).all()
 
             if not torres:
                 logger.error("No se encontraron torres para el recetario proporcionado.")
@@ -534,7 +599,7 @@ class ObtenerNodosOpc:
                 else:
                     print("Error en alguna de las escrituras de correcciones. No se enviará confirmación.")
                     return {"mensaje": "Error en las correcciones."}
-
+                
                 return {"mensaje": "Proceso completado con éxito."}
 
             except Exception as e:
@@ -887,7 +952,7 @@ class ObtenerNodosOpc:
                         tipoMolde=datosReceta.get("TIPO DE MOLDE"),
                         productosMolde=datosReceta.get("PRODUCTOS POR MOLDE"),
                     )
-                    db.add(nueva_receta)
+                    db_session.add(nueva_receta)
                     print(f"Receta {receta_id} creada correctamente.")
 
             # Confirmamos todos los cambios realizados

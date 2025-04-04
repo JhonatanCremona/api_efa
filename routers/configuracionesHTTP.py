@@ -78,7 +78,7 @@ async def tomar_datos_torre(POST_datos_torre: POSTDatosTorre, db: Session = Depe
                 db.query(TorreConfiguraciones).filter(TorreConfiguraciones.id_torre == old_id).update(
                     {"id_torre": torre_existente.id, "id_torreNum": old_ntorre}
                 )
-                db.query(Ciclo).filter(Ciclo.id_torre == old_id).update({"id_torre": torre_existente.id})
+                db.query(CicloDesmoldeo).filter(CicloDesmoldeo.id_torre == old_id).update({"id_torre": torre_existente.id})
 
             if POST_datos_torre.hBastidor not in [None, ""]:
                 torre_existente.hBastidor = POST_datos_torre.hBastidor

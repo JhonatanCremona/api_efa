@@ -22,6 +22,7 @@ class Recetario(Base):
     n1Altura = Column(Integer, index=True)
     bastidorAltura = Column(Integer, index=True)
     ajusteN1Altura = Column(Integer, index=True)
+    productosMolde = Column(Integer, index=True)
     
     recetarioxciclo = relationship("RecetarioXCiclo", back_populates="recetario")
 

@@ -21,7 +21,7 @@ from models.torreconfiguraciones import TorreConfiguraciones
 from models.usuario import Usuario 
 from models.etapa import Etapa
 from services.desp import bcrypt_context
-from routers import usuarios, graficosHistorico, productividad
+from routers import usuarios, graficosHistorico, productividad, configuracionesHTTP
 
 import logging
 import asyncio
@@ -40,16 +40,19 @@ ruta_sql_alarmas = os.path.join(ruta_principal, 'query', 'insert_alarmas.sql')
 ruta_sql_etapas = os.path.join(ruta_principal, 'query', 'insert_etapas.sql')
 ruta_sql_recetario = os.path.join(ruta_principal, 'query', 'insert_recetario.sql')
 ruta_sql_torre = os.path.join(ruta_principal,'query', 'insert_torre.sql')
+ruta_sql_torre_configuraciones = os.path.join(ruta_principal,"query","insert_torre_configuraciones.sql")
 
 
 URL = f"opc.tcp://{opc_ip}:{opc_port}"
 opc_client = OPCUAClient(URL)
 
-db.Base.metadata.drop_all(bind=db.engine)
+#db.Base.metadata.drop_all(bind=db.engine)
 db.Base.metadata.create_all(bind=db.engine)
 
 listaDatosOpc = ObtenerNodosOpc(opc_client)
 listaRecetario = ObtenerNodosOpc(opc_client)
+
+actualizarRecetas = ObtenerNodosOpc(opc_client)
 
 def cargar_archivo_sql(file_path: str):
     try:
@@ -77,10 +80,19 @@ async def central_opc_render():
 async def central_opc_render_2():
     while True:
         try:
-            await ws_manager.send_message("recetario", await listaRecetario.ConexionPLCRecetas())
+            await ws_manager.send_message("lista-receta", await listaRecetario.ConexionPLCRecetas())
             await asyncio.sleep(10.0)
         except Exception as e:
-            logger.error(f"Error en el lector del OPC: {e}")
+            logger.error(f"Error en el lector [Correcciones TORRES] del OPC: {e}")
+
+
+async def central_opc_recetas():
+    while True:
+        try:
+            await ws_manager.send_message("actualizar-recetas", await actualizarRecetas.actualizarRecetas())
+            await asyncio.sleep(10.0)
+        except Exception as e:
+            logger.error(f"Error en el lector [ACTUALIZAR - RECETAS - BDD] del OPC UA: {e}")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):       
@@ -116,6 +128,7 @@ async def lifespan(app: FastAPI):
             logger.info(f"Cargar registros BDD [Torre]")
             cargar_archivo_sql(ruta_sql_torre)
         if session.query(TorreConfiguraciones).count() == 0:
+            cargar_archivo_sql(ruta_sql_torre_configuraciones)
             logger.info(f"Cargar registros BDD [TorreConfiguraciones]")
 
     except Exception as e:
@@ -125,6 +138,7 @@ async def lifespan(app: FastAPI):
         logger.info("Conectado al servidor OPC UA.")
         asyncio.create_task(central_opc_render())
         asyncio.create_task(central_opc_render_2())
+        asyncio.create_task(central_opc_recetas())
         yield
     finally:
         await opc_client.disconnect()
@@ -141,6 +155,7 @@ app.add_middleware(
 app.include_router(usuarios.RouterUsers)
 app.include_router(graficosHistorico.RoutersGraficosH)
 app.include_router(productividad.RouterProductividad)
+app.include_router(configuracionesHTTP.RouterConfiguraciones)
 @app.websocket("/ws/{id}")
 async def resumen_desmoldeo(websocket: WebSocket, id: str):
     await websocket.accept()
