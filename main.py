@@ -8,6 +8,7 @@ from config.opc import OPCUAClient
 from config import db
 from config.ws import ws_manager
 from services.opcService import ObtenerNodosOpc
+from services.opcRecetas import OpcRecetas
 
 from models.recetario import Recetario
 from models.alarma import Alarma
@@ -52,7 +53,7 @@ db.Base.metadata.create_all(bind=db.engine)
 listaDatosOpc = ObtenerNodosOpc(opc_client)
 listaRecetario = ObtenerNodosOpc(opc_client)
 
-actualizarRecetas = ObtenerNodosOpc(opc_client)
+actualizarRecetas = OpcRecetas(opc_client)
 
 def cargar_archivo_sql(file_path: str):
     try:
@@ -89,7 +90,7 @@ async def central_opc_render_2():
 async def central_opc_recetas():
     while True:
         try:
-            await ws_manager.send_message("actualizar-recetas", await actualizarRecetas.actualizarRecetas())
+            actualizarRecetas.actualizarRecetas()
             await asyncio.sleep(10.0)
         except Exception as e:
             logger.error(f"Error en el lector [ACTUALIZAR - RECETAS - BDD] del OPC UA: {e}")
@@ -151,6 +152,7 @@ app.add_middleware(
     allow_methods=["*"],  # Permite todos los métodos (GET, POST, etc.)
     allow_headers=["*"],  # Permite todos los headers
 )
+
 
 app.include_router(usuarios.RouterUsers)
 app.include_router(graficosHistorico.RoutersGraficosH)

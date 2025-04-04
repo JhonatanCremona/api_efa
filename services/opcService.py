@@ -349,9 +349,10 @@ class ObtenerNodosOpc:
             e_datosSeleccionado = datos_opc_a_enviar.get_child([f"4:datosSeleccionados"])
             e_listaRecetario = datos_opc_a_enviar.get_child([f"4:RECETARIO"])
 
+            logger.info("LEEEEEEEEE")
 
-
-            PANTALLA_ENCENDIDA = e_datosSeleccionado.get_child([f"4:patalla_receta"]).get_value()
+            pantalla_receta = e_datosSeleccionado.get_child([f"4:pantalla_receta"])
+            PANTALLA_ENCENDIDA = pantalla_receta.get_value()
             logger.error(f"PANTALLA OPC: {PANTALLA_ENCENDIDA}")
             
 
