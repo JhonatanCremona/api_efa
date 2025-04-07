@@ -50,7 +50,7 @@ ruta_sql_torre_configuraciones = os.path.join(ruta_principal,"query","insert_tor
 URL = f"opc.tcp://{opc_ip}:{opc_port}"
 opc_client = OPCUAClient(URL)
 
-#db.Base.metadata.drop_all(bind=db.engine)
+db.Base.metadata.drop_all(bind=db.engine)
 db.Base.metadata.create_all(bind=db.engine)
 
 listaDatosOpc = ObtenerNodosOpc(opc_client)
@@ -136,8 +136,6 @@ def proceso_central_opc_escritura():
         loop.run_until_complete(client.disconnect())
         loop.close()
 
-
-
 def proceso_central_opc_recetas():
     from services.opcRecetas import OpcRecetas  # Asegurate de que esté en un módulo separado
 
@@ -162,11 +160,27 @@ def proceso_central_opc_recetas():
         loop.run_until_complete(client.disconnect())
         loop.close()
 
+def proceso_central_opc_alarmas():
+    from services.opcAlarmas import OpcAlarmas
 
-def run_async_coroutine(coroutine_func):
+    client = OPCUAClient(URL)
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
-    loop.run_until_complete(coroutine_func())
+
+    loop.run_until_complete(client.connect())
+    alarma_reader = OpcAlarmas(client)
+    async def central_opc_alarmas():
+        while True:
+            try:
+                await alarma_reader.leerAlarmasRobot()
+                await asyncio.sleep(10)
+            except Exception as e:
+                logger.warning(f"Error en el render alarmas: {e}")
+    try:
+        loop.run_until_complete(central_opc_alarmas())
+    finally:
+        loop.run_until_complete(client.disconnect())
+        loop.close()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):       
@@ -210,23 +224,26 @@ async def lifespan(app: FastAPI):
     try:
         await opc_client.connect()
         logger.info("Conectado al servidor OPC UA.")
-        asyncio.create_task(central_opc_render_1())
+        #asyncio.create_task(central_opc_render_1())
         #asyncio.create_task(central_opc_render_2())
         #asyncio.create_task(central_opc_recetas())
 
         #p1 = Process(target=proceso_central_opc_ws, daemon=True)
-        p2 = Process(target=proceso_central_opc_escritura, daemon=True)
-        p3 = Process(target=proceso_central_opc_recetas, daemon=True)
+        #p2 = Process(target=proceso_central_opc_escritura, daemon=True)
+        #p3 = Process(target=proceso_central_opc_recetas, daemon=True)
+
+        p4 = Process(target=proceso_central_opc_alarmas, daemon=True)
 
         #p1.start()
-        p2.start()
-        p3.start()
-        
+        #p2.start()
+        #p3.start()
+        p4.start()
         yield
     finally:
         #p1.terminate()
-        p2.terminate()
-        p3.terminate()
+        #p2.terminate()
+        #p3.terminate()
+        p4.terminate()
         await opc_client.disconnect()
 
 app = FastAPI(
