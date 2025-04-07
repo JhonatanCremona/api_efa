@@ -3,6 +3,8 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from contextlib import asynccontextmanager
 from starlette.middleware.cors import CORSMiddleware
 from sqlalchemy import text
+from multiprocessing import Process, cpu_count
+
 
 from config.opc import OPCUAClient
 from config import db
@@ -26,6 +28,7 @@ from routers import usuarios, graficosHistorico, productividad, configuracionesH
 
 import logging
 import asyncio
+import time
 import socket
 
 from dotenv import load_dotenv
@@ -70,30 +73,100 @@ def cargar_archivo_sql(file_path: str):
     except Exception as e:
         logger.error(f"Error al cargar el archivo SQL: {e}")
 
-async def central_opc_render():
-    while True:
-        try:
-            await ws_manager.send_message("datos", await listaDatosOpc.conexionOpcPLC())
-            await asyncio.sleep(10.0)
-        except Exception as e:
-            logger.error(f"Error en el lector del OPC: {e}")
-
-async def central_opc_render_2():
-    while True:
-        try:
-            await ws_manager.send_message("lista-receta", await listaRecetario.ConexionPLCRecetas())
-            await asyncio.sleep(10.0)
-        except Exception as e:
-            logger.error(f"Error en el lector [Correcciones TORRES] del OPC: {e}")
 
 
-async def central_opc_recetas():
-    while True:
-        try:
-            actualizarRecetas.actualizarRecetas()
-            await asyncio.sleep(10.0)
-        except Exception as e:
-            logger.error(f"Error en el lector [ACTUALIZAR - RECETAS - BDD] del OPC UA: {e}")
+def proceso_central_opc_ws():
+    from services.opcService import ObtenerNodosOpc
+    from config.ws import ws_manager    # Importar dentro del proceso si es necesario
+
+    client = OPCUAClient(URL)
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+    loop.run_until_complete(client.connect())
+    listaDatosOpc = ObtenerNodosOpc(client)
+
+    async def central_opc_render():
+        while True:
+            try:
+                data = await listaDatosOpc.conexionOpcPLC()
+                await ws_manager.send_message("datos", data)
+                await asyncio.sleep(10.0)
+            except Exception as e:
+                logger.error(f"Error en el lector del OPC (lectura datos): {e}")
+
+    try:
+        loop.run_until_complete(central_opc_render())
+    finally:
+        loop.run_until_complete(client.disconnect())
+        loop.close()
+
+async def central_opc_render_1():
+        while True:
+            try:
+                data = await listaDatosOpc.conexionOpcPLC()
+                await ws_manager.send_message("datos", data)
+                await asyncio.sleep(10.0)
+            except Exception as e:
+                logger.error(f"Error en el lector del OPC (lectura datos): {e}")
+
+def proceso_central_opc_escritura():
+    from services.opcService import ObtenerNodosOpc
+    from config.ws import ws_manager  # Importar dentro del proceso si es necesario
+
+    client = OPCUAClient(URL)
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+    loop.run_until_complete(client.connect())
+    listaRecetario = ObtenerNodosOpc(client)
+
+    async def central_opc_render_2():
+        while True:
+            try:
+                data = await listaRecetario.ConexionPLCRecetas()
+                await ws_manager.send_message("lista-receta", data)
+                await asyncio.sleep(10.0)
+            except Exception as e:
+                logger.error(f"Error en el lector [Recetario TORRES] del OPC: {e}")
+
+    try:
+        loop.run_until_complete(central_opc_render_2())
+    finally:
+        loop.run_until_complete(client.disconnect())
+        loop.close()
+
+
+
+def proceso_central_opc_recetas():
+    from services.opcRecetas import OpcRecetas  # Asegurate de que esté en un módulo separado
+
+    client = OPCUAClient(URL)
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+    loop.run_until_complete(client.connect())
+    receta_reader = OpcRecetas(client)
+
+    async def central_opc_recetas():
+        while True:
+            try:
+                await receta_reader.actualizarRecetas()
+                await asyncio.sleep(10)
+            except Exception as e:
+                logger.error(f"Error en render recetas: {e}")
+
+    try:
+        loop.run_until_complete(central_opc_recetas())
+    finally:
+        loop.run_until_complete(client.disconnect())
+        loop.close()
+
+
+def run_async_coroutine(coroutine_func):
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(coroutine_func())
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):       
@@ -137,14 +210,31 @@ async def lifespan(app: FastAPI):
     try:
         await opc_client.connect()
         logger.info("Conectado al servidor OPC UA.")
-        asyncio.create_task(central_opc_render())
-        asyncio.create_task(central_opc_render_2())
-        asyncio.create_task(central_opc_recetas())
+        asyncio.create_task(central_opc_render_1())
+        #asyncio.create_task(central_opc_render_2())
+        #asyncio.create_task(central_opc_recetas())
+
+        #p1 = Process(target=proceso_central_opc_ws, daemon=True)
+        p2 = Process(target=proceso_central_opc_escritura, daemon=True)
+        p3 = Process(target=proceso_central_opc_recetas, daemon=True)
+
+        #p1.start()
+        p2.start()
+        p3.start()
+        
         yield
     finally:
+        #p1.terminate()
+        p2.terminate()
+        p3.terminate()
         await opc_client.disconnect()
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(
+    lifespan=lifespan,
+    docs_url=None, 
+    redoc_url=None, 
+    openapi_url=None
+    )
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # Permite todas las solicitudes de cualquier dominio

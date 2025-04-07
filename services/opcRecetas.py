@@ -14,14 +14,7 @@ from models.torreconfiguraciones import TorreConfiguraciones
 from models.contrasPlc import ContrasPLC
 from models.recetario import Recetario
 
-from datetime import datetime
-
 import logging
-import re
-import threading
-import time
-import asyncio
-
 
 PANTALLA_ENCENDIDA = False
 ULTIMO_ESTADO_PANTALLA = None
@@ -50,16 +43,13 @@ class OpcRecetas:
             e_datosSeleccionado = datos_opc_a_enviar.get_child([f"4:datosSeleccionados"])
             e_listaRecetario = datos_opc_a_enviar.get_child([f"4:RECETARIO"])
 
-            logger.info("LEEEEEEEEE")
-
             pantalla_receta = e_datosSeleccionado.get_child([f"4:pantalla_receta"])
             PANTALLA_ENCENDIDA = pantalla_receta.get_value()
-            logger.error(f"PANTALLA OPC: {PANTALLA_ENCENDIDA}")
+            logger.info(f"PANTALLA OPC: {PANTALLA_ENCENDIDA}")
             
 
             if PANTALLA_ENCENDIDA != ULTIMO_ESTADO_PANTALLA :
-                if PANTALLA_ENCENDIDA == False:
-
+                if PANTALLA_ENCENDIDA == True:
                     try:
                         for child in e_listaRecetario.get_children():
                             if not child:
@@ -78,11 +68,10 @@ class OpcRecetas:
             ULTIMO_ESTADO_PANTALLA = PANTALLA_ENCENDIDA
 
         except Exception as e:
-            logger.error(f"Error al intertar ACTUALIZAR RECETAS {e}") 
+            logger.error(f"Error al intertar ACTUALIZAR RECETAS, problema de conexion {e}") 
 
-    def guardarRecetaEnBD(datosPLC):
+    def guardarRecetaEnBD(self, datosPLC):
         try:
-
             for index, (clave, datosReceta) in enumerate(datosPLC.items(), start=1):
                 receta_id = index  # Matcheamos el índice + 1 con el ID
 

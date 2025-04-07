@@ -9,7 +9,7 @@ networks:
     ipam:
       config:
         - subnet: 192.168.10.0/24
-          gateway: 192.168.10.1
+          gateway: 192.168.10.110
 
 services:
   db:
@@ -40,7 +40,7 @@ services:
     env_file:
       - .env
     environment:
-      DATABASE_URL: mysql+pymysql://${MYSQL_USER}:${MYSQL_PASSWORD}@db:3306/${MYSQL_DATABASE} 
+      DATABASE_URL: mysql+pymysql://${MYSQL_USER}:${MYSQL_PASSWORD}@db:3306/${MYSQL_DATABASE}
     ports:
       - "8000:8000"
     volumes:
@@ -50,7 +50,8 @@ services:
     networks:
       bridge_network:
       macvlan_network:
-        ipv4_address: 192.168.10.105
+        ipv4_address: 192.168.10.115
+
   nextjs-app:
     build:
       context: ../proyecto-efa  # La carpeta donde está el Dockerfile
@@ -65,21 +66,5 @@ services:
     networks:
       - bridge_network
 
-  volumes:
-    mysql_data:
-    nextjs-app:
-      build:
-        context: ../proyecto-efa  # La carpeta donde está el Dockerfile
-        dockerfile: web.Dockerfile
-      ports:
-        - "3000:3000"
-      volumes:
-        - ../proyecto-efa:/app 
-      restart: always
-      depends_on:
-        - fastapi_app
-      networks:
-        - bridge_network
-
 volumes:
-    mysql_data:
+  mysql_data:
