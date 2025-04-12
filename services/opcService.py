@@ -21,6 +21,7 @@ import re
 import threading
 import time
 import asyncio
+import json
 
 logger = logging.getLogger("uvicorn")
 db_session = next(get_db())
@@ -262,6 +263,13 @@ class ObtenerNodosOpc:
             
             listaRespuesta.append(listaCelda)
             listaRespuesta.append(listaDatosGeneral)
+
+            with open('alarmas.json', 'r') as file:
+                data = json.load(file)
+            alarmas = list(data.values())
+            alarmas_ordenadas = sorted(alarmas, key=lambda x: not x['estadoAlarma'])
+
+            listaRespuesta.append(alarmas_ordenadas)
 
             return listaRespuesta
         

@@ -9,7 +9,7 @@ class Alarma(Base):
     id = Column(Integer, primary_key=True, index=True, autoincrement= False)
     tipoAlarma = Column(String(20), index=True)
     descripcion = Column(String(255), index=True)
-    fechaRegistro = Column(DateTime, default=datetime)
+    fechaRegistro = Column(DateTime, default=datetime.now)
 
     sdda = relationship("Sdda", back_populates="alarma")
     robot = relationship("Robot", back_populates="alarma")

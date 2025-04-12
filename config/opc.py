@@ -6,7 +6,7 @@ logger = logging.getLogger("uvicorn")
 
 class OPCUAClient:
 
-    def __init__(self, server_url, max_retries=5, retry_delay=10):
+    def __init__(self, server_url, max_retries=3, retry_delay=3):
         self.server_url = server_url
         self.client = None
         self.max_retries = max_retries

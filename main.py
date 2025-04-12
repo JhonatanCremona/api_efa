@@ -3,7 +3,7 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from contextlib import asynccontextmanager
 from starlette.middleware.cors import CORSMiddleware
 from sqlalchemy import text
-from multiprocessing import Process, cpu_count
+from multiprocessing import Process, cpu_count, Event
 
 
 from config.opc import OPCUAClient
@@ -29,7 +29,6 @@ from routers import usuarios, graficosHistorico, productividad, configuracionesH
 import logging
 import asyncio
 import time
-import socket
 
 from dotenv import load_dotenv
 import os
@@ -73,7 +72,7 @@ def cargar_archivo_sql(file_path: str):
     except Exception as e:
         logger.error(f"Error al cargar el archivo SQL: {e}")
 
-
+stop_event = Event()
 
 def proceso_central_opc_ws():
     from services.opcService import ObtenerNodosOpc
@@ -124,9 +123,18 @@ def proceso_central_opc_escritura():
     async def central_opc_render_2():
         while True:
             try:
+                inicio = time.time()
                 data = await listaRecetario.ConexionPLCRecetas()
+                fin = time.time()
+
+                duracion = fin - inicio
+
+                minutos = int(duracion // 60)
+                segundos = int(duracion % 60)
+
+                print(f"⏱ [UPDATE TORRE CONF.] Tiempo de ejecución: {minutos} minutos y {segundos} segundos")
                 await ws_manager.send_message("lista-receta", data)
-                await asyncio.sleep(10.0)
+                await asyncio.sleep(5)
             except Exception as e:
                 logger.error(f"Error en el lector [Recetario TORRES] del OPC: {e}")
 
@@ -149,8 +157,17 @@ def proceso_central_opc_recetas():
     async def central_opc_recetas():
         while True:
             try:
+                inicio = time.time()
                 await receta_reader.actualizarRecetas()
-                await asyncio.sleep(10)
+                fin = time.time()
+
+                duracion = fin - inicio
+
+                minutos = int(duracion // 60)
+                segundos = int(duracion % 60)
+
+                print(f"⏱ [UPDATE RECETAS] Tiempo de ejecución: {minutos} minutos y {segundos} segundos")
+                await asyncio.sleep(5)
             except Exception as e:
                 logger.error(f"Error en render recetas: {e}")
 
@@ -160,7 +177,7 @@ def proceso_central_opc_recetas():
         loop.run_until_complete(client.disconnect())
         loop.close()
 
-def proceso_central_opc_alarmas():
+def proceso_central_opc_alarmas(stop_event):
     from services.opcAlarmas import OpcAlarmas
 
     client = OPCUAClient(URL)
@@ -170,10 +187,20 @@ def proceso_central_opc_alarmas():
     loop.run_until_complete(client.connect())
     alarma_reader = OpcAlarmas(client)
     async def central_opc_alarmas():
-        while True:
+        while not stop_event.is_set():
             try:
+                inicio = time.time()
                 await alarma_reader.leerAlarmasRobot()
-                await asyncio.sleep(10)
+                fin = time.time()
+
+                duracion = fin - inicio
+
+                minutos = int(duracion // 60)
+                segundos = int(duracion % 60)
+
+                print(f"⏱ [UPDATE ALARMAS] Tiempo de ejecución: {minutos} minutos y {segundos} segundos")
+
+                await asyncio.sleep(5)
             except Exception as e:
                 logger.warning(f"Error en el render alarmas: {e}")
     try:
@@ -224,26 +251,30 @@ async def lifespan(app: FastAPI):
     try:
         await opc_client.connect()
         logger.info("Conectado al servidor OPC UA.")
-        #asyncio.create_task(central_opc_render_1())
+        asyncio.create_task(central_opc_render_1())
         #asyncio.create_task(central_opc_render_2())
         #asyncio.create_task(central_opc_recetas())
 
-        #p1 = Process(target=proceso_central_opc_ws, daemon=True)
-        #p2 = Process(target=proceso_central_opc_escritura, daemon=True)
-        #p3 = Process(target=proceso_central_opc_recetas, daemon=True)
+        #p1 = Process(target=proceso_central_opc_ws, daemon=True) // OMITIR
+        p2 = Process(target=proceso_central_opc_escritura, daemon=True)
+        p3 = Process(target=proceso_central_opc_recetas, daemon=True)
 
-        p4 = Process(target=proceso_central_opc_alarmas, daemon=True)
+        p4 = Process(target=proceso_central_opc_alarmas,args=(stop_event,), daemon=True)
 
         #p1.start()
-        #p2.start()
-        #p3.start()
+        p2.start()
+        p3.start()
         p4.start()
         yield
     finally:
         #p1.terminate()
-        #p2.terminate()
-        #p3.terminate()
-        p4.terminate()
+        p2.terminate()
+        p3.terminate()
+        
+        stop_event.set()
+        time.sleep(1)  # Esperar a que se limpien los procesos
+        p4.terminate()  # Como backup si no se cerraron
+        p4.join(timeout=5)
         await opc_client.disconnect()
 
 app = FastAPI(
