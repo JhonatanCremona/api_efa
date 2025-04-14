@@ -44,15 +44,18 @@ ruta_sql_etapas = os.path.join(ruta_principal, 'query', 'insert_etapas.sql')
 ruta_sql_recetario = os.path.join(ruta_principal, 'query', 'insert_recetario.sql')
 ruta_sql_torre = os.path.join(ruta_principal,'query', 'insert_torre.sql')
 ruta_sql_torre_configuraciones = os.path.join(ruta_principal,"query","insert_torre_configuraciones.sql")
+ruta_sql_torre_ciclo = os.path.join(ruta_principal,"query","insert_ciclo_iffa.sql")
+ruta_sql_torre_receta_ciclo = os.path.join(ruta_principal,"query","insert_recetaxciclo_iffa.sql")
 
 
 URL = f"opc.tcp://{opc_ip}:{opc_port}"
 opc_client = OPCUAClient(URL)
 
-db.Base.metadata.drop_all(bind=db.engine)
+#db.Base.metadata.drop_all(bind=db.engine)
 db.Base.metadata.create_all(bind=db.engine)
 
 listaDatosOpc = ObtenerNodosOpc(opc_client)
+
 listaRecetario = ObtenerNodosOpc(opc_client)
 
 actualizarRecetas = OpcRecetas(opc_client)
@@ -73,6 +76,8 @@ def cargar_archivo_sql(file_path: str):
         logger.error(f"Error al cargar el archivo SQL: {e}")
 
 stop_event = Event()
+
+"""
 
 def proceso_central_opc_ws():
     from services.opcService import ObtenerNodosOpc
@@ -100,7 +105,10 @@ def proceso_central_opc_ws():
         loop.run_until_complete(client.disconnect())
         loop.close()
 
-async def central_opc_render_1():
+
+"""
+
+async def central_opc_render_ws():
         while True:
             try:
                 data = await listaDatosOpc.conexionOpcPLC()
@@ -109,7 +117,7 @@ async def central_opc_render_1():
             except Exception as e:
                 logger.error(f"Error en el lector del OPC (lectura datos): {e}")
 
-def proceso_central_opc_escritura():
+def proceso_central_opc_escritura(stop_event):
     from services.opcService import ObtenerNodosOpc
     from config.ws import ws_manager  # Importar dentro del proceso si es necesario
 
@@ -120,8 +128,8 @@ def proceso_central_opc_escritura():
     loop.run_until_complete(client.connect())
     listaRecetario = ObtenerNodosOpc(client)
 
-    async def central_opc_render_2():
-        while True:
+    async def central_opc_render_torre_config():
+        while not stop_event.is_set():
             try:
                 inicio = time.time()
                 data = await listaRecetario.ConexionPLCRecetas()
@@ -139,12 +147,12 @@ def proceso_central_opc_escritura():
                 logger.error(f"Error en el lector [Recetario TORRES] del OPC: {e}")
 
     try:
-        loop.run_until_complete(central_opc_render_2())
+        loop.run_until_complete(central_opc_render_torre_config())
     finally:
         loop.run_until_complete(client.disconnect())
         loop.close()
 
-def proceso_central_opc_recetas():
+def proceso_central_opc_recetas(stop_event):
     from services.opcRecetas import OpcRecetas  # Asegurate de que esté en un módulo separado
 
     client = OPCUAClient(URL)
@@ -155,7 +163,7 @@ def proceso_central_opc_recetas():
     receta_reader = OpcRecetas(client)
 
     async def central_opc_recetas():
-        while True:
+        while not stop_event.is_set():
             try:
                 inicio = time.time()
                 await receta_reader.actualizarRecetas()
@@ -245,19 +253,24 @@ async def lifespan(app: FastAPI):
         if session.query(TorreConfiguraciones).count() == 0:
             cargar_archivo_sql(ruta_sql_torre_configuraciones)
             logger.info(f"Cargar registros BDD [TorreConfiguraciones]")
+        
+        if session.query(CicloDesmoldeo).count() == 0:
+            cargar_archivo_sql(ruta_sql_torre_ciclo)
+            logger.info(f"Cargar registros BDD [CicloDesmoldeo]")
+        if session.query(RecetarioXCiclo).count() == 0:
+            cargar_archivo_sql(ruta_sql_torre_receta_ciclo)
+            logger.info(f"Cargar registros BDD [RecetarioXCiclo]")
 
     except Exception as e:
         logger.error(f"Error al cargar diccionarios: {e}")
     try:
         await opc_client.connect()
         logger.info("Conectado al servidor OPC UA.")
-        asyncio.create_task(central_opc_render_1())
-        #asyncio.create_task(central_opc_render_2())
-        #asyncio.create_task(central_opc_recetas())
+        asyncio.create_task(central_opc_render_ws())
 
         #p1 = Process(target=proceso_central_opc_ws, daemon=True) // OMITIR
-        p2 = Process(target=proceso_central_opc_escritura, daemon=True)
-        p3 = Process(target=proceso_central_opc_recetas, daemon=True)
+        p2 = Process(target=proceso_central_opc_escritura, args=(stop_event,),daemon=True)
+        p3 = Process(target=proceso_central_opc_recetas, args=(stop_event,),daemon=True)
 
         p4 = Process(target=proceso_central_opc_alarmas,args=(stop_event,), daemon=True)
 
@@ -268,8 +281,16 @@ async def lifespan(app: FastAPI):
         yield
     finally:
         #p1.terminate()
-        p2.terminate()
-        p3.terminate()
+
+        stop_event.set()
+        time.sleep(1)  # Esperar a que se limpien los procesos
+        p2.terminate()  # Como backup si no se cerraron
+        p2.join(timeout=5)
+
+        stop_event.set()
+        time.sleep(1)  # Esperar a que se limpien los procesos
+        p3.terminate()  # Como backup si no se cerraron
+        p3.join(timeout=5)
         
         stop_event.set()
         time.sleep(1)  # Esperar a que se limpien los procesos

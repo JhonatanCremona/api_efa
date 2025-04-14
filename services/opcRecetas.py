@@ -69,6 +69,7 @@ class OpcRecetas:
 
         except Exception as e:
             logger.error(f"Error al intertar ACTUALIZAR RECETAS, problema de conexion {e}") 
+            await self.conexion_servidor.handle_reconnect()
 
     def guardarRecetaEnBD(self, datosPLC):
         try:

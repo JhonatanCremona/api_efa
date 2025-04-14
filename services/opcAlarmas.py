@@ -124,6 +124,7 @@ class OpcAlarmas:
         
         except Exception as e:
             logger.error(f"No se pudo leer los datos lista_alarmas {e}")
+            await self.conexion_servidor.handle_reconnect()
 
     def get_ultimo_ciclo(self, db):
             try:

@@ -4,377 +4,377 @@
         "estadoAlarma": false,
         "tipoAlarma": "FALLA CILINDRO",
         "descripcion": "Se detecto que el cilindro de cierre de pinza no llego a la posicion requerida. Revise el cilindro y el sensor desde el modo manual",
-        "fechaRegistro": "2025-04-12 15-02-32"
+        "fechaRegistro": "2025-04-14 02-34-58"
     },
     "201": {
         "id_alarma": 201,
         "estadoAlarma": false,
         "tipoAlarma": "FALLA CILINDRO",
         "descripcion": "Se detecto que el cilindro A de elevacion de molde no llego a la posicion requerida. Revise el cilindro y el sensor desde el modo manual",
-        "fechaRegistro": "2025-04-12 15-02-32"
+        "fechaRegistro": "2025-04-14 02-34-58"
     },
     "202": {
         "id_alarma": 202,
         "estadoAlarma": false,
         "tipoAlarma": "FALLA CILINDRO",
         "descripcion": "Se detecto que el cilindro B de elevacion de molde no llego a la posicion requerida. Revise el cilindro y el sensor desde el modo manual",
-        "fechaRegistro": "2025-04-12 15-02-33"
+        "fechaRegistro": "2025-04-14 02-34-59"
     },
     "700": {
         "id_alarma": 700,
         "estadoAlarma": false,
         "tipoAlarma": "CANCELACION",
         "descripcion": "Ciclo cancelado por operador",
-        "fechaRegistro": "2025-04-12 15-02-53"
+        "fechaRegistro": "2025-04-14 02-35-18"
     },
     "701": {
         "id_alarma": 701,
         "estadoAlarma": false,
         "tipoAlarma": "CANCELACION",
         "descripcion": "Ciclo cancelado por emergencia",
-        "fechaRegistro": "2025-04-12 15-02-54"
+        "fechaRegistro": "2025-04-14 02-35-19"
     },
     "800": {
         "id_alarma": 800,
         "estadoAlarma": false,
         "tipoAlarma": "PULSADORES",
         "descripcion": "Pulsador de emergencia activado",
-        "fechaRegistro": "2025-04-12 15-03-14"
+        "fechaRegistro": "2025-04-14 02-35-36"
     },
     "801": {
         "id_alarma": 801,
         "estadoAlarma": true,
         "tipoAlarma": "PULSADORES",
         "descripcion": "Pulsador de arranque presionado",
-        "fechaRegistro": "2025-04-12 15-03-15"
+        "fechaRegistro": "2025-04-14 02-35-37"
     },
     "802": {
         "id_alarma": 802,
         "estadoAlarma": true,
         "tipoAlarma": "PULSADORES",
         "descripcion": "",
-        "fechaRegistro": "2025-04-12 15-03-16"
+        "fechaRegistro": "2025-04-14 02-35-38"
     },
     "803": {
         "id_alarma": 803,
         "estadoAlarma": true,
         "tipoAlarma": "PULSADORES",
         "descripcion": "",
-        "fechaRegistro": "2025-04-12 15-03-16"
+        "fechaRegistro": "2025-04-14 02-35-38"
     },
     "500": {
         "id_alarma": 500,
         "estadoAlarma": true,
         "tipoAlarma": "SERVOS",
         "descripcion": "Servo de carro fuera de referencia",
-        "fechaRegistro": "2025-04-12 15-03-34"
+        "fechaRegistro": "2025-04-14 02-35-56"
     },
     "501": {
         "id_alarma": 501,
         "estadoAlarma": true,
         "tipoAlarma": "SERVOS",
         "descripcion": "Servo de elevación sin respuesta",
-        "fechaRegistro": "2025-04-12 15-03-35"
+        "fechaRegistro": "2025-04-14 02-35-56"
     },
     "502": {
         "id_alarma": 502,
         "estadoAlarma": true,
         "tipoAlarma": "SERVOS",
         "descripcion": "",
-        "fechaRegistro": "2025-04-12 15-03-35"
+        "fechaRegistro": "2025-04-14 02-35-57"
     },
     "503": {
         "id_alarma": 503,
         "estadoAlarma": true,
         "tipoAlarma": "SERVOS",
         "descripcion": "",
-        "fechaRegistro": "2025-04-12 15-03-36"
+        "fechaRegistro": "2025-04-14 02-35-58"
     },
     "600": {
         "id_alarma": 600,
         "estadoAlarma": false,
         "tipoAlarma": "INICIO CICLO",
         "descripcion": "Inicio de ciclo automático",
-        "fechaRegistro": "2025-04-12 15-03-55"
+        "fechaRegistro": "2025-04-14 02-36-17"
     },
     "601": {
         "id_alarma": 601,
         "estadoAlarma": false,
         "tipoAlarma": "INICIO CICLO",
         "descripcion": "Inicio de ciclo manual",
-        "fechaRegistro": "2025-04-12 15-03-56"
+        "fechaRegistro": "2025-04-14 02-36-17"
     },
     "400": {
         "id_alarma": 400,
         "estadoAlarma": false,
         "tipoAlarma": "GENERALES",
         "descripcion": "Falla general del sistema. Verificar condiciones de energía y sensores",
-        "fechaRegistro": "2025-04-12 15-04-22"
+        "fechaRegistro": "2025-04-14 02-36-40"
     },
     "401": {
         "id_alarma": 401,
         "estadoAlarma": false,
         "tipoAlarma": "GENERALES",
         "descripcion": "Reinicio inesperado del controlador principal",
-        "fechaRegistro": "2025-04-12 15-04-22"
+        "fechaRegistro": "2025-04-14 02-36-41"
     },
     "300": {
         "id_alarma": 300,
         "estadoAlarma": false,
         "tipoAlarma": "POSICIONADOR",
         "descripcion": "Posicionador no llego a la posicion requerida. Verifique sensores y motor",
-        "fechaRegistro": "2025-04-12 15-04-42"
+        "fechaRegistro": "2025-04-14 02-36-59"
     },
     "301": {
         "id_alarma": 301,
         "estadoAlarma": false,
         "tipoAlarma": "POSICIONADOR",
         "descripcion": "Error de seguimiento en el sistema del posicionador. Requiere recalibración",
-        "fechaRegistro": "2025-04-12 15-04-43"
+        "fechaRegistro": "2025-04-14 02-36-59"
     },
     "305": {
         "id_alarma": 305,
         "estadoAlarma": true,
         "tipoAlarma": "POSICIONADOR",
         "descripcion": "",
-        "fechaRegistro": "2025-04-12 15-04-45"
+        "fechaRegistro": "2025-04-14 02-37-02"
     },
     "0": {
         "id_alarma": 0,
         "estadoAlarma": false,
         "tipoAlarma": "ESTADO ROBOT",
         "descripcion": "Robot buscando Home",
-        "fechaRegistro": "2025-04-12 15-05-02"
+        "fechaRegistro": "2025-04-14 02-37-19"
     },
     "1": {
         "id_alarma": 1,
         "estadoAlarma": true,
         "tipoAlarma": "ESTADO ROBOT",
         "descripcion": "Robot buscando gripper",
-        "fechaRegistro": "2025-04-12 15-05-03"
+        "fechaRegistro": "2025-04-14 02-37-19"
     },
     "2": {
         "id_alarma": 2,
         "estadoAlarma": false,
         "tipoAlarma": "ESTADO ROBOT",
         "descripcion": "Robot Ingresando a estacion en busca de gripper",
-        "fechaRegistro": "2025-04-12 15-05-04"
+        "fechaRegistro": "2025-04-14 02-37-20"
     },
     "3": {
         "id_alarma": 3,
         "estadoAlarma": false,
         "tipoAlarma": "ESTADO ROBOT",
         "descripcion": "Robot saliendo de estacion con nuevo gripper",
-        "fechaRegistro": "2025-04-12 15-05-04"
+        "fechaRegistro": "2025-04-14 02-37-20"
     },
     "4": {
         "id_alarma": 4,
         "estadoAlarma": false,
         "tipoAlarma": "ESTADO ROBOT",
         "descripcion": "Robot finalizo la busqueda de nuevo gripper",
-        "fechaRegistro": "2025-04-12 15-05-05"
+        "fechaRegistro": "2025-04-14 02-37-21"
     },
     "5": {
         "id_alarma": 5,
         "estadoAlarma": false,
         "tipoAlarma": "ESTADO ROBOT",
         "descripcion": "Robot posicionandose para dejar gripper",
-        "fechaRegistro": "2025-04-12 15-05-06"
+        "fechaRegistro": "2025-04-14 02-37-22"
     },
     "6": {
         "id_alarma": 6,
         "estadoAlarma": false,
         "tipoAlarma": "ESTADO ROBOT",
         "descripcion": "Robot ingresando a estacion para dejar gripper",
-        "fechaRegistro": "2025-04-12 15-05-07"
+        "fechaRegistro": "2025-04-14 02-37-22"
     },
     "7": {
         "id_alarma": 7,
         "estadoAlarma": false,
         "tipoAlarma": "ESTADO ROBOT",
         "descripcion": "Robot saliendo de estacion sin gripper",
-        "fechaRegistro": "2025-04-12 15-05-07"
+        "fechaRegistro": "2025-04-14 02-37-23"
     },
     "8": {
         "id_alarma": 8,
         "estadoAlarma": false,
         "tipoAlarma": "ESTADO ROBOT",
         "descripcion": "Robot finalizo el deja gripper",
-        "fechaRegistro": "2025-04-12 15-05-08"
+        "fechaRegistro": "2025-04-14 02-37-23"
     },
     "9": {
         "id_alarma": 9,
         "estadoAlarma": false,
         "tipoAlarma": "ESTADO ROBOT",
         "descripcion": "Robot posicionandose para cambiar gripper",
-        "fechaRegistro": "2025-04-12 15-05-09"
+        "fechaRegistro": "2025-04-14 02-37-24"
     },
     "10": {
         "id_alarma": 10,
         "estadoAlarma": false,
         "tipoAlarma": "ESTADO ROBOT",
         "descripcion": "Robot ingresando a estacion para dejar el gripper actual",
-        "fechaRegistro": "2025-04-12 15-05-10"
+        "fechaRegistro": "2025-04-14 02-37-24"
     },
     "11": {
         "id_alarma": 11,
         "estadoAlarma": false,
         "tipoAlarma": "ESTADO ROBOT",
         "descripcion": "Robot extrayendo nuevo gripper",
-        "fechaRegistro": "2025-04-12 15-05-10"
+        "fechaRegistro": "2025-04-14 02-37-25"
     },
     "12": {
         "id_alarma": 12,
         "estadoAlarma": false,
         "tipoAlarma": "ESTADO ROBOT",
         "descripcion": "Robot saliendo con nuevo gripper",
-        "fechaRegistro": "2025-04-12 15-05-11"
+        "fechaRegistro": "2025-04-14 02-37-25"
     },
     "13": {
         "id_alarma": 13,
         "estadoAlarma": false,
         "tipoAlarma": "ESTADO ROBOT",
         "descripcion": "Robot finalizo el cambio de gripper",
-        "fechaRegistro": "2025-04-12 15-05-11"
+        "fechaRegistro": "2025-04-14 02-37-26"
     },
     "14": {
         "id_alarma": 14,
         "estadoAlarma": false,
         "tipoAlarma": "ESTADO ROBOT",
         "descripcion": "Robot yendo a posicion de service 1",
-        "fechaRegistro": "2025-04-12 15-05-12"
+        "fechaRegistro": "2025-04-14 02-37-26"
     },
     "15": {
         "id_alarma": 15,
         "estadoAlarma": false,
         "tipoAlarma": "ESTADO ROBOT",
         "descripcion": "Robot yendo a posicion de service 2",
-        "fechaRegistro": "2025-04-12 15-05-13"
+        "fechaRegistro": "2025-04-14 02-37-27"
     },
     "16": {
         "id_alarma": 16,
         "estadoAlarma": false,
         "tipoAlarma": "ESTADO ROBOT",
         "descripcion": "Robot yendo a posicion de service 3",
-        "fechaRegistro": "2025-04-12 15-05-13"
+        "fechaRegistro": "2025-04-14 02-37-28"
     },
     "17": {
         "id_alarma": 17,
         "estadoAlarma": false,
         "tipoAlarma": "ESTADO ROBOT",
         "descripcion": "Robot yendo a posicion de espera",
-        "fechaRegistro": "2025-04-12 15-05-14"
+        "fechaRegistro": "2025-04-14 02-37-28"
     },
     "18": {
         "id_alarma": 18,
         "estadoAlarma": false,
         "tipoAlarma": "ESTADO ROBOT",
         "descripcion": "Robot en posicion de espera",
-        "fechaRegistro": "2025-04-12 15-05-15"
+        "fechaRegistro": "2025-04-14 02-37-29"
     },
     "19": {
         "id_alarma": 19,
         "estadoAlarma": false,
         "tipoAlarma": "ESTADO ROBOT",
         "descripcion": "Robot entrando a zona de pick",
-        "fechaRegistro": "2025-04-12 15-05-16"
+        "fechaRegistro": "2025-04-14 02-37-29"
     },
     "20": {
         "id_alarma": 20,
         "estadoAlarma": false,
         "tipoAlarma": "ESTADO ROBOT",
         "descripcion": "Robot realizando el pickeado de productos",
-        "fechaRegistro": "2025-04-12 15-05-16"
+        "fechaRegistro": "2025-04-14 02-37-30"
     },
     "21": {
         "id_alarma": 21,
         "estadoAlarma": false,
         "tipoAlarma": "ESTADO ROBOT",
         "descripcion": "Robot llego a posicion para retiro de zona de SDDA",
-        "fechaRegistro": "2025-04-12 15-05-17"
+        "fechaRegistro": "2025-04-14 02-37-30"
     },
     "22": {
         "id_alarma": 22,
         "estadoAlarma": false,
         "tipoAlarma": "ESTADO ROBOT",
         "descripcion": "Robot finalizo el pick de productos y se retiro de zona SDDA",
-        "fechaRegistro": "2025-04-12 15-05-17"
+        "fechaRegistro": "2025-04-14 02-37-31"
     },
     "23": {
         "id_alarma": 23,
         "estadoAlarma": false,
         "tipoAlarma": "ESTADO ROBOT",
         "descripcion": "Robot yendo a banda de transporte para dejar los productos",
-        "fechaRegistro": "2025-04-12 15-05-18"
+        "fechaRegistro": "2025-04-14 02-37-31"
     },
     "24": {
         "id_alarma": 24,
         "estadoAlarma": false,
         "tipoAlarma": "ESTADO ROBOT",
         "descripcion": "Robot dejo los productos en la banda y se retira",
-        "fechaRegistro": "2025-04-12 15-05-18"
+        "fechaRegistro": "2025-04-14 02-37-32"
     },
     "100": {
         "id_alarma": 100,
         "estadoAlarma": false,
         "tipoAlarma": "ESTADO SDDA",
         "descripcion": "Carro de SDDA buscando posicion de HOME",
-        "fechaRegistro": "2025-04-12 15-05-23"
+        "fechaRegistro": "2025-04-14 02-37-37"
     },
     "101": {
         "id_alarma": 101,
         "estadoAlarma": false,
         "tipoAlarma": "ESTADO SDDA",
         "descripcion": "Altura de SDDA buscando posicion de HOME",
-        "fechaRegistro": "2025-04-12 15-05-24"
+        "fechaRegistro": "2025-04-14 02-37-38"
     },
     "102": {
         "id_alarma": 102,
         "estadoAlarma": false,
         "tipoAlarma": "ESTADO SDDA",
         "descripcion": "SDDA buscando nuevo nivel en velocidad rapida",
-        "fechaRegistro": "2025-04-12 15-05-25"
+        "fechaRegistro": "2025-04-14 02-37-39"
     },
     "103": {
         "id_alarma": 103,
         "estadoAlarma": false,
         "tipoAlarma": "ESTADO SDDA",
         "descripcion": "SDDA buscando nivel exacto",
-        "fechaRegistro": "2025-04-12 15-05-26"
+        "fechaRegistro": "2025-04-14 02-37-40"
     },
     "104": {
         "id_alarma": 104,
         "estadoAlarma": false,
         "tipoAlarma": "ESTADO SDDA",
         "descripcion": "SDDA nivel detectado",
-        "fechaRegistro": "2025-04-12 15-05-26"
+        "fechaRegistro": "2025-04-14 02-37-40"
     },
     "105": {
         "id_alarma": 105,
         "estadoAlarma": false,
         "tipoAlarma": "ESTADO SDDA",
         "descripcion": "SDDA buscando molde en velocidad rapida",
-        "fechaRegistro": "2025-04-12 15-05-27"
+        "fechaRegistro": "2025-04-14 02-37-41"
     },
     "106": {
         "id_alarma": 106,
         "estadoAlarma": false,
         "tipoAlarma": "ESTADO SDDA",
         "descripcion": "Carro de SDDA aproximandose a molde",
-        "fechaRegistro": "2025-04-12 15-05-28"
+        "fechaRegistro": "2025-04-14 02-37-42"
     },
     "107": {
         "id_alarma": 107,
         "estadoAlarma": false,
         "tipoAlarma": "ESTADO SDDA",
         "descripcion": "SDDA elevando y tomando moldes",
-        "fechaRegistro": "2025-04-12 15-05-29"
+        "fechaRegistro": "2025-04-14 02-37-43"
     },
     "108": {
         "id_alarma": 108,
         "estadoAlarma": false,
         "tipoAlarma": "ESTADO SDDA",
         "descripcion": "Carro de SDDA en retroceso",
-        "fechaRegistro": "2025-04-12 15-05-30"
+        "fechaRegistro": "2025-04-14 02-37-44"
     }
 }

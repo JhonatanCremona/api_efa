@@ -108,13 +108,15 @@ def obtenerTiempo(estadoCiclo):
 
     return tiempoCiclo
 
-def get_ultimo_ciclo():
+def get_ultimo_ciclo(db):
         try:
-            ultimo_ciclo = db_session.query(CicloDesmoldeo).order_by(CicloDesmoldeo.id.desc()).first()
+            ultimo_ciclo = db.query(CicloDesmoldeo).order_by(CicloDesmoldeo.id.desc()).first()
+            if not ultimo_ciclo:
+                logger.error(f"No existen datos en la tabla Ciclo")
+                return None
             return ultimo_ciclo.id
         except Exception as e:
             logger.error(f"No hay datos en la BDD-CICLO")
-        return None
 
 class ObtenerNodosOpc:
     def __init__(self, conexion_servidor):
@@ -275,6 +277,7 @@ class ObtenerNodosOpc:
         
         except Exception as e:
             logger.exception("Error al obtener la conexión OPC del PLC:")
+            await self.conexion_servidor.handle_reconnect()
             return None
         
     async def obtenerListaAlarmasOpc(self, nodoAlarma):
@@ -617,6 +620,7 @@ class ObtenerNodosOpc:
                 return {"mensaje": f"Error: {e}"}
         except Exception as e:
             logger.error(f"Sinconexion al servidor OPC UA-ORIGEN")
+            await self.conexion_servidor.handle_reconnect()
             return {"mensaje": f"Error en la función leerDatosReceta: {e}"}
 
     async def escribirCorreccionesHN(self, correccionesHN, nivelesHN_node):
