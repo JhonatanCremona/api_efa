@@ -280,68 +280,6 @@ class ObtenerNodosOpc:
             await self.conexion_servidor.handle_reconnect()
             return None
         
-    async def obtenerListaAlarmasOpc(self, nodoAlarma):
-        listaAlarmaActivas = {}
-        global LOGS_ALARMA_CICLO
-        try:
-            alarmaArray = nodoAlarma
-            children = alarmaArray.get_children()
-            for child in children:
-                fecha_actual = datetime.now()
-                #logger.info(f"VALOR {child.get_value()} - Nombre {child.get_browse_name().Name}")
-                match = re.search(r"\[(\d+)\]", child.get_browse_name().Name)
-                indice = int(match.group(1)) + 1
-                if child.get_value() == True:
-                    alarma_lista = (
-                        db_session.query(Alarma).filter(Alarma.id == indice).first()
-                    )
-                    alarma = vars(alarma_lista)
-
-                    if alarma:
-                        try:
-                            alarma["estadoActual"] = child.get_value()
-                            alarma["fechaActual"] = fecha_actual.strftime("%Y-%m-%d-%H-%M")
-                            alarma["fechaInicio"] = fecha_actual.strftime("%Y-%m-%d-%H-%M")
-                            
-                            listaAlarmaActivas[indice] = alarma
-                        except Exception as e:
-                            logger.error(f"Error al asignar valores a alarmas: {e}")
-                        
-                        ultimo_ciclo_id = get_ultimo_ciclo()
-                        try:
-                            alarma_historico = HistoricoAlarma(
-                                    id_alarma=indice,
-                                    id_ciclo_desmoldeo=None,  # Usar el último ciclo si es válido
-                                    estadoAlarma=child.get_value()
-                                )
-                            db_session.add(alarma_historico)
-                            logger.info("************GUARDE DATOS EN LA BDD ALARMAS********************")
-                            db_session.commit()
-                        except Exception as e:
-                            logger.error(f"Error al guardar el histórico de alarma: {e}")                        
-
-                        if ultimo_ciclo_id is not None:
-                            LOGS_ALARMA_CICLO.append(alarma)
-                        else:
-                            logger.warning(f"El ciclo es None, no se guardó el LOGS DE ALARMA: {indice}")
-
-                elif child.get_value() == False:
-                    if indice in listaAlarmaActivas:
-                        del listaAlarmaActivas[indice]
-                        logger.info(f"Alarma con índice {indice} eliminada de listaAlarmaActivas.")
-                    #else:
-                        # logger.warning(f"Intento de eliminar una alarma que no está en listaAlarmaActivas: {indice}")
-
-                
-            return list(listaAlarmaActivas.values())
-
-        except Exception as e:
-            logger.error(f"Error al buscar nodos ALARMASSSSS: {e}")  
-            return None
-
-    async def ConexionAlarmas(self, ):
-        return ""
-
 
     async def actualizarRecetas(self):
         global PANTALLA_ENCENDIDA, ULTIMO_ESTADO_PANTALLA
@@ -518,7 +456,7 @@ class ObtenerNodosOpc:
                 torre_proxima = int(lista_datos_seleccionados.get("N_torre_proxima"))
                 primera_torre = torres[0]
 
-                ntorre_comparacion = (int(primera_torre.NTorre) + torre_proxima)
+                ntorre_comparacion = (int(primera_torre.NTorre) + torre_proxima - 1)
                 print(f"Valor de ntorre_comparacion: {ntorre_comparacion}")
 
                 exitosotorres = False

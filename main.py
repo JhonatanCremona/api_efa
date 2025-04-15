@@ -44,8 +44,7 @@ ruta_sql_etapas = os.path.join(ruta_principal, 'query', 'insert_etapas.sql')
 ruta_sql_recetario = os.path.join(ruta_principal, 'query', 'insert_recetario.sql')
 ruta_sql_torre = os.path.join(ruta_principal,'query', 'insert_torre.sql')
 ruta_sql_torre_configuraciones = os.path.join(ruta_principal,"query","insert_torre_configuraciones.sql")
-ruta_sql_torre_ciclo = os.path.join(ruta_principal,"query","insert_ciclo_iffa.sql")
-ruta_sql_torre_receta_ciclo = os.path.join(ruta_principal,"query","insert_recetaxciclo_iffa.sql")
+
 
 
 URL = f"opc.tcp://{opc_ip}:{opc_port}"
@@ -76,37 +75,6 @@ def cargar_archivo_sql(file_path: str):
         logger.error(f"Error al cargar el archivo SQL: {e}")
 
 stop_event = Event()
-
-"""
-
-def proceso_central_opc_ws():
-    from services.opcService import ObtenerNodosOpc
-    from config.ws import ws_manager    # Importar dentro del proceso si es necesario
-
-    client = OPCUAClient(URL)
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-
-    loop.run_until_complete(client.connect())
-    listaDatosOpc = ObtenerNodosOpc(client)
-
-    async def central_opc_render():
-        while True:
-            try:
-                data = await listaDatosOpc.conexionOpcPLC()
-                await ws_manager.send_message("datos", data)
-                await asyncio.sleep(10.0)
-            except Exception as e:
-                logger.error(f"Error en el lector del OPC (lectura datos): {e}")
-
-    try:
-        loop.run_until_complete(central_opc_render())
-    finally:
-        loop.run_until_complete(client.disconnect())
-        loop.close()
-
-
-"""
 
 async def central_opc_render_ws():
         while True:
@@ -254,12 +222,7 @@ async def lifespan(app: FastAPI):
             cargar_archivo_sql(ruta_sql_torre_configuraciones)
             logger.info(f"Cargar registros BDD [TorreConfiguraciones]")
         
-        if session.query(CicloDesmoldeo).count() == 0:
-            cargar_archivo_sql(ruta_sql_torre_ciclo)
-            logger.info(f"Cargar registros BDD [CicloDesmoldeo]")
-        if session.query(RecetarioXCiclo).count() == 0:
-            cargar_archivo_sql(ruta_sql_torre_receta_ciclo)
-            logger.info(f"Cargar registros BDD [RecetarioXCiclo]")
+        
 
     except Exception as e:
         logger.error(f"Error al cargar diccionarios: {e}")
@@ -271,7 +234,6 @@ async def lifespan(app: FastAPI):
         #p1 = Process(target=proceso_central_opc_ws, daemon=True) // OMITIR
         p2 = Process(target=proceso_central_opc_escritura, args=(stop_event,),daemon=True)
         p3 = Process(target=proceso_central_opc_recetas, args=(stop_event,),daemon=True)
-
         p4 = Process(target=proceso_central_opc_alarmas,args=(stop_event,), daemon=True)
 
         #p1.start()
