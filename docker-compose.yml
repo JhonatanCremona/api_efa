@@ -9,7 +9,7 @@ networks:
     ipam:
       config:
         - subnet: 192.168.10.0/24
-          gateway: 192.168.10.110
+          gateway: 192.168.10.60
 
 services:
   db:
