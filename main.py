@@ -50,8 +50,8 @@ ruta_sql_torre_configuraciones = os.path.join(ruta_principal,"query","insert_tor
 ruta_sql_torre_ciclo = os.path.join(ruta_principal,"query","insert_ciclo_iffa.sql")
 ruta_sql_torre_receta_ciclo = os.path.join(ruta_principal,"query","insert_recetaxciclo_iffa.sql")
 
-URL = f"opc.tcp://{local_ip}:4841"
-#URL = f"opc.tcp://{opc_ip}:{opc_port}"
+#URL = f"opc.tcp://{local_ip}:4841"
+URL = f"opc.tcp://{opc_ip}:{opc_port}"
 opc_client = OPCUAClient(URL)
 
 #db.Base.metadata.drop_all(bind=db.engine)

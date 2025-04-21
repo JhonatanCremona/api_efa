@@ -1544,7 +1544,6 @@ INSERT INTO recetarioxciclo (cantidadNivelesFinalizado, pesoPorNivel, id_recetar
 (9, 110, 3, 1543),
 (8, 92, 5, 1544),
 (10, 104, 3, 1545),
-(8, 100, 1, 1546),
 (10, 108, 7, 1547),
 (9, 109, 4, 1548),
 (11, 96, 2, 1549),
