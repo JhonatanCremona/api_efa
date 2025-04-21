@@ -22,6 +22,7 @@ import threading
 import time
 import asyncio
 import json
+import os
 
 logger = logging.getLogger("uvicorn")
 db_session = next(get_db())
@@ -54,6 +55,7 @@ lista_sector_io = {
 PANTALLA_ENCENDIDA = False
 ULTIMO_ESTADO_PANTALLA = None
 
+ciclo_actual = None
 
 ulEstado = None
 tiempoCiclo = "00:00 mm:ss"
@@ -62,6 +64,7 @@ fechaInicioCIclo = 0
 ultimo_estado = None 
 ciclo_guardado = None
 ULTIMO_NIVEL = None
+flag_nivel = 0
 PESO_ACTUAL_DESMOLDADO = None
 PESO_TOTAL_CICLO = 0
 
@@ -84,6 +87,8 @@ tipo_molde = {
     2: "Molde B",
     3: "Molde C"
 }
+
+INDICE_OPC = os.getenv("INDICE_OPC_UA")
 
 def obtenerTiempo(estadoCiclo):
     global tiempoCiclo, fechaInicioCIclo, ulEstado
@@ -125,31 +130,35 @@ class ObtenerNodosOpc:
     async def conexionOpcPLC(self):
         listaRespuesta = []
 
-        global ESTADO_CICLO_DESMOLDEO, LISTA_DATOS_CICLO
-        global LOGS_ALARMA_CICLO
-        global TIEMPO_TRANSCURRIDO
-        global RECETA_ACTUAL, lista_resumen_general, lista_sector_io
+        global ESTADO_CICLO_DESMOLDEO, LISTA_DATOS_CICLO, ciclo_actual
+        global LOGS_ALARMA_CICLO, INDICE_OPC
+        global TIEMPO_TRANSCURRIDO, flag_nivel
+        global RECETA_ACTUAL, lista_resumen_general, lista_sector_io, PESO_TOTAL_CICLO
         global ultimo_estado, ciclo_guardado, ULTIMO_NIVEL, PESO_ACTUAL_DESMOLDADO
 
         try:
-            
-            root_node = await self.conexion_servidor.get_objects_nodos()
-            objects_node = root_node.get_child(["0:Objects"])
-            server_interface_node = objects_node.get_child(["3:ServerInterfaces"])
+            if INDICE_OPC == 4:
+                root_node = await self.conexion_servidor.get_objects_nodos()
+                objects_node = root_node.get_child(["0:Objects"])
+                server_interface_node = objects_node.get_child(["3:ServerInterfaces"])
+            else:
+                root_node = await self.conexion_servidor.get_objects_nodos()
+                objects_node = root_node.get_child(["0:Objects"])
+                server_interface_node = objects_node.get_child(["2:ServerInterfaces"])
 
-            server_interface_1 = server_interface_node.get_child(["4:Server interface_1"])
+            server_interface_1 = server_interface_node.get_child([f"{INDICE_OPC}:Server interface_1"])
             if not server_interface_1:
                 logger.error("No se encontró el nodo 'Server interface_1'.")
                 return None
 
-            datos_opc_a_enviar = server_interface_1.get_child(["4:DATOS OPC A ENVIAR"])
+            datos_opc_a_enviar = server_interface_1.get_child([f"{INDICE_OPC}:DATOS OPC A ENVIAR"])
             
-            estado_equipo = datos_opc_a_enviar.get_child([f"4:Estado_equipo"])
-            e_sdda = datos_opc_a_enviar.get_child([f"4:datosSdda"])
-            e_datosRobot = datos_opc_a_enviar.get_child([f"4:datosRobot"])
-            e_datosGripper = datos_opc_a_enviar.get_child([f"4:datosGripper"])
-            e_desmoldeo = datos_opc_a_enviar.get_child([f"4:desmoldeo"])
-            e_datosSeleccionado = datos_opc_a_enviar.get_child([f"4:datosSeleccionados"])
+            estado_equipo = datos_opc_a_enviar.get_child([f"{INDICE_OPC}:Estado_equipo"])
+            e_sdda = datos_opc_a_enviar.get_child([f"{INDICE_OPC}:datosSdda"])
+            e_datosRobot = datos_opc_a_enviar.get_child([f"{INDICE_OPC}:datosRobot"])
+            e_datosGripper = datos_opc_a_enviar.get_child([f"{INDICE_OPC}:datosGripper"])
+            e_desmoldeo = datos_opc_a_enviar.get_child([f"{INDICE_OPC}:desmoldeo"])
+            e_datosSeleccionado = datos_opc_a_enviar.get_child([f"{INDICE_OPC}:datosSeleccionados"])
 
 
             listaDatos = estado_equipo.get_children()
@@ -160,51 +169,61 @@ class ObtenerNodosOpc:
 
                 if browse_name == "Ciclo_iniciado":
                     ESTADO_CICLO_DESMOLDEO = value
+                    print(f"----------DATO 1 INCIIO DEL CICLO: {ESTADO_CICLO_DESMOLDEO}")
                     if not value:
                         LOGS_ALARMA_CICLO.clear()
 
             print(f"ESTADO CICLO DES {ESTADO_CICLO_DESMOLDEO} - ULTIMO ESTADO: {ultimo_estado}")
+            ULTIMO_NIVEL = e_sdda.get_child([f"{INDICE_OPC}:sdda_nivel_actual"]).get_value()
+            print(f"VALOR NIVEL ACTUAL: {ULTIMO_NIVEL}")
+
+            
+            if flag_nivel != ULTIMO_NIVEL and ESTADO_CICLO_DESMOLDEO == True:
+                
+                #db_session.query(CicloDesmoldeo).filter(CicloDesmoldeo.id == ciclo_actual.id).first()
+                receta_proximo = db_session.query(Recetario).filter(Recetario.id == e_datosSeleccionado.get_child([f"{INDICE_OPC}:N_receta_actual"]).get_value()).first()
+                PESO_FILA_PRODUCTO = RECETA_ACTUAL.get("PESO DEL PRODUCTO", 0) * RECETA_ACTUAL.get("PRODUCTOS POR MOLDE", 0) 
+                PESO_ACTUAL_DESMOLDADO = RECETA_ACTUAL.get("PESO DEL PRODUCTO", 0) * RECETA_ACTUAL.get("PRODUCTOS POR MOLDE", 0) * e_sdda.get_child([f"{INDICE_OPC}:sdda_nivel_actual"]).get_value()
+                PESO_TOTAL_CICLO = PESO_ACTUAL_DESMOLDADO
+                flag_nivel = ULTIMO_NIVEL
+
+                lista_resumen_general["idRecetaActual"] = e_datosSeleccionado.get_child([f"{INDICE_OPC}:N_receta_actual"]).get_value()
+                lista_resumen_general["idRecetaProxima"] = receta_proximo.codigoProducto
+                lista_resumen_general["CodigoProducto"] = RECETA_ACTUAL.get("NOMBRE")
+                lista_resumen_general["TotalNiveles"] = RECETA_ACTUAL.get("CANTIDAD NIVELES")
+                lista_resumen_general["TipoMolde"] = tipo_molde.get(RECETA_ACTUAL.get("TIPO DE MOLDE"))
+                        
+                lista_resumen_general["desmoldeoBanda"] = banda_desmolde.get(e_desmoldeo.get_child([f"{INDICE_OPC}:desmoldeobanda"]).get_value(), error)
+                lista_resumen_general["PesoProducto"] = round(PESO_FILA_PRODUCTO, 2)
+                        
+                lista_resumen_general["sdda_nivel_actual"] = ULTIMO_NIVEL
+                lista_resumen_general["NGripperActual"] = e_datosGripper.get_child([f"{INDICE_OPC}:NGripperActual"]).get_value()
+                lista_resumen_general["PesoActualDesmoldado"] = round(PESO_TOTAL_CICLO,2)
+                lista_resumen_general["TorreActual"] = e_datosSeleccionado.get_child([f"{INDICE_OPC}:N_torre_actual"]).get_value()
+
+
 
             if ESTADO_CICLO_DESMOLDEO != ultimo_estado:
                 if ESTADO_CICLO_DESMOLDEO == True:
-                    
-                    indiceRecetaActual = e_datosSeleccionado.get_child([f"4:N_receta_actual"]).get_value()
-                    e_receta_actual = datos_opc_a_enviar.get_child([f"4:RECETARIO"]).get_child([f"4:[{indiceRecetaActual}]"])
+                    indiceRecetaActual = e_datosSeleccionado.get_child([f"{INDICE_OPC}:N_receta_actual"]).get_value()
+                    e_receta_actual = datos_opc_a_enviar.get_child([f"{INDICE_OPC}:RECETARIO"]).get_child([f"{INDICE_OPC}:[{indiceRecetaActual}]"])
                     childremRecetaA = e_receta_actual.get_children()
                     for child in childremRecetaA:
                         RECETA_ACTUAL[child.get_browse_name().Name] = child.get_value()
-                    print(f"Receta Actual: {RECETA_ACTUAL.get("PESO DEL PRODUCTO")}")
                     
-                    PESO_ACTUAL_DESMOLDADO = RECETA_ACTUAL.get("PESO DEL PRODUCTO", 0) * RECETA_ACTUAL.get("PRODUCTOS POR MOLDE", 0) * e_sdda.get_child([f"4:sdda_nivel_actual"]).get_value()
-                    PESO_TOTAL_CICLO += PESO_ACTUAL_DESMOLDADO
-                    ULTIMO_NIVEL = e_sdda.get_child([f"4:sdda_nivel_actual"]).get_value()
+                    #ULTIMO_NIVEL = e_sdda.get_child([f"{INDICE_OPC}:sdda_nivel_actual"]).get_value()
 
                     ciclo_desmoldeo = CicloDesmoldeo(
                             fecha_inicio= datetime.now(),
                             fecha_fin=None,
-                            estadoMaquina= estado_maquina.get(estado_equipo.get_child([f"4:Estado_actual"]).get_value(), error),
-                            bandaDesmolde= banda_desmolde.get(e_desmoldeo.get_child([f"4:desmoldeobanda"]).get_value(), error),
+                            estadoMaquina= estado_maquina.get(estado_equipo.get_child([f"{INDICE_OPC}:Estado_actual"]).get_value(), error),
+                            bandaDesmolde= banda_desmolde.get(e_desmoldeo.get_child([f"{INDICE_OPC}:desmoldeobanda"]).get_value(), error),
                             lote="001",
                             tiempoDesmolde=0.0,
-                            pesoDesmoldado = 0,
+                            pesoDesmoldado = PESO_ACTUAL_DESMOLDADO,
                             id_etapa=1,
-                            id_torre= 1 if e_datosSeleccionado.get_child([f"4:N_torre_actual"]).get_value() == 0 else e_datosSeleccionado.get_child([f"4:N_torre_actual"]).get_value()
+                            id_torre= 1 if e_datosSeleccionado.get_child([f"{INDICE_OPC}:N_torre_actual"]).get_value() == 0 else e_datosSeleccionado.get_child([f"{INDICE_OPC}:N_torre_actual"]).get_value()
                         )
-
-                    lista_resumen_general["idRecetaActual"] = e_datosSeleccionado.get_child([f"N_receta_actual"]).get_value()
-                    lista_resumen_general["idRecetaProxima"] = e_datosSeleccionado.get_child([f"N_receta_proxima"]).get_value()
-                    lista_resumen_general["CodigoProducto"] = RECETA_ACTUAL.get("NOMBRE")
-                    lista_resumen_general["TotalNiveles"] = RECETA_ACTUAL.get("CANTIDAD NIVELES")
-                    lista_resumen_general["TipoMolde"] = tipo_molde.get(RECETA_ACTUAL.get("TIPO DE MOLDE"))
-                    lista_resumen_general["estadoMaquina"] = estado_maquina.get(estado_equipo.get_child([f"4:Estado_actual"]).get_value(), error)
-                    lista_resumen_general["desmoldeoBanda"] = banda_desmolde.get(e_desmoldeo.get_child([f"4:desmoldeobanda"]).get_value(), error)
-                    lista_resumen_general["PesoProducto"] = PESO_ACTUAL_DESMOLDADO
-                    lista_resumen_general["TiempoTranscurrido"] = TIEMPO_TRANSCURRIDO
-                    lista_resumen_general["sdda_nivel_actual"] = ULTIMO_NIVEL
-                    lista_resumen_general["NGripperActual"] = e_datosGripper.get_child([f"NGripperActual"]).get_value()
-                    lista_resumen_general["PesoActualDesmoldado"] = PESO_TOTAL_CICLO
-                    lista_resumen_general["TorreActual"] = e_datosSeleccionado.get_child([f"N_torre_actual"]).get_value()
-
                     try:
                         db_session.add(ciclo_desmoldeo)
                         db_session.commit()
@@ -215,14 +234,27 @@ class ObtenerNodosOpc:
                         db_session.rollback()
                         logger.error(f"ERRO AL GUARDAR CICLO-DESM EN BDD: {e}")
 
-
-                    if ESTADO_CICLO_DESMOLDEO == False:
-                        try:
+                if ESTADO_CICLO_DESMOLDEO == False:
+                    lista_resumen_general = {
+                        "idRecetaActual": 0,
+                        "idRecetaProxima": 0,
+                        "CodigoProducto": "",
+                        "TotalNiveles": 0,
+                        "TipoMolde": "",
+                        "desmoldeoBanda": "",
+                        "PesoProducto": 0.0,
+                        "sdda_nivel_actual": 0,
+                        "NGripperActual": 0,
+                        "PesoActualDesmoldado": 0.0,
+                        "TorreActual": 0
+                    }
+                    try:
+                            print(f"VALOR DE NIVEL ACTUAL DEL SSDA: {ULTIMO_NIVEL}")
                             ciclo_actualizar = db_session.query(CicloDesmoldeo).filter(CicloDesmoldeo.id == ciclo_actual.id).first()
                             db_recetaXCiclo = RecetarioXCiclo(
                                 cantidadNivelesFinalizado = ULTIMO_NIVEL,
                                 pesoPorNivel = PESO_ACTUAL_DESMOLDADO,
-                                id_recetario = e_datosSeleccionado.get_child([f"4:N_receta_actual"]).get_value() if e_datosSeleccionado.get_child([f"4:N_receta_actual"]).get_value() <=5 else 2,
+                                id_recetario = e_datosSeleccionado.get_child([f"{INDICE_OPC}:N_receta_actual"]).get_value() if e_datosSeleccionado.get_child([f"{INDICE_OPC}:N_receta_actual"]).get_value() <=5 else 2,
                                 id_ciclo_desmoldeo = ciclo_actualizar.id,
                             )
                             db_session.add(db_recetaXCiclo)
@@ -245,20 +277,22 @@ class ObtenerNodosOpc:
                                 PESO_TOTAL_CICLO = 0
                                 ULTIMO_NIVEL= 0;
 
-                        except Exception as e:
-                            logger.error(f"SURGIO UN ERROR AL GUARDAR UN REGISTRO CICLOXRECETA {e}")
+                    except Exception as e:
+                        logger.error(f"SURGIO UN ERROR AL GUARDAR UN REGISTRO CICLOXRECETA {e}")
                 
             ultimo_estado = ESTADO_CICLO_DESMOLDEO
             TIEMPO_TRANSCURRIDO = obtenerTiempo(ESTADO_CICLO_DESMOLDEO)
+            lista_resumen_general["estadoMaquina"] = estado_maquina.get(estado_equipo.get_child([f"{INDICE_OPC}:Estado_actual"]).get_value(), error)
+            lista_resumen_general["TiempoTranscurrido"] = TIEMPO_TRANSCURRIDO
             listaRespuesta.append(lista_resumen_general)
 
-            lista_sector_io["banda_desmoldeo"] = banda_desmolde.get(e_desmoldeo.get_child([f"4:desmoldeobanda"]).get_value(), error)
+            lista_sector_io["banda_desmoldeo"] = banda_desmolde.get(e_desmoldeo.get_child([f"{INDICE_OPC}:desmoldeobanda"]).get_value(), error)
             lista_sector_io["estado_ciclo"] = ESTADO_CICLO_DESMOLDEO
 
             listaCelda, listaDatosGeneral = await asyncio.gather(
                 self.obtenerDatosCelda(
-                    estado_equipo.get_child(f"4:Estado_actual").get_value(), 
-                    e_sdda.get_child(f"4:sdda_nivel_actual").get_value()
+                    estado_equipo.get_child(f"{INDICE_OPC}:Estado_actual").get_value(), 
+                    e_sdda.get_child(f"{INDICE_OPC}:sdda_nivel_actual").get_value()
                 ),
                 self.obtenerListaGeneral(e_datosRobot, e_datosGripper, e_desmoldeo, e_datosSeleccionado, e_sdda, lista_sector_io)
             )
@@ -282,7 +316,7 @@ class ObtenerNodosOpc:
         
 
     async def actualizarRecetas(self):
-        global PANTALLA_ENCENDIDA, ULTIMO_ESTADO_PANTALLA
+        global PANTALLA_ENCENDIDA, ULTIMO_ESTADO_PANTALLA, INDICE_OPC
         lista_recetas = {}
         
         try:
@@ -290,18 +324,15 @@ class ObtenerNodosOpc:
             objects_node = root_node.get_child(["0:Objects"])
             server_interface_node = objects_node.get_child(["3:ServerInterfaces"])
 
-            server_interface_1 = server_interface_node.get_child(["4:Server interface_1"])
+            server_interface_1 = server_interface_node.get_child([f"{INDICE_OPC}:Server interface_1"])
             if not server_interface_1:
                 logger.error("No se encontró el nodo 'Server interface_1'.")
                 return None
 
-            datos_opc_a_enviar = server_interface_1.get_child(["4:DATOS OPC A ENVIAR"])
-            e_datosSeleccionado = datos_opc_a_enviar.get_child([f"4:datosSeleccionados"])
-            e_listaRecetario = datos_opc_a_enviar.get_child([f"4:RECETARIO"])
-
-            logger.info("LEEEEEEEEE")
-
-            pantalla_receta = e_datosSeleccionado.get_child([f"4:pantalla_receta"])
+            datos_opc_a_enviar = server_interface_1.get_child([f"{INDICE_OPC}:DATOS OPC A ENVIAR"])
+            e_datosSeleccionado = datos_opc_a_enviar.get_child([f"{INDICE_OPC}:datosSeleccionados"])
+            e_listaRecetario = datos_opc_a_enviar.get_child([f"{INDICE_OPC}:RECETARIO"])
+            pantalla_receta = e_datosSeleccionado.get_child([f"{INDICE_OPC}:pantalla_receta"])
             PANTALLA_ENCENDIDA = pantalla_receta.get_value()
             logger.error(f"PANTALLA OPC: {PANTALLA_ENCENDIDA}")
             
@@ -335,11 +366,11 @@ class ObtenerNodosOpc:
         resultado = {}
         global TIEMPO_TRANSCURRIDO
         global ESTADO_CICLO_DESMOLDEO
-        global RECETA_ACTUAL
+        global RECETA_ACTUAL, INDICE_OPC
         try:
 
             resultado["Nombre actual"] = RECETA_ACTUAL.get("NOMBRE")
-            resultado["PesoProducto"] = RECETA_ACTUAL.get("PESO DEL PRODUCTO")
+            resultado["PesoProducto"] = round(RECETA_ACTUAL.get("PESO DEL PRODUCTO") * RECETA_ACTUAL.get("PRODUCTOS POR MOLDE", 0), 2)
             resultado["TotalNiveles"] = RECETA_ACTUAL.get("CANTIDAD NIVELES")
 
             resultado["sdda_nivel_actual"] = sddaNivelActual
@@ -347,12 +378,10 @@ class ObtenerNodosOpc:
             resultado["iniciado"] = ESTADO_CICLO_DESMOLDEO
 
             # Evitar TypeError en caso de valores None
-            peso_producto = resultado.get("PesoProducto", 0)
+            peso_producto = round(resultado.get("PesoProducto", 0),2)
             nivel_actual = resultado.get("sdda_nivel_actual", 0)
 
-            print(f"VALOR DE PESO PRODUCTO: {resultado.get("PesoProducto")}")
-
-            resultado["PesoActualDesmoldado"] = (peso_producto or 0) * nivel_actual
+            resultado["PesoActualDesmoldado"] = round((peso_producto or 0) * nivel_actual, 2)
             resultado["TiempoTranscurrido"] = TIEMPO_TRANSCURRIDO
 
             celda = {
@@ -367,7 +396,7 @@ class ObtenerNodosOpc:
             return None
         
     async def obtenerListaGeneral(self, datosRobotNODO, datosGripperNODO, desmoldeoNODO, datosSeleccionadoNODO, datosSddaNODO, lista_sector_io):
-        global RECETA_ACTUAL
+        global RECETA_ACTUAL, INDICE_OPC
         datosGripper = {}
         datosRobot = {}
         datosDesmoldeo = {}
@@ -410,6 +439,7 @@ class ObtenerNodosOpc:
             return None
 
     async def ConexionPLCRecetas(self):
+        global INDICE_OPC
         lista_datos_seleccionados = {}
         try:
             db: Session = next(get_db())
@@ -417,22 +447,22 @@ class ObtenerNodosOpc:
             objects_node = root_node.get_child(["0:Objects"])
             server_interface_node = objects_node.get_child(["3:ServerInterfaces"])
 
-            server_interface_1 = server_interface_node.get_child(["4:Server interface_1"])
+            server_interface_1 = server_interface_node.get_child([f"{INDICE_OPC}:Server interface_1"])
             if not server_interface_1:
                 logger.error("No se encontró el nodo 'Server interface_1'.")
                 return None
 
-            datos_opc_a_enviar = server_interface_1.get_child(["4:DATOS OPC A ENVIAR"])
-            e_datosSeleccionado = datos_opc_a_enviar.get_child([f"4:datosSeleccionados"])
+            datos_opc_a_enviar = server_interface_1.get_child([f"{INDICE_OPC}:DATOS OPC A ENVIAR"])
+            e_datosSeleccionado = datos_opc_a_enviar.get_child([f"{INDICE_OPC}:datosSeleccionados"])
 
-            e_datosTorre = datos_opc_a_enviar.get_child(["4:datosTorre"])
-            nivelesHN_node = datos_opc_a_enviar.get_child(["4:DatosNivelesHN"])
-            nivelesuHN_node = datos_opc_a_enviar.get_child(["4:DatosNivelesuHN"])
-            nivelesChG_node = datos_opc_a_enviar.get_child(["4:DatosNivelesChG"])
-            nivelesChB_node = datos_opc_a_enviar.get_child(["4:DatosNivelesChB"])
-            nivelesFA_node = datos_opc_a_enviar.get_child(["4:DatosNivelesFA"])
+            e_datosTorre = datos_opc_a_enviar.get_child([f"{INDICE_OPC}:datosTorre"])
+            nivelesHN_node = datos_opc_a_enviar.get_child([f"{INDICE_OPC}:DatosNivelesHN"])
+            nivelesuHN_node = datos_opc_a_enviar.get_child([f"{INDICE_OPC}:DatosNivelesuHN"])
+            nivelesChG_node = datos_opc_a_enviar.get_child([f"{INDICE_OPC}:DatosNivelesChG"])
+            nivelesChB_node = datos_opc_a_enviar.get_child([f"{INDICE_OPC}:DatosNivelesChB"])
+            nivelesFA_node = datos_opc_a_enviar.get_child([f"{INDICE_OPC}:DatosNivelesFA"])
 
-            Comprobacion_datos_node = datos_opc_a_enviar.get_child(["4:Comprobacion_datos"])
+            Comprobacion_datos_node = datos_opc_a_enviar.get_child([f"{INDICE_OPC}:Comprobacion_datos"])
 
             children = e_datosSeleccionado.get_children()
             for child in children:
@@ -562,6 +592,7 @@ class ObtenerNodosOpc:
             return {"mensaje": f"Error en la función leerDatosReceta: {e}"}
 
     async def escribirCorreccionesHN(self, correccionesHN, nivelesHN_node):
+        global INDICE_OPC
         try:
             if not nivelesHN_node:
                 logger.error("No se encontró el nodo 'DatosNivelesHN'.")
@@ -569,7 +600,7 @@ class ObtenerNodosOpc:
 
             for i, valor in enumerate(correccionesHN):
                 if valor is not None:  # Solo escribir valores que no sean None
-                    nodo_correccion = nivelesHN_node.get_child([f"4:Correccion_hN{i+1}"])
+                    nodo_correccion = nivelesHN_node.get_child([f"{INDICE_OPC}:Correccion_hN{i+1}"])
                     if nodo_correccion:
                         data_value = ua.DataValue(ua.Variant(valor, ua.VariantType.Int16))
                         nodo_correccion.set_value(data_value)
@@ -584,6 +615,7 @@ class ObtenerNodosOpc:
             return False
 
     async def escribirCorreccionesuHN(self, correccionesuHN, nivelesuHN_node):
+        global INDICE_OPC
         try:
             if not nivelesuHN_node:
                 logger.error("No se encontró el nodo 'DatosNivelesuHN'.")
@@ -592,7 +624,7 @@ class ObtenerNodosOpc:
             # Iterar sobre los valores de correccionesHN y escribir en los nodos OPC
             for i, valor in enumerate(correccionesuHN):
                 if valor is not None:  # Solo escribir valores que no sean None
-                    nodo_correccion = nivelesuHN_node.get_child([f"4:ultimo_hNivel{i+1}"])
+                    nodo_correccion = nivelesuHN_node.get_child([f"{INDICE_OPC}:ultimo_hNivel{i+1}"])
                     if nodo_correccion:
                         data_value = ua.DataValue(ua.Variant(valor, ua.VariantType.Int16))
                         nodo_correccion.set_value(data_value)
@@ -607,6 +639,7 @@ class ObtenerNodosOpc:
             return False
 
     async def escribirCorreccionesChG(self, correccionesChG, nivelesChG_node):
+        global INDICE_OPC
         try:
             if not nivelesChG_node:
                 logger.error("No se encontró el nodo 'DatosNivelesChG'.")
@@ -614,7 +647,7 @@ class ObtenerNodosOpc:
 
             for i, valor in enumerate(correccionesChG):
                 if valor is not None:  # Solo escribir valores que no sean None
-                    nodo_correccion = nivelesChG_node.get_child([f"4:Correccion_hguardado_N{i+1}"])
+                    nodo_correccion = nivelesChG_node.get_child([f"{INDICE_OPC}:Correccion_hguardado_N{i+1}"])
                     if nodo_correccion:
                         data_value = ua.DataValue(ua.Variant(valor, ua.VariantType.Int16))
                         nodo_correccion.set_value(data_value)
@@ -629,6 +662,7 @@ class ObtenerNodosOpc:
             return False
 
     async def escribirCorreccionesChB(self, correccionesChB, nivelesChB_node):
+        global INDICE_OPC
         try:
             if not nivelesChB_node:
                 logger.error("No se encontró el nodo 'DatosNivelesChB'.")
@@ -636,7 +670,7 @@ class ObtenerNodosOpc:
 
             for i, valor in enumerate(correccionesChB):
                 if valor is not None:  # Solo escribir valores que no sean None
-                    nodo_correccion = nivelesChB_node.get_child([f"4:Correccion_hbusqueda_N{i+1}"])
+                    nodo_correccion = nivelesChB_node.get_child([f"{INDICE_OPC}:Correccion_hbusqueda_N{i+1}"])
                     if nodo_correccion:
                         data_value = ua.DataValue(ua.Variant(valor, ua.VariantType.Int16))
                         nodo_correccion.set_value(data_value)
@@ -651,6 +685,7 @@ class ObtenerNodosOpc:
             return False
 
     async def escribirCorreccionesFA(self, correccionesFA, nivelesFA_node):
+        global INDICE_OPC
         try:
             if not nivelesFA_node:
                 logger.error("No se encontró el nodo 'DatosNivelesFA'.")
@@ -658,7 +693,7 @@ class ObtenerNodosOpc:
 
             for i, valor in enumerate(correccionesFA):
                 if valor is not None:  # Solo escribir valores que no sean None
-                    nodo_correccion = nivelesFA_node.get_child([f"4:FallasN{i+1}"])
+                    nodo_correccion = nivelesFA_node.get_child([f"{INDICE_OPC}:FallasN{i+1}"])
                     if nodo_correccion:
                         data_value = ua.DataValue(ua.Variant(valor, ua.VariantType.Int16))
                         nodo_correccion.set_value(data_value)
@@ -673,6 +708,7 @@ class ObtenerNodosOpc:
             return False
 
     async def escribirDatosTorreOpc(self, datos_torre, e_datosTorre):
+        global INDICE_OPC
         if not e_datosTorre:
             logger.error("No se encontró el nodo 'datosTorre'.")
             return False
@@ -689,7 +725,7 @@ class ObtenerNodosOpc:
             try:
                 valor = datos_torre.get(db_field, None)
                 if valor is not None:
-                    nodo = e_datosTorre.get_child([f"4:{opc_node}"])
+                    nodo = e_datosTorre.get_child([f"{INDICE_OPC}:{opc_node}"])
                     if nodo is not None:
                         if isinstance(valor, str):
                             data_value = ua.DataValue(ua.Variant(valor, ua.VariantType.String))
@@ -710,15 +746,15 @@ class ObtenerNodosOpc:
         return True
     
     async def confirmar_envio_correcciones(self, torre_proxima, receta_proxima, Comprobacion_datos_node):
-
+        global INDICE_OPC
         try:
             if not Comprobacion_datos_node:
                 logger.error("No se encontró el nodo 'Comprobacion_datos'.")
                 return False
 
-            confirmacion_envio = Comprobacion_datos_node.get_child(["4:confirmacion_envio"])
-            torre_obtenido = Comprobacion_datos_node.get_child(["4:torre_obtenido"])
-            receta_obtenido = Comprobacion_datos_node.get_child(["4:receta_obtenido"])
+            confirmacion_envio = Comprobacion_datos_node.get_child([f"{INDICE_OPC}:confirmacion_envio"])
+            torre_obtenido = Comprobacion_datos_node.get_child([f"{INDICE_OPC}:torre_obtenido"])
+            receta_obtenido = Comprobacion_datos_node.get_child([f"{INDICE_OPC}:receta_obtenido"])
 
             confirmacion_envio.set_value(ua.DataValue(ua.Variant(1, ua.VariantType.Boolean)))
             torre_obtenido.set_value(ua.DataValue(ua.Variant(torre_proxima, ua.VariantType.Int16)))
@@ -740,25 +776,25 @@ class ObtenerNodosOpc:
             return False
         
     async def gestorContraseñas(self):
-        global estado_anterior_id_contra
+        global estado_anterior_id_contra, INDICE_OPC
         try:
             root_node = await self.conexion_servidor.get_objects_nodos()
             objects_node = root_node.get_child(["0:Objects"])
             server_interface_node = objects_node.get_child(["3:ServerInterfaces"])
 
-            server_interface_1 = server_interface_node.get_child(["4:Server interface_1"])
+            server_interface_1 = server_interface_node.get_child([f"{INDICE_OPC}:Server interface_1"])
             if not server_interface_1:
                 logger.error("No se encontró 'Server interface_1'.")
                 return False
 
-            datos_opc_a_enviar = server_interface_1.get_child(["4:DATOS OPC A ENVIAR"])
-            gestorContraseñas_node = datos_opc_a_enviar.get_child(["4:Gestor_contraseña"])
+            datos_opc_a_enviar = server_interface_1.get_child([f"{INDICE_OPC}:DATOS OPC A ENVIAR"])
+            gestorContraseñas_node = datos_opc_a_enviar.get_child([f"{INDICE_OPC}:Gestor_contraseña"])
 
             if not gestorContraseñas_node:
                 print("No se encontró el nodo 'Gestor_contraseña'.")
                 return False
 
-            id_contra_node = gestorContraseñas_node.get_child(["4:id_contra"])
+            id_contra_node = gestorContraseñas_node.get_child([f"{INDICE_OPC}:id_contra"])
             if not id_contra_node:
                 print("No se encontró el nodo 'id_contra'.")
                 return False
@@ -768,7 +804,7 @@ class ObtenerNodosOpc:
                 print("El nodo 'id_contra' no tiene un valor válido.")
                 return False
 
-            fecha_inicio_node = gestorContraseñas_node.get_child(["4:fecha_inicio"])
+            fecha_inicio_node = gestorContraseñas_node.get_child([f"{INDICE_OPC}:fecha_inicio"])
             if not fecha_inicio_node:
                 print("No se encontró el nodo 'fecha_inicio'.")
                 return False
@@ -806,7 +842,7 @@ class ObtenerNodosOpc:
                     db.commit()
 
                 if contras_plc and contras_plc.fecha_bloqueo == fecha_actual.date():
-                    actualizar_id_node = gestorContraseñas_node.get_child(["4:actualizar_id"])
+                    actualizar_id_node = gestorContraseñas_node.get_child([f"{INDICE_OPC}:actualizar_id"])
                     if not actualizar_id_node:
                         print("No se encontró el nodo 'actualizar_id'.")
                         return False
@@ -820,7 +856,7 @@ class ObtenerNodosOpc:
                         return False
 
                 if contras_plc:
-                    contra_node = gestorContraseñas_node.get_child(["4:contra"])
+                    contra_node = gestorContraseñas_node.get_child([f"{INDICE_OPC}:contra"])
                     if not contra_node:
                         print("No se encontró el nodo 'contra'.")
                         return False

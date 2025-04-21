@@ -15,18 +15,20 @@ from models.contrasPlc import ContrasPLC
 from models.recetario import Recetario
 
 import logging
+import os
 
 PANTALLA_ENCENDIDA = False
 ULTIMO_ESTADO_PANTALLA = None
 
 logger = logging.getLogger("uvicorn")
+INDICE_OPC = os.getenv("INDICE_OPC_UA")
 db_session = next(get_db())
 class OpcRecetas:
     def __init__(self, conexion_servidor):
         self.conexion_servidor = conexion_servidor
 
     async def actualizarRecetas(self):
-        global PANTALLA_ENCENDIDA, ULTIMO_ESTADO_PANTALLA
+        global PANTALLA_ENCENDIDA, ULTIMO_ESTADO_PANTALLA, INDICE_OPC
         lista_recetas = {}
         
         try:
@@ -34,16 +36,16 @@ class OpcRecetas:
             objects_node = root_node.get_child(["0:Objects"])
             server_interface_node = objects_node.get_child(["3:ServerInterfaces"])
 
-            server_interface_1 = server_interface_node.get_child(["4:Server interface_1"])
+            server_interface_1 = server_interface_node.get_child([f"{INDICE_OPC}:Server interface_1"])
             if not server_interface_1:
                 logger.error("No se encontró el nodo 'Server interface_1'.")
                 return None
 
-            datos_opc_a_enviar = server_interface_1.get_child(["4:DATOS OPC A ENVIAR"])
-            e_datosSeleccionado = datos_opc_a_enviar.get_child([f"4:datosSeleccionados"])
-            e_listaRecetario = datos_opc_a_enviar.get_child([f"4:RECETARIO"])
+            datos_opc_a_enviar = server_interface_1.get_child([f"{INDICE_OPC}:DATOS OPC A ENVIAR"])
+            e_datosSeleccionado = datos_opc_a_enviar.get_child([f"{INDICE_OPC}:datosSeleccionados"])
+            e_listaRecetario = datos_opc_a_enviar.get_child([f"{INDICE_OPC}:RECETARIO"])
 
-            pantalla_receta = e_datosSeleccionado.get_child([f"4:pantalla_receta"])
+            pantalla_receta = e_datosSeleccionado.get_child([f"{INDICE_OPC}:pantalla_receta"])
             PANTALLA_ENCENDIDA = pantalla_receta.get_value()
             logger.info(f"PANTALLA OPC: {PANTALLA_ENCENDIDA}")
             
