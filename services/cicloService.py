@@ -79,7 +79,7 @@ def generarDocumentoXLMSProductividad(db, fecha_inicio:date, fecha_fin:date):
         db.query(CicloDesmoldeo, RecetarioXCiclo, Recetario, Torre)
         .join(RecetarioXCiclo, CicloDesmoldeo.id == RecetarioXCiclo.id_ciclo_desmoldeo)
         .join(Recetario, RecetarioXCiclo.id_recetario == Recetario.id)
-        .join(Torre, CicloDesmoldeo.id_torre == Torre.id)
+        .join(Torre, CicloDesmoldeo.id_torre == Torre.NTorre)
         .filter(CicloDesmoldeo.fecha_fin.between(fecha_inicio, fecha_fin))
         .all()
     )
@@ -121,6 +121,7 @@ def generarDocumentoXLMSProductividad(db, fecha_inicio:date, fecha_fin:date):
 
     
     def sumarDatosCiclos(id_recetario, recetaXCiclo, torre_dic, ciclo_dic):
+        
         return [
             [
                 ciclo_dic[recetaCiclo.id_ciclo_desmoldeo].pesoDesmoldado, 
@@ -139,9 +140,10 @@ def generarDocumentoXLMSProductividad(db, fecha_inicio:date, fecha_fin:date):
             resultadoCiclo = sumarDatosCiclos(
                 receta.id,
                 tablaBaseDatos,
-                {r.id: r for _, _, _, r in tablaBaseDatos},
+                {r.NTorre: r for _, _, _, r in tablaBaseDatos},
                 {c.id: c for c, _, _, _ in tablaBaseDatos}
             )
+
             print(f"Resultado: Print {resultadoCiclo}")
 
             # Inicializa una fila con los datos básicos
