@@ -370,7 +370,11 @@ class ObtenerNodosOpc:
         try:
 
             resultado["Nombre actual"] = RECETA_ACTUAL.get("NOMBRE")
-            resultado["PesoProducto"] = round(RECETA_ACTUAL.get("PESO DEL PRODUCTO") * RECETA_ACTUAL.get("PRODUCTOS POR MOLDE", 0), 2)
+
+            peso_producto = RECETA_ACTUAL.get("PESO DEL PRODUCTO") or 0
+            productos_por_molde = RECETA_ACTUAL.get("PRODUCTOS POR MOLDE") or 0
+            resultado["PesoProducto"] = round(peso_producto * productos_por_molde, 2)
+            
             resultado["TotalNiveles"] = RECETA_ACTUAL.get("CANTIDAD NIVELES")
 
             resultado["sdda_nivel_actual"] = sddaNivelActual
