@@ -226,12 +226,6 @@ async def lifespan(app: FastAPI):
             cargar_archivo_sql(ruta_sql_torre_configuraciones)
             logger.info(f"Cargar registros BDD [TorreConfiguraciones]")
         
-        if session.query(CicloDesmoldeo).count() == 0:
-            cargar_archivo_sql(ruta_sql_torre_ciclo)
-            logger.info(f"Cargar registros BDD [CicloDesmoldeo]")
-        if session.query(RecetarioXCiclo).count() == 0:
-            cargar_archivo_sql(ruta_sql_torre_receta_ciclo)
-            logger.info(f"Cargar registros BDD [RecetarioXCiclo]")
         
 
     except Exception as e:
@@ -248,9 +242,9 @@ async def lifespan(app: FastAPI):
 
         #p1.start()
         
-        #p2.start()
-        #p3.start()
-        #p4.start()
+        p2.start()
+        p3.start()
+        p4.start()
         yield
     finally:
         #p1.terminate()
@@ -287,6 +281,7 @@ app.include_router(usuarios.RouterUsers)
 app.include_router(graficosHistorico.RoutersGraficosH)
 app.include_router(productividad.RouterProductividad)
 app.include_router(configuracionesHTTP.RouterConfiguraciones)
+
 @app.websocket("/ws/{id}")
 async def resumen_desmoldeo(websocket: WebSocket, id: str):
     await websocket.accept()

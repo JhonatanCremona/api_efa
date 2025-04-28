@@ -137,7 +137,7 @@ class ObtenerNodosOpc:
         global ultimo_estado, ciclo_guardado, ULTIMO_NIVEL, PESO_ACTUAL_DESMOLDADO
 
         try:
-            if INDICE_OPC == 4:
+            if INDICE_OPC != 2:
                 root_node = await self.conexion_servidor.get_objects_nodos()
                 objects_node = root_node.get_child(["0:Objects"])
                 server_interface_node = objects_node.get_child(["3:ServerInterfaces"])
