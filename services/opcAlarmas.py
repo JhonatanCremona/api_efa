@@ -1,22 +1,28 @@
 
 from sqlalchemy.orm import Session
 from datetime import datetime
-
+from threading import Lock
 from config.db import get_db
+
 
 from models.alarma import Alarma
 from models.cicloDesmoldeo import CicloDesmoldeo
 from models.alarmaHistorico import HistoricoAlarma
-import logging
+
 import re
 import json
 import os
+import logging
+import threading
+import asyncio
 
 logger = logging.getLogger("uvicorn")
-
 LISTA_COMPLETA_ALARMAS = {}
 LISTA_FRONT_ALARMAS = []
 INDICE_OPC = os.getenv("INDICE_OPC_UA")
+
+
+
 
 class OpcAlarmas:
     def __init__(self,conexion_servidor):
@@ -41,6 +47,7 @@ class OpcAlarmas:
             datos_opc_a_enviar = server_interface_1.get_child([f"{INDICE_OPC}:DATOS OPC A ENVIAR"])
             
             listaGeneralAlarmas = datos_opc_a_enviar.get_child([f"{INDICE_OPC}:Alarmas"])
+            
 
             for child in listaGeneralAlarmas.get_children():
                 logger.debug(f"[FOR-ALARMAS] Evaluando item en grupo '{grupo_nombre}'")
@@ -49,6 +56,7 @@ class OpcAlarmas:
                 
                 tipo_alarma = {}
                 item_alarma = {}
+
 
                 for item in child.get_children():
                     
@@ -118,8 +126,8 @@ class OpcAlarmas:
                         dict_unico_alarmas[alarma_existente.id] = item_alarma
                         
 
-                    tipo_alarma[item.get_browse_name().Name] = item.get_value()
-                LISTA_COMPLETA_ALARMAS[child.get_browse_name().Name] = tipo_alarma
+            #        tipo_alarma[item.get_browse_name().Name] = item.get_value()
+            #    LISTA_COMPLETA_ALARMAS[child.get_browse_name().Name] = tipo_alarma
             
             with open("alarmas.json", "w", encoding="utf-8") as archivo:
                 json.dump(dict_unico_alarmas, archivo, indent=4, ensure_ascii=False)
@@ -128,6 +136,46 @@ class OpcAlarmas:
         except Exception as e:
             logger.error(f"No se pudo leer los datos lista_alarmas {e}")
             await self.conexion_servidor.handle_reconnect()
+
+    def leerAlarmasCeldaDesmoldeo(self):
+        global INDICE_OPC
+        dict_unico_alarmas = {}
+        lock_dict = Lock()
+        try:
+            root_node = asyncio.run(self.conexion_servidor.get_objects_nodos())  # Llamada fuera del hilo async
+            objects_node = root_node.get_child(["0:Objects"])
+            server_interface_node = objects_node.get_child(["3:ServerInterfaces"])
+            server_interface_1 = server_interface_node.get_child([f"{INDICE_OPC}:Server interface_1"])
+            datos_opc_a_enviar = server_interface_1.get_child([f"{INDICE_OPC}:DATOS OPC A ENVIAR"])
+            listaGeneralAlarmas = datos_opc_a_enviar.get_child([f"{INDICE_OPC}:Alarmas"])
+            
+            tipos_alarmas = [
+                "SDDA", "FALLAS CILINDROS", "POSICIONADOR", "GENERALES",
+                "SERVOS", "INICIO DE CICLO", "CANCELACION", "PULSADORES"
+            ]
+
+            hilos = []
+
+            for tipo in tipos_alarmas:
+                t = threading.Thread(
+                    target=self.obtenerDatosTipoAlrma,
+                    args=(tipo, listaGeneralAlarmas, dict_unico_alarmas, lock_dict)
+                )
+                hilos.append(t)
+                t.start()
+
+            for t in hilos:
+                t.join()
+
+            with open("alarmas.json", "w", encoding="utf-8") as archivo:
+                json.dump(dict_unico_alarmas, archivo, indent=4, ensure_ascii=False)
+
+            return "Se creó el documento de alarmas correctamente"
+
+        except Exception as e:
+            logger.error(f"Error al leer las alarmas: {e}")
+            asyncio.run(self.conexion_servidor.handle_reconnect())
+
 
     def get_ultimo_ciclo(self, db):
             try:
@@ -138,4 +186,83 @@ class OpcAlarmas:
                 return ultimo_ciclo.id
             except Exception as e:
                 logger.error(f"No hay datos en la BDD-CICLO")
-        
+
+    def obtenerDatosTipoAlrma(self, nodo_opc, tipo_alarma, dict_unico_alarmas, look_dict):
+        global INDICE_OPC
+        db: Session = next(get_db())
+
+        try:
+            alarma = tipo_alarma.get_child([f"{INDICE_OPC}:{nodo_opc}"])
+
+            for item in alarma.get_children():
+
+                logger.debug(f"[FOR-ALARMAS] Evaluando item en grupo '{nodo_opc}'")
+
+                browse_name = item.get_browse_name().Name
+                match = re.search(r"\[(\d+)\]", browse_name)
+
+                if not match:
+                    logger.warning(f"[SKIP] Nodo sin índice en nombre: '{browse_name}'")
+
+                indice = int(match.group(1))
+                valor = item.get_value()
+
+                if nodo_opc == "SDDA":
+                    indice+= 100
+                if nodo_opc == "FALLAS CILINDROS":
+                    indice+=200
+                if nodo_opc == "POSICIONADOR":
+                    indice+=300
+                if nodo_opc == "GENERALES":
+                    indice+=400
+                if nodo_opc == "SERVOS":
+                    indice+=500
+                if nodo_opc == "INICIO DE CICLO":
+                    indice+=600
+                if nodo_opc == "CANCELACION":
+                    indice+=700
+                if nodo_opc == "PULSADORES":
+                    indice+=800
+                
+                alarma_existente = db.query(Alarma).filter_by(id=indice).first()
+
+                if valor == True:
+                    try:
+                        if not alarma_existente:
+                            nueva_alarma = Alarma(
+                                id=indice,
+                                tipoAlarma=nodo_opc,
+                                descripcion=""
+                            )
+                            db.add(nueva_alarma)
+                            db.commit()
+                            logger.info(f"[CREADO] Se agregó la alarma faltante con ID {indice} y tipo '{nodo_opc}'")
+
+                        alarma_historico = HistoricoAlarma(
+                            id_alarma=indice,
+                            id_ciclo_desmoldeo = self.get_ultimo_ciclo(db),
+                            estadoAlarma = valor
+                        )
+                        db.add(alarma_historico)
+                        db.commit()
+                        logger.info(f"[GUARDADO] Se registró la alarma '{browse_name}' con ID {indice} y estado '{valor}'")
+                    except Exception as e:
+                        db.rollback()
+                        logger.error(f"[ERROR-DB] Fallo al guardar alarma '{browse_name}' (ID: {indice}) - Error: {e}")
+                                    
+
+                if alarma_existente:
+                    item_alarma = {
+                        "id_alarma": alarma_existente.id,
+                        "estadoAlarma": valor,
+                        "tipoAlarma": alarma_existente.tipoAlarma,
+                        "descripcion": alarma_existente.descripcion,
+                        "fechaRegistro": datetime.now().strftime("%Y-%m-%d %H-%M-%S")
+                    }
+                    with look_dict:
+                        dict_unico_alarmas[alarma_existente.id] = item_alarma
+
+        except Exception as e:
+            logger.error(f"[ERROR THREAD ALARMA] Nodo: {nodo_opc} - {e}")
+        finally:
+            db.close()

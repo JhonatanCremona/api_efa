@@ -10,8 +10,8 @@ class CicloDesmoldeo(Base):
     fecha_fin = Column(DateTime, index=True, nullable=True)
     estadoMaquina = Column(String(50), nullable=False)
     bandaDesmolde = Column(String(50), nullable=False)
-    lote = Column(String(50), nullable=False)
-    tiempoDesmolde = Column(Integer, nullable=False)
+    tiempoDesmolde = Column(String(10))
+    tiempoPausado = Column(String(10))
     pesoDesmoldado = Column(Double, nullable=False)
     
 

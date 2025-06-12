@@ -14,6 +14,8 @@ from models.torreconfiguraciones import TorreConfiguraciones
 from models.contrasPlc import ContrasPLC
 from models.recetario import Recetario
 
+from config.logger_config import logger
+
 from datetime import datetime
 
 import logging
@@ -24,15 +26,16 @@ import asyncio
 import json
 import os
 
-logger = logging.getLogger("uvicorn")
 db_session = next(get_db())
-
+logger = logging.getLogger("uvicorn")
 estado_anterior_id_contra = None
 LOGS_ALARMA_CICLO = []
 ESTADO_CICLO_DESMOLDEO = None
 TIEMPO_TRANSCURRIDO = 0
 RECETA_ACTUAL = {}
 LISTA_DATOS_CICLO = {}
+CONTADOR_CICLO_PAUSADO = 0
+ultimo_tiempo_check = datetime.now()
 lista_resumen_general = {
     "idRecetaActual": 0,
     "idRecetaProxima": 0,
@@ -56,6 +59,7 @@ PANTALLA_ENCENDIDA = False
 ULTIMO_ESTADO_PANTALLA = None
 
 ciclo_actual = None
+NIVELES_SELECCIONADOS_CICLO = 0
 
 ulEstado = None
 tiempoCiclo = "00:00 mm:ss"
@@ -68,6 +72,9 @@ flag_nivel = 0
 PESO_ACTUAL_DESMOLDADO = None
 PESO_TOTAL_CICLO = 0
 
+CONTADOR_NIVELES_DESMOLDADOS = 0
+ultimo_estado_nivel_desmoldado = False
+
 error = "Error al obtener dato"
 banda_desmolde = {
     1:"CINTA A",
@@ -76,7 +83,9 @@ banda_desmolde = {
 estado_maquina = {
     1: "CICLO INACTIVO",
     2: "CICLO ACTIVO",
-    3: "CICLO PAUSADO"
+    3: "CICLO PAUSADO",
+    4: "FINALIZADO",
+    5: "CANCELADO"
 }
 ciclo_tipo_fin = {
     1:"CICLO CORRECTO",
@@ -89,6 +98,28 @@ tipo_molde = {
 }
 
 INDICE_OPC = os.getenv("INDICE_OPC_UA")
+
+def actualizarContadorCicloPausado(estadoActual):
+    global CONTADOR_CICLO_PAUSADO, ultimo_tiempo_check
+    
+    if not hasattr(actualizarContadorCicloPausado, 'estado_anterior'):
+        actualizarContadorCicloPausado.estado_anterior = None
+    
+    ahora = datetime.now()
+    
+    if estadoActual == 3:
+        delta_segundos = (ahora - ultimo_tiempo_check).total_seconds()
+        CONTADOR_CICLO_PAUSADO += delta_segundos
+        ultimo_tiempo_check = ahora
+        logger.info(f"Contador ciclo pausado: {CONTADOR_CICLO_PAUSADO:.2f} segundos")
+    else:
+        ultimo_tiempo_check = ahora
+        if actualizarContadorCicloPausado.estado_anterior == 3:
+            logger.info(f"Ciclo reanudado. Tiempo acumulado en pausa: {CONTADOR_CICLO_PAUSADO:.2f} segundos")
+    
+    actualizarContadorCicloPausado.estado_anterior = estadoActual
+    
+    return CONTADOR_CICLO_PAUSADO
 
 def obtenerTiempo(estadoCiclo):
     global tiempoCiclo, fechaInicioCIclo, ulEstado
@@ -109,7 +140,7 @@ def obtenerTiempo(estadoCiclo):
         tiempoCiclo = 0
         fechaInicioCIclo = 0
         ulEstado = None
-    print(f"ULTIMO ESTADO CICLO TT: {ulEstado}")
+    logger.info(f"ULTIMO ESTADO CICLO TT: {ulEstado}")
 
     return tiempoCiclo
 
@@ -123,10 +154,30 @@ def get_ultimo_ciclo(db):
         except Exception as e:
             logger.error(f"No hay datos en la BDD-CICLO")
 
+def formato_tiempo_mmss(segundos_totales):
+    """Convierte segundos totales en formato 'MM:SS'"""
+    if segundos_totales is None:
+        return "00:00"
+    
+    minutos = int(segundos_totales // 60)
+    segundos = int(segundos_totales % 60)
+    return f"{minutos:02d}:{segundos:02d}"
+
 class ObtenerNodosOpc:
     def __init__(self, conexion_servidor):
         self.conexion_servidor = conexion_servidor
     
+    def get_node_value_safely(self, parent_node, node_name, default_value=None):
+        try:
+            child_node = parent_node.get_child([f"{INDICE_OPC}:{node_name}"])
+            if child_node:
+                return child_node.get_value()
+            logger.warning(f"Nodo '{node_name}' no encontrado, usando valor por defecto: {default_value}")
+            return default_value
+        except Exception as e:
+            logger.warning(f"Error al acceder al nodo '{node_name}': {e}")
+            return default_value
+
     async def conexionOpcPLC(self):
         listaRespuesta = []
 
@@ -135,6 +186,19 @@ class ObtenerNodosOpc:
         global TIEMPO_TRANSCURRIDO, flag_nivel
         global RECETA_ACTUAL, lista_resumen_general, lista_sector_io, PESO_TOTAL_CICLO
         global ultimo_estado, ciclo_guardado, ULTIMO_NIVEL, PESO_ACTUAL_DESMOLDADO
+        global CONTADOR_NIVELES_DESMOLDADOS, ultimo_estado_nivel_desmoldado
+        global CONTADOR_CICLO_PAUSADO, ultimo_tiempo_check
+        global NIVELES_SELECCIONADOS_CICLO  # Agregamos la global para niveles seleccionados
+
+
+        ciclo_guardado_por_flanco = False
+        
+        if not hasattr(self, 'ciclo_iniciado_anterior'):
+            self.ciclo_iniciado_anterior = False
+        if not hasattr(self, 'fin_finalizado_anterior'):
+            self.fin_finalizado_anterior = False
+        if not hasattr(self, 'fin_cancelado_anterior'):
+            self.fin_cancelado_anterior = False
 
         try:
             if INDICE_OPC != 2:
@@ -144,7 +208,7 @@ class ObtenerNodosOpc:
             else:
                 root_node = await self.conexion_servidor.get_objects_nodos()
                 objects_node = root_node.get_child(["0:Objects"])
-                server_interface_node = objects_node.get_child(["2:ServerInterfaces"])
+                server_interface_node = objects_node.get_child(["3:ServerInterfaces"])
 
             server_interface_1 = server_interface_node.get_child([f"{INDICE_OPC}:Server interface_1"])
             if not server_interface_1:
@@ -159,140 +223,305 @@ class ObtenerNodosOpc:
             e_datosGripper = datos_opc_a_enviar.get_child([f"{INDICE_OPC}:datosGripper"])
             e_desmoldeo = datos_opc_a_enviar.get_child([f"{INDICE_OPC}:desmoldeo"])
             e_datosSeleccionado = datos_opc_a_enviar.get_child([f"{INDICE_OPC}:datosSeleccionados"])
+            
+            ciclo_iniciado_actual = self.get_node_value_safely(estado_equipo, "Ciclo_iniciado", False)
+            fin_finalizado = self.get_node_value_safely(estado_equipo, "finFinalizado", False)
+            fin_cancelado = self.get_node_value_safely(estado_equipo, "finCancelado", False)
+            
+            flanco_fin_finalizado = fin_finalizado and not self.fin_finalizado_anterior
+            flanco_fin_cancelado = fin_cancelado and not self.fin_cancelado_anterior
+            flanco_fin_detectado = flanco_fin_finalizado or flanco_fin_cancelado
+            
+            if flanco_fin_detectado and ciclo_actual is not None and not ciclo_guardado_por_flanco:
+                logger.info(f"[FLANCO FIN DETECTADO] finFinalizado={fin_finalizado}, finCancelado={fin_cancelado}")
+                
+                try:
+                    ciclo_actualizar = db_session.query(CicloDesmoldeo).filter(CicloDesmoldeo.id == ciclo_actual.id).first()
+                    if ciclo_actualizar:
+                        id_receta = self.get_node_value_safely(e_datosSeleccionado, "N_receta_actual", 1)
+                        if id_receta <= 0:
+                            logger.warning(f"ID de receta inválido: {id_receta}, usando valor predeterminado 1")
+                            id_receta = 1
+                        
+                        # Recalcular el peso independientemente del estado de PESO_ACTUAL_DESMOLDADO
+                        PESO_FILA_PRODUCTO = RECETA_ACTUAL.get("PESO DEL PRODUCTO", 0) * (RECETA_ACTUAL.get("MOLDES POR NIVEL", 0) * RECETA_ACTUAL.get("PRODUCTOS POR MOLDE", 0))
+                        peso_calculado = PESO_FILA_PRODUCTO * CONTADOR_NIVELES_DESMOLDADOS
+                        
+                        logger.info(f"[FLANCO FIN] Recalculando peso final: {PESO_FILA_PRODUCTO} kg × {CONTADOR_NIVELES_DESMOLDADOS} niveles = {peso_calculado} kg")
+                        
+                        db_recetaXCiclo = RecetarioXCiclo(
+                            cantidadNivelesFinalizado = CONTADOR_NIVELES_DESMOLDADOS,
+                            pesoPorNivel = PESO_FILA_PRODUCTO,
+                            id_recetario = id_receta,
+                            id_ciclo_desmoldeo = ciclo_actualizar.id,
+                            cantidadNivelesSeleccionados = NIVELES_SELECCIONADOS_CICLO
+                        )
+                        db_session.add(db_recetaXCiclo)
+                        db_session.commit()
+                        logger.info(f"[FLANCO FIN] RecetaXCiclo guardado con ID receta: {id_receta}, ID RecetaXCiclo: {db_recetaXCiclo.id}")
+                        
+                        ciclo_actualizar.fecha_fin = datetime.now()
+                        # Usar el peso recién calculado en lugar de PESO_ACTUAL_DESMOLDADO
+                        ciclo_actualizar.pesoDesmoldado = peso_calculado
+                        
+                        tiempo_desmolde_segundos = (datetime.now() - ciclo_actualizar.fecha_inicio).total_seconds()
+                        tiempo_pausado_segundos = CONTADOR_CICLO_PAUSADO
+                        
+                        ciclo_actualizar.tiempoDesmolde = formato_tiempo_mmss(tiempo_desmolde_segundos)
+                        ciclo_actualizar.tiempoPausado = formato_tiempo_mmss(tiempo_pausado_segundos)
+                        
+                        # Verificar si realmente se completaron todos los niveles seleccionados
+                        if flanco_fin_finalizado and CONTADOR_NIVELES_DESMOLDADOS == NIVELES_SELECCIONADOS_CICLO:
+                            ciclo_actualizar.estadoMaquina = "FINALIZADO"
+                            logger.info(f"[FLANCO FIN] Ciclo {ciclo_actualizar.id} marcado como FINALIZADO (niveles desmoldados: {CONTADOR_NIVELES_DESMOLDADOS}/{NIVELES_SELECCIONADOS_CICLO})")
+                        else:
+                            # Si hay menos niveles desmoldados que seleccionados, o si es cancelado manualmente
+                            ciclo_actualizar.estadoMaquina = "CANCELADO"
+                            if flanco_fin_finalizado:
+                                logger.info(f"[FLANCO FIN] Ciclo {ciclo_actualizar.id} marcado como CANCELADO por niveles incompletos (niveles desmoldados: {CONTADOR_NIVELES_DESMOLDADOS}/{NIVELES_SELECCIONADOS_CICLO})")
+                            else:
+                                logger.info(f"[FLANCO FIN] Ciclo {ciclo_actualizar.id} marcado como CANCELADO manualmente")
+                        
+                        db_session.commit()
+                        ciclo_guardado_por_flanco = True
+                        # Añadir el peso al log para verificación
+                        logger.info(f"[FLANCO FIN] Ciclo actualizado con ID: {ciclo_actualizar.id}, Estado: {ciclo_actualizar.estadoMaquina}, Peso guardado: {ciclo_actualizar.pesoDesmoldado} kg")
+                        
+                        ciclo_actual = None
+                        ESTADO_CICLO_DESMOLDEO = False
+                    else:
+                        logger.error(f"[FLANCO FIN] No se encontró ciclo con ID {ciclo_actual.id} para finalizar")
+                except Exception as e:
+                    db_session.rollback()
+                    logger.error(f"[ERROR FLANCO FIN] Error al finalizar ciclo: {e}")
 
+            if fin_finalizado:
+                niveles_seleccionados = self.get_node_value_safely(e_datosSeleccionado, "nivelesSeleccionados", 0)
+                
+                if ciclo_actual is not None and CONTADOR_NIVELES_DESMOLDADOS < niveles_seleccionados:
+                    logger.info(f"[CICLO FINALIZADO] Actualizando contador de niveles a total configurado: {niveles_seleccionados}")
+                    CONTADOR_NIVELES_DESMOLDADOS = niveles_seleccionados
+                    
+                    if RECETA_ACTUAL:
+                        PESO_FILA_PRODUCTO = RECETA_ACTUAL.get("PESO DEL PRODUCTO", 0) * (RECETA_ACTUAL.get("MOLDES POR NIVEL", 0) * RECETA_ACTUAL.get("PRODUCTOS POR MOLDE", 0))
+                        PESO_ACTUAL_DESMOLDADO = PESO_FILA_PRODUCTO * CONTADOR_NIVELES_DESMOLDADOS
+                        PESO_TOTAL_CICLO = PESO_ACTUAL_DESMOLDADO
+                        logger.info(f"[RECÁLCULO PESO] Peso actualizado al total: {PESO_ACTUAL_DESMOLDADO} kg")
 
+            niveles_desmoldados_bool = self.get_node_value_safely(estado_equipo, "nivelesDesmoldados", False)
+            if niveles_desmoldados_bool == True and ultimo_estado_nivel_desmoldado == False:
+                if ciclo_actual is not None:
+                    CONTADOR_NIVELES_DESMOLDADOS += 1
+                    logger.info(f"[NIVEL DESMOLDADO] Se detectó flanco de nivel desmoldado #{CONTADOR_NIVELES_DESMOLDADOS}")
+                    
+                    if RECETA_ACTUAL:
+                        PESO_FILA_PRODUCTO = RECETA_ACTUAL.get("PESO DEL PRODUCTO", 0) * (RECETA_ACTUAL.get("MOLDES POR NIVEL", 0) * RECETA_ACTUAL.get("PRODUCTOS POR MOLDE", 0))
+                        PESO_ACTUAL_DESMOLDADO = PESO_FILA_PRODUCTO * CONTADOR_NIVELES_DESMOLDADOS
+                        PESO_TOTAL_CICLO = PESO_ACTUAL_DESMOLDADO
+                        logger.info(f"[PESO] Actualizado por nivel desmoldado: {PESO_ACTUAL_DESMOLDADO} kg")
+
+            ultimo_estado_nivel_desmoldado = niveles_desmoldados_bool
+            
             listaDatos = estado_equipo.get_children()
             for child in listaDatos:
                 browse_name = child.get_browse_name().Name
                 value = child.get_value()
                 LISTA_DATOS_CICLO[browse_name] = value
 
-                if browse_name == "Ciclo_iniciado":
-                    ESTADO_CICLO_DESMOLDEO = value
-                    print(f"----------DATO 1 INCIIO DEL CICLO: {ESTADO_CICLO_DESMOLDEO}")
-                    if not value:
-                        LOGS_ALARMA_CICLO.clear()
+            flanco_inicio_ciclo = ciclo_iniciado_actual == True and self.ciclo_iniciado_anterior == False
+            
+            if flanco_inicio_ciclo:
+                logger.info("[FLANCO CICLO_INICIADO] Se detectó inicio de ciclo")
 
-            print(f"ESTADO CICLO DES {ESTADO_CICLO_DESMOLDEO} - ULTIMO ESTADO: {ultimo_estado}")
-            ULTIMO_NIVEL = e_sdda.get_child([f"{INDICE_OPC}:sdda_nivel_actual"]).get_value()
-            print(f"VALOR NIVEL ACTUAL: {ULTIMO_NIVEL}")
+                NIVELES_SELECCIONADOS_CICLO = self.get_node_value_safely(e_datosSeleccionado, "nivelesSeleccionados", 0)
+                logger.info(f"[FLANCO CICLO_INICIADO] Niveles seleccionados: {NIVELES_SELECCIONADOS_CICLO}")
 
+                if ciclo_actual is not None:
+                    logger.warning(f"[CICLO SOLAPADO] Se detectó inicio de ciclo mientras otro estaba activo (ID: {ciclo_actual.id})")
+                    
+                    try:
+                        ciclo_actualizar = db_session.query(CicloDesmoldeo).filter(CicloDesmoldeo.id == ciclo_actual.id).first()
+                        if ciclo_actualizar:
+                            logger.info(f"[CICLO SOLAPADO] Cancelando ciclo anterior ID: {ciclo_actualizar.id}")
+                            
+                            id_receta = self.get_node_value_safely(e_datosSeleccionado, "N_receta_actual", 1)
+                            if id_receta <= 0:
+                                id_receta = 1
+                            
+                            PESO_FILA_PRODUCTO = RECETA_ACTUAL.get("PESO DEL PRODUCTO", 0) * (RECETA_ACTUAL.get("MOLDES POR NIVEL", 0) * RECETA_ACTUAL.get("PRODUCTOS POR MOLDE", 0))
+                            
+                            # Recalcular el peso explícitamente
+                            peso_calculado = PESO_FILA_PRODUCTO * CONTADOR_NIVELES_DESMOLDADOS
+                            logger.info(f"[CICLO SOLAPADO] Recalculando peso: {PESO_FILA_PRODUCTO} kg × {CONTADOR_NIVELES_DESMOLDADOS} niveles = {peso_calculado} kg")
+                            
+                            db_recetaXCiclo = RecetarioXCiclo(
+                                cantidadNivelesFinalizado = CONTADOR_NIVELES_DESMOLDADOS,
+                                pesoPorNivel = PESO_FILA_PRODUCTO,
+                                id_recetario = id_receta,
+                                id_ciclo_desmoldeo = ciclo_actualizar.id,
+                                cantidadNivelesSeleccionados = NIVELES_SELECCIONADOS_CICLO
+                            )
+                            db_session.add(db_recetaXCiclo)
+                            db_session.commit()
+                            
+                            ciclo_actualizar.fecha_fin = datetime.now()
+                            ciclo_actualizar.pesoDesmoldado = peso_calculado
+                            
+                            tiempo_desmolde_segundos = (datetime.now() - ciclo_actualizar.fecha_inicio).total_seconds()
+                            tiempo_pausado_segundos = CONTADOR_CICLO_PAUSADO
+                            
+                            ciclo_actualizar.tiempoDesmolde = formato_tiempo_mmss(tiempo_desmolde_segundos)
+                            ciclo_actualizar.tiempoPausado = formato_tiempo_mmss(tiempo_pausado_segundos)
+                            ciclo_actualizar.estadoMaquina = "CANCELADO"
+                            
+                            db_session.commit()
+                            logger.info(f"[CICLO SOLAPADO] Ciclo anterior {ciclo_actualizar.id} marcado como CANCELADO con éxito")
+                        else:
+                            logger.error(f"[CICLO SOLAPADO] No se pudo encontrar el ciclo con ID {ciclo_actual.id} para cancelar")
+                    except Exception as e:
+                        db_session.rollback()
+                        logger.error(f"[ERROR CICLO SOLAPADO] Error al cancelar ciclo anterior: {e}")
+                
+                CONTADOR_CICLO_PAUSADO = 0
+                CONTADOR_NIVELES_DESMOLDADOS = 0
+                ultimo_tiempo_check = datetime.now()
+                ESTADO_CICLO_DESMOLDEO = True
+                ciclo_guardado_por_flanco = False
+
+                indiceRecetaActual = self.get_node_value_safely(e_datosSeleccionado, "N_receta_actual", 1) - 1
+                e_receta_actual = datos_opc_a_enviar.get_child([f"{INDICE_OPC}:RECETARIO"]).get_child([f"{INDICE_OPC}:[{indiceRecetaActual}]"])
+                childremRecetaA = e_receta_actual.get_children()
+                
+                RECETA_ACTUAL.clear()
+                for child in childremRecetaA:
+                    RECETA_ACTUAL[child.get_browse_name().Name] = child.get_value()
+                    logger.info(f"--------------- Receta actual: {child.get_browse_name().Name} = {child.get_value()}")
+
+                fin_cancelado_verificacion = self.get_node_value_safely(estado_equipo, "finCancelado", False)
+                fin_finalizado_verificacion = self.get_node_value_safely(estado_equipo, "finFinalizado", False)
+                
+                ciclo_ya_cancelado = fin_cancelado_verificacion or fin_finalizado_verificacion
+                
+                if ciclo_ya_cancelado:
+                    logger.warning("[CICLO CANCELADO DURANTE INICIO] Se detectó cancelación mientras se procesaba el inicio")
+                    
+                    # Crear ciclo ya marcado como cancelado
+                    ciclo_desmoldeo = CicloDesmoldeo(
+                        fecha_inicio=datetime.now(),
+                        fecha_fin=datetime.now(),  # Misma fecha inicio y fin
+                        estadoMaquina="CANCELADO",
+                        bandaDesmolde=banda_desmolde.get(self.get_node_value_safely(e_desmoldeo, "desmoldeobanda", 1), error),
+                        tiempoDesmolde="00:00",
+                        tiempoPausado="00:00",
+                        pesoDesmoldado=0,
+                        id_etapa=1,
+                        id_torre=self.get_node_value_safely(e_datosSeleccionado, "N_torre_actual", 1)
+                    )
+                else:
+                    ciclo_desmoldeo = CicloDesmoldeo(
+                        fecha_inicio= datetime.now(),
+                        fecha_fin=None,
+                        estadoMaquina= estado_maquina.get(self.get_node_value_safely(estado_equipo, "Estado_actual", 1), error),
+                        bandaDesmolde= banda_desmolde.get(self.get_node_value_safely(e_desmoldeo, "desmoldeobanda", 1), error),
+                        tiempoDesmolde=0.0,
+                        tiempoPausado=0.0,
+                        pesoDesmoldado = 0,
+                        id_etapa= 1,
+                        id_torre= self.get_node_value_safely(e_datosSeleccionado, "N_torre_actual", 1)
+                    )
+                try:
+                    db_session.add(ciclo_desmoldeo)
+                    db_session.commit()
+                    db_session.refresh(ciclo_desmoldeo)
+                    
+                    if ciclo_ya_cancelado:
+                        logger.info(f"[CICLO CANCELADO DURANTE INICIO] Ciclo {ciclo_desmoldeo.id} creado y marcado como CANCELADO automáticamente")
+                        ESTADO_CICLO_DESMOLDEO = False
+                        ciclo_actual = None  # No establecer como ciclo actual
+                    else:
+                        ciclo_actual = ciclo_desmoldeo
+                        logger.info(f"[FLANCO CICLO_INICIADO] NUEVO CICLO CREADO: {ciclo_desmoldeo.id}")
+                        
+                except Exception as e:
+                    db_session.rollback()
+                    logger.error(f"ERROR AL GUARDAR CICLO-DESM EN BDD: {e}")
+            
+            # Actualizar estados anteriores para la próxima detección de flancos
+            self.ciclo_iniciado_anterior = ciclo_iniciado_actual
+            self.fin_finalizado_anterior = fin_finalizado
+            self.fin_cancelado_anterior = fin_cancelado
+            
+            if ciclo_iniciado_actual is False and ESTADO_CICLO_DESMOLDEO is True:
+                if not ciclo_guardado_por_flanco and ciclo_actual is not None:
+                    logger.warning(f"[CICLO NO FINALIZADO] Ciclo_iniciado cambió a FALSE sin flanco fin para ciclo {ciclo_actual.id}")
+                ESTADO_CICLO_DESMOLDEO = False
+            else:
+                ESTADO_CICLO_DESMOLDEO = ciclo_iniciado_actual
+            
+            if self.get_node_value_safely(e_sdda, "sdda_nivel_actual", 0) > 0:
+                ULTIMO_NIVEL = self.get_node_value_safely(e_sdda, "sdda_nivel_actual", 0)
+                logger.info(f"VALOR NIVEL ACTUAL: {ULTIMO_NIVEL}")
             
             if flag_nivel != ULTIMO_NIVEL and ESTADO_CICLO_DESMOLDEO == True:
+                receta_proximo = db_session.query(Recetario).filter(Recetario.id == self.get_node_value_safely(e_datosSeleccionado, "N_receta_actual", 1)).first()
+                PESO_FILA_PRODUCTO = RECETA_ACTUAL.get("PESO DEL PRODUCTO", 0) * (RECETA_ACTUAL.get("MOLDES POR NIVEL", 0) * RECETA_ACTUAL.get("PRODUCTOS POR MOLDE", 0))
                 
-                #db_session.query(CicloDesmoldeo).filter(CicloDesmoldeo.id == ciclo_actual.id).first()
-                receta_proximo = db_session.query(Recetario).filter(Recetario.id == e_datosSeleccionado.get_child([f"{INDICE_OPC}:N_receta_actual"]).get_value()).first()
-                PESO_FILA_PRODUCTO = RECETA_ACTUAL.get("PESO DEL PRODUCTO", 0) * RECETA_ACTUAL.get("PRODUCTOS POR MOLDE", 0) 
-                PESO_ACTUAL_DESMOLDADO = RECETA_ACTUAL.get("PESO DEL PRODUCTO", 0) * RECETA_ACTUAL.get("PRODUCTOS POR MOLDE", 0) * e_sdda.get_child([f"{INDICE_OPC}:sdda_nivel_actual"]).get_value()
+                PESO_ACTUAL_DESMOLDADO = PESO_FILA_PRODUCTO * CONTADOR_NIVELES_DESMOLDADOS
                 PESO_TOTAL_CICLO = PESO_ACTUAL_DESMOLDADO
                 flag_nivel = ULTIMO_NIVEL
 
-                lista_resumen_general["idRecetaActual"] = e_datosSeleccionado.get_child([f"{INDICE_OPC}:N_receta_actual"]).get_value()
-                lista_resumen_general["idRecetaProxima"] = receta_proximo.codigoProducto
+                lista_resumen_general["idRecetaActual"] = self.get_node_value_safely(e_datosSeleccionado, "N_receta_actual", 0)
+                lista_resumen_general["idRecetaProxima"] = receta_proximo.codigoProducto if receta_proximo else ""
                 lista_resumen_general["CodigoProducto"] = RECETA_ACTUAL.get("NOMBRE")
                 lista_resumen_general["TotalNiveles"] = RECETA_ACTUAL.get("CANTIDAD NIVELES")
                 lista_resumen_general["TipoMolde"] = tipo_molde.get(RECETA_ACTUAL.get("TIPO DE MOLDE"))
                         
-                lista_resumen_general["desmoldeoBanda"] = banda_desmolde.get(e_desmoldeo.get_child([f"{INDICE_OPC}:desmoldeobanda"]).get_value(), error)
+                lista_resumen_general["desmoldeoBanda"] = banda_desmolde.get(self.get_node_value_safely(e_desmoldeo, "desmoldeobanda", 0), error)
                 lista_resumen_general["PesoProducto"] = round(PESO_FILA_PRODUCTO, 2)
                         
                 lista_resumen_general["sdda_nivel_actual"] = ULTIMO_NIVEL
-                lista_resumen_general["NGripperActual"] = e_datosGripper.get_child([f"{INDICE_OPC}:NGripperActual"]).get_value()
-                lista_resumen_general["PesoActualDesmoldado"] = round(PESO_TOTAL_CICLO,2)
-                lista_resumen_general["TorreActual"] = e_datosSeleccionado.get_child([f"{INDICE_OPC}:N_torre_actual"]).get_value()
+                lista_resumen_general["NGripperActual"] = self.get_node_value_safely(e_datosGripper, "NGripperActual", 0)
+                lista_resumen_general["PesoActualDesmoldado"] = round(PESO_TOTAL_CICLO, 2)
+                lista_resumen_general["TorreActual"] = self.get_node_value_safely(e_datosSeleccionado, "N_torre_actual", 0)
 
+            estado_actual_valor = self.get_node_value_safely(estado_equipo, "Estado_actual", 1)
+            actualizarContadorCicloPausado(estado_actual_valor)
 
-
-            if ESTADO_CICLO_DESMOLDEO != ultimo_estado:
-                if ESTADO_CICLO_DESMOLDEO == True:
-                    indiceRecetaActual = e_datosSeleccionado.get_child([f"{INDICE_OPC}:N_receta_actual"]).get_value()
-                    e_receta_actual = datos_opc_a_enviar.get_child([f"{INDICE_OPC}:RECETARIO"]).get_child([f"{INDICE_OPC}:[{indiceRecetaActual}]"])
-                    childremRecetaA = e_receta_actual.get_children()
-                    for child in childremRecetaA:
-                        RECETA_ACTUAL[child.get_browse_name().Name] = child.get_value()
-                    
-                    #ULTIMO_NIVEL = e_sdda.get_child([f"{INDICE_OPC}:sdda_nivel_actual"]).get_value()
-
-                    ciclo_desmoldeo = CicloDesmoldeo(
-                            fecha_inicio= datetime.now(),
-                            fecha_fin=None,
-                            estadoMaquina= estado_maquina.get(estado_equipo.get_child([f"{INDICE_OPC}:Estado_actual"]).get_value(), error),
-                            bandaDesmolde= banda_desmolde.get(e_desmoldeo.get_child([f"{INDICE_OPC}:desmoldeobanda"]).get_value(), error),
-                            lote="001",
-                            tiempoDesmolde=0.0,
-                            pesoDesmoldado = PESO_ACTUAL_DESMOLDADO,
-                            id_etapa=1,
-                            id_torre= 1 if e_datosSeleccionado.get_child([f"{INDICE_OPC}:N_torre_actual"]).get_value() == 0 else e_datosSeleccionado.get_child([f"{INDICE_OPC}:N_torre_actual"]).get_value()
-                        )
-                    try:
-                        db_session.add(ciclo_desmoldeo)
-                        db_session.commit()
-                        logger.info(f"SE GUARDO EL CICLO - D: {ciclo_desmoldeo.id} ")
-                        db_session.refresh(ciclo_desmoldeo)
-                        ciclo_actual = ciclo_desmoldeo
-                    except Exception as e:
-                        db_session.rollback()
-                        logger.error(f"ERRO AL GUARDAR CICLO-DESM EN BDD: {e}")
-
-                if ESTADO_CICLO_DESMOLDEO == False:
-                    lista_resumen_general = {
-                        "idRecetaActual": 0,
-                        "idRecetaProxima": 0,
-                        "CodigoProducto": "",
-                        "TotalNiveles": 0,
-                        "TipoMolde": "",
-                        "desmoldeoBanda": "",
-                        "PesoProducto": 0.0,
-                        "sdda_nivel_actual": 0,
-                        "NGripperActual": 0,
-                        "PesoActualDesmoldado": 0.0,
-                        "TorreActual": 0
-                    }
-                    try:
-                            print(f"VALOR DE NIVEL ACTUAL DEL SSDA: {ULTIMO_NIVEL}")
-                            ciclo_actualizar = db_session.query(CicloDesmoldeo).filter(CicloDesmoldeo.id == ciclo_actual.id).first()
-                            db_recetaXCiclo = RecetarioXCiclo(
-                                cantidadNivelesFinalizado = ULTIMO_NIVEL,
-                                pesoPorNivel = PESO_ACTUAL_DESMOLDADO,
-                                id_recetario = e_datosSeleccionado.get_child([f"{INDICE_OPC}:N_receta_actual"]).get_value() if e_datosSeleccionado.get_child([f"{INDICE_OPC}:N_receta_actual"]).get_value() <=5 else 2,
-                                id_ciclo_desmoldeo = ciclo_actualizar.id,
-                            )
-                            db_session.add(db_recetaXCiclo)
-                            db_session.commit()
-                            print("------------------------------------------------")
-                            logger.info("SE REGISTRO UN NUEVO CICLO EN LA RECETAXCICLO")
-
-                            if ciclo_actualizar:
-                                """
-                                print(f"-----------DATO PESO ")
-                                print(f"-DATO PESO{datosGenerales["PesoProducto"]} + {datosGenerales["sdda_nivel_actual"]} :  {datosGenerales["PesoProducto"] * datosGenerales["sdda_nivel_actual"]}-")
-                                """
-                                ciclo_actualizar.fecha_fin = datetime.now()
-                                ciclo_actualizar.pesoDesmoldado = PESO_ACTUAL_DESMOLDADO
-                                ciclo_actualizar.tiempoDesmolde = int((datetime.now() - ciclo_actualizar.fecha_inicio).total_seconds() // 60)
-                                db_session.commit()
-                                db_session.refresh(ciclo_actualizar)
-                                logger.info(f"Ciclo actualizado con ID: {ciclo_actualizar.id}")
-                                PESO_ACTUAL_DESMOLDADO = 0;
-                                PESO_TOTAL_CICLO = 0
-                                ULTIMO_NIVEL= 0;
-
-                    except Exception as e:
-                        logger.error(f"SURGIO UN ERROR AL GUARDAR UN REGISTRO CICLOXRECETA {e}")
+            if ESTADO_CICLO_DESMOLDEO == False and ultimo_estado == True:
+                lista_resumen_general = {
+                    "idRecetaActual": 0,
+                    "idRecetaProxima": 0,
+                    "CodigoProducto": "",
+                    "TotalNiveles": 0,
+                    "TipoMolde": "",
+                    "desmoldeoBanda": "",
+                    "PesoProducto": 0.0,
+                    "sdda_nivel_actual": 0,
+                    "NGripperActual": 0,
+                    "PesoActualDesmoldado": 0.0,
+                    "TorreActual": 0
+                }
                 
+                PESO_ACTUAL_DESMOLDADO = 0
+                PESO_TOTAL_CICLO = 0
+                ULTIMO_NIVEL = 0
+                CONTADOR_CICLO_PAUSADO = 0
+                ciclo_guardado_por_flanco = False
+            
             ultimo_estado = ESTADO_CICLO_DESMOLDEO
+
             TIEMPO_TRANSCURRIDO = obtenerTiempo(ESTADO_CICLO_DESMOLDEO)
-            lista_resumen_general["estadoMaquina"] = estado_maquina.get(estado_equipo.get_child([f"{INDICE_OPC}:Estado_actual"]).get_value(), error)
+            lista_resumen_general["estadoMaquina"] = estado_maquina.get(estado_actual_valor, error)
             lista_resumen_general["TiempoTranscurrido"] = TIEMPO_TRANSCURRIDO
             listaRespuesta.append(lista_resumen_general)
 
-            lista_sector_io["banda_desmoldeo"] = banda_desmolde.get(e_desmoldeo.get_child([f"{INDICE_OPC}:desmoldeobanda"]).get_value(), error)
+            lista_sector_io["banda_desmoldeo"] = banda_desmolde.get(self.get_node_value_safely(e_desmoldeo, "desmoldeobanda", 1), error)
             lista_sector_io["estado_ciclo"] = ESTADO_CICLO_DESMOLDEO
 
             listaCelda, listaDatosGeneral = await asyncio.gather(
                 self.obtenerDatosCelda(
-                    estado_equipo.get_child(f"{INDICE_OPC}:Estado_actual").get_value(), 
-                    e_sdda.get_child(f"{INDICE_OPC}:sdda_nivel_actual").get_value()
+                    estado_actual_valor, 
+                    self.get_node_value_safely(e_sdda, "sdda_nivel_actual", 0)
                 ),
                 self.obtenerListaGeneral(e_datosRobot, e_datosGripper, e_desmoldeo, e_datosSeleccionado, e_sdda, lista_sector_io)
             )
@@ -304,16 +533,38 @@ class ObtenerNodosOpc:
                 data = json.load(file)
             alarmas = list(data.values())
             alarmas_ordenadas = sorted(alarmas, key=lambda x: not x['estadoAlarma'])
-
             listaRespuesta.append(alarmas_ordenadas)
 
+            fecha_actual_h = datetime.now()
+            una_hora_atras = fecha_actual_h - timedelta(hours=1)
+
+            datos_alarmas_h = (
+                db_session.query(Alarma, HistoricoAlarma)
+                .join(Alarma, HistoricoAlarma.id_alarma == Alarma.id)
+                .filter(HistoricoAlarma.fechaRegistro.between(una_hora_atras, fecha_actual_h))
+                .all()
+            )
+
+            registro_historico_a = []
+
+            for alarma, historico_alarma in datos_alarmas_h:
+                registro_alarma = {
+                    "id_alarma" : alarma.id,
+                    "estadoAlarma" : historico_alarma.estadoAlarma,
+                    "tipoAlarma" : alarma.tipoAlarma,
+                    "descripcion" : alarma.descripcion, 
+                    "fechaRegistro" : historico_alarma.fechaRegistro,
+                }
+                registro_historico_a.append(registro_alarma)
+            
+            listaRespuesta.append(registro_historico_a)
+
             return listaRespuesta
-        
+            
         except Exception as e:
-            logger.exception("Error al obtener la conexión OPC del PLC:")
+            logger.exception(f"Error general en conexionOpcPLC: {e}")
             await self.conexion_servidor.handle_reconnect()
             return None
-        
 
     async def actualizarRecetas(self):
         global PANTALLA_ENCENDIDA, ULTIMO_ESTADO_PANTALLA, INDICE_OPC
@@ -360,7 +611,6 @@ class ObtenerNodosOpc:
 
         except Exception as e:
             logger.error(f"Error al intertar ACTUALIZAR RECETAS {e}")    
-
 
     async def obtenerDatosCelda(self, estadoActual, sddaNivelActual):
         resultado = {}

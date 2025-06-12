@@ -1,0 +1,717 @@
+{"timestamp": "2025-05-02T09:18:45.889279", "level": "INFO", "name": "uvicorn.error", "message": "Started server process [103707]", "filename": "server.py", "line": 82}
+{"timestamp": "2025-05-02T09:18:45.889279", "level": "INFO", "name": "uvicorn.error", "message": "Started server process [103707]", "filename": "server.py", "line": 82}
+{"timestamp": "2025-05-02T09:18:45.889587", "level": "INFO", "name": "uvicorn.error", "message": "Waiting for application startup.", "filename": "on.py", "line": 48}
+{"timestamp": "2025-05-02T09:18:45.889587", "level": "INFO", "name": "uvicorn.error", "message": "Waiting for application startup.", "filename": "on.py", "line": 48}
+{"timestamp": "2025-05-02T09:18:45.924274", "level": "INFO", "name": "uvicorn", "message": "Base de datos inicializada.", "filename": "main.py", "line": 211}
+Requested session timeout to be 3600000ms, got 30000ms instead
+{"timestamp": "2025-05-02T09:18:46.933738", "level": "INFO", "name": "uvicorn", "message": "\u2705 Conectado al servidor OPC UA.", "filename": "opc.py", "line": 24}
+{"timestamp": "2025-05-02T09:18:46.933979", "level": "INFO", "name": "uvicorn", "message": "Conectado al servidor OPC UA.", "filename": "main.py", "line": 235}
+Usuario: root, Password: echo3241, Host: db, Puerto: 3306, DB: efa
+DATO ULR: mysql+pymysql://root:echo3241@db:3306/efa
+Error al conectar a la base de datos: (pymysql.err.OperationalError) (2003, "Can't connect to MySQL server on 'db' ([Errno -2] Name or service not known)")
+(Background on this error at: https://sqlalche.me/e/20/e3q8)
+Intentando conexión con localhost...
+DATO ULR: mysql+pymysql://root:echo3241@localhost:3306/efa
+Conectado a la base de datos en mysql+pymysql://root:echo3241@localhost:3306/efa
+Requested session timeout to be 3600000ms, got 30000ms instead
+{"timestamp": "2025-05-02T09:18:47.658137", "level": "INFO", "name": "uvicorn", "message": "\u2705 Conectado al servidor OPC UA.", "filename": "opc.py", "line": 24}
+{"timestamp": "2025-05-02T09:18:48.530440", "level": "INFO", "name": "uvicorn", "message": "[INICIO] Grupo de alarma detectado: 'FALLAS CILINDROS'", "filename": "opcAlarmas.py", "line": 49}
+{"timestamp": "2025-05-02T09:18:48.931688", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[0]' (ID: 200) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:18:49.005328", "level": "INFO", "name": "uvicorn", "message": "----------DATO 1 INCIIO DEL CICLO: False", "filename": "opcService.py", "line": 173}
+{"timestamp": "2025-05-02T09:18:49.288695", "level": "INFO", "name": "uvicorn", "message": "ESTADO CICLO DES False - ULTIMO ESTADO: None", "filename": "opcService.py", "line": 177}
+{"timestamp": "2025-05-02T09:18:49.519584", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[1]' (ID: 201) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:18:49.600890", "level": "ERROR", "name": "uvicorn", "message": "Error al obtener la conexi\u00f3n OPC del PLC:", "filename": "opcService.py", "line": 321}
+{"timestamp": "2025-05-02T09:18:49.601198", "level": "INFO", "name": "uvicorn", "message": "\ud83d\udd04 Intentando reconectar al servidor OPC UA...", "filename": "opc.py", "line": 41}
+{"timestamp": "2025-05-02T09:18:50.042805", "level": "WARNING", "name": "uvicorn", "message": "\u26a0\ufe0f Conexi\u00f3n OPC UA cerrada.", "filename": "opc.py", "line": 35}
+{"timestamp": "2025-05-02T09:18:50.043543", "level": "INFO", "name": "uvicorn.error", "message": "Application startup complete.", "filename": "on.py", "line": 62}
+{"timestamp": "2025-05-02T09:18:50.043543", "level": "INFO", "name": "uvicorn.error", "message": "Application startup complete.", "filename": "on.py", "line": 62}
+{"timestamp": "2025-05-02T09:18:50.044885", "level": "INFO", "name": "uvicorn.error", "message": "Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)", "filename": "server.py", "line": 214}
+{"timestamp": "2025-05-02T09:18:50.044885", "level": "INFO", "name": "uvicorn.error", "message": "Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)", "filename": "server.py", "line": 214}
+{"timestamp": "2025-05-02T09:18:50.363887", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[2]' (ID: 202) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+Requested session timeout to be 3600000ms, got 30000ms instead
+{"timestamp": "2025-05-02T09:18:50.808977", "level": "INFO", "name": "uvicorn", "message": "\u2705 Conectado al servidor OPC UA.", "filename": "opc.py", "line": 24}
+{"timestamp": "2025-05-02T09:18:50.809346", "level": "INFO", "name": "uvicorn", "message": "No se encontr\u00f3 la conexi\u00f3n para poll_id: datos", "filename": "ws.py", "line": 28}
+{"timestamp": "2025-05-02T09:18:51.101142", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[3]' (ID: 203) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:18:51.653402", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[4]' (ID: 204) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:18:52.252332", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[5]' (ID: 205) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:18:52.869405", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[6]' (ID: 206) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:18:53.383220", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[7]' (ID: 207) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:18:53.891004", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[8]' (ID: 208) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:18:54.401963", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[9]' (ID: 209) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:18:54.762788", "level": "INFO", "name": "uvicorn", "message": "----------DATO 1 INCIIO DEL CICLO: False", "filename": "opcService.py", "line": 173}
+{"timestamp": "2025-05-02T09:18:54.985471", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[10]' (ID: 210) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:18:55.045388", "level": "INFO", "name": "uvicorn", "message": "ESTADO CICLO DES False - ULTIMO ESTADO: None", "filename": "opcService.py", "line": 177}
+{"timestamp": "2025-05-02T09:18:55.293572", "level": "ERROR", "name": "uvicorn", "message": "Error al obtener la conexi\u00f3n OPC del PLC:", "filename": "opcService.py", "line": 321}
+{"timestamp": "2025-05-02T09:18:55.293763", "level": "INFO", "name": "uvicorn", "message": "\ud83d\udd04 Intentando reconectar al servidor OPC UA...", "filename": "opc.py", "line": 41}
+{"timestamp": "2025-05-02T09:18:55.807715", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[11]' (ID: 211) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:18:55.807954", "level": "WARNING", "name": "uvicorn", "message": "\u26a0\ufe0f Conexi\u00f3n OPC UA cerrada.", "filename": "opc.py", "line": 35}
+Requested session timeout to be 3600000ms, got 30000ms instead
+{"timestamp": "2025-05-02T09:18:56.488579", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[12]' (ID: 212) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:18:56.573506", "level": "INFO", "name": "uvicorn", "message": "\u2705 Conectado al servidor OPC UA.", "filename": "opc.py", "line": 24}
+{"timestamp": "2025-05-02T09:18:56.573831", "level": "INFO", "name": "uvicorn", "message": "No se encontr\u00f3 la conexi\u00f3n para poll_id: datos", "filename": "ws.py", "line": 28}
+{"timestamp": "2025-05-02T09:18:57.146842", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[13]' (ID: 213) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:18:57.750831", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[14]' (ID: 214) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:18:58.289813", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[15]' (ID: 215) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:18:58.900604", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[16]' (ID: 216) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:18:59.412441", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[17]' (ID: 217) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:18:59.947180", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[18]' (ID: 218) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:00.464325", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[19]' (ID: 219) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:00.536775", "level": "INFO", "name": "uvicorn", "message": "----------DATO 1 INCIIO DEL CICLO: False", "filename": "opcService.py", "line": 173}
+{"timestamp": "2025-05-02T09:19:00.817809", "level": "INFO", "name": "uvicorn", "message": "ESTADO CICLO DES False - ULTIMO ESTADO: None", "filename": "opcService.py", "line": 177}
+{"timestamp": "2025-05-02T09:19:01.001609", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[20]' (ID: 220) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:01.066261", "level": "ERROR", "name": "uvicorn", "message": "Error al obtener la conexi\u00f3n OPC del PLC:", "filename": "opcService.py", "line": 321}
+{"timestamp": "2025-05-02T09:19:01.066767", "level": "INFO", "name": "uvicorn", "message": "\ud83d\udd04 Intentando reconectar al servidor OPC UA...", "filename": "opc.py", "line": 41}
+{"timestamp": "2025-05-02T09:19:01.503376", "level": "WARNING", "name": "uvicorn", "message": "\u26a0\ufe0f Conexi\u00f3n OPC UA cerrada.", "filename": "opc.py", "line": 35}
+{"timestamp": "2025-05-02T09:19:01.830226", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[21]' (ID: 221) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+Requested session timeout to be 3600000ms, got 30000ms instead
+{"timestamp": "2025-05-02T09:19:02.303652", "level": "INFO", "name": "uvicorn", "message": "\u2705 Conectado al servidor OPC UA.", "filename": "opc.py", "line": 24}
+{"timestamp": "2025-05-02T09:19:02.303955", "level": "INFO", "name": "uvicorn", "message": "No se encontr\u00f3 la conexi\u00f3n para poll_id: datos", "filename": "ws.py", "line": 28}
+{"timestamp": "2025-05-02T09:19:02.558439", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[22]' (ID: 222) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:03.278971", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[23]' (ID: 223) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:03.998225", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[24]' (ID: 224) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:04.516645", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[25]' (ID: 225) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:05.074075", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[26]' (ID: 226) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:05.601343", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[27]' (ID: 227) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:06.130409", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[28]' (ID: 228) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:06.321574", "level": "INFO", "name": "uvicorn", "message": "----------DATO 1 INCIIO DEL CICLO: False", "filename": "opcService.py", "line": 173}
+{"timestamp": "2025-05-02T09:19:06.586756", "level": "INFO", "name": "uvicorn", "message": "ESTADO CICLO DES False - ULTIMO ESTADO: None", "filename": "opcService.py", "line": 177}
+{"timestamp": "2025-05-02T09:19:06.655290", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[29]' (ID: 229) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:06.855618", "level": "ERROR", "name": "uvicorn", "message": "Error al obtener la conexi\u00f3n OPC del PLC:", "filename": "opcService.py", "line": 321}
+{"timestamp": "2025-05-02T09:19:06.855876", "level": "INFO", "name": "uvicorn", "message": "\ud83d\udd04 Intentando reconectar al servidor OPC UA...", "filename": "opc.py", "line": 41}
+{"timestamp": "2025-05-02T09:19:07.371264", "level": "WARNING", "name": "uvicorn", "message": "\u26a0\ufe0f Conexi\u00f3n OPC UA cerrada.", "filename": "opc.py", "line": 35}
+{"timestamp": "2025-05-02T09:19:07.537104", "level": "INFO", "name": "uvicorn", "message": "[INICIO] Grupo de alarma detectado: 'CANCELACION'", "filename": "opcAlarmas.py", "line": 49}
+Requested session timeout to be 3600000ms, got 30000ms instead
+{"timestamp": "2025-05-02T09:19:08.075702", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[0]' (ID: 700) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:08.154555", "level": "INFO", "name": "uvicorn", "message": "\u2705 Conectado al servidor OPC UA.", "filename": "opc.py", "line": 24}
+{"timestamp": "2025-05-02T09:19:08.154943", "level": "INFO", "name": "uvicorn", "message": "No se encontr\u00f3 la conexi\u00f3n para poll_id: datos", "filename": "ws.py", "line": 28}
+{"timestamp": "2025-05-02T09:19:08.631535", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[1]' (ID: 701) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:09.270224", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[2]' (ID: 702) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:09.825122", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[3]' (ID: 703) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:10.346024", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[4]' (ID: 704) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:10.853849", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[5]' (ID: 705) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:11.365290", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[6]' (ID: 706) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:11.896593", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[7]' (ID: 707) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:12.085998", "level": "INFO", "name": "uvicorn", "message": "----------DATO 1 INCIIO DEL CICLO: False", "filename": "opcService.py", "line": 173}
+{"timestamp": "2025-05-02T09:19:12.371679", "level": "INFO", "name": "uvicorn", "message": "ESTADO CICLO DES False - ULTIMO ESTADO: None", "filename": "opcService.py", "line": 177}
+{"timestamp": "2025-05-02T09:19:12.425581", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[8]' (ID: 708) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:12.629718", "level": "ERROR", "name": "uvicorn", "message": "Error al obtener la conexi\u00f3n OPC del PLC:", "filename": "opcService.py", "line": 321}
+{"timestamp": "2025-05-02T09:19:12.629952", "level": "INFO", "name": "uvicorn", "message": "\ud83d\udd04 Intentando reconectar al servidor OPC UA...", "filename": "opc.py", "line": 41}
+{"timestamp": "2025-05-02T09:19:13.206002", "level": "WARNING", "name": "uvicorn", "message": "\u26a0\ufe0f Conexi\u00f3n OPC UA cerrada.", "filename": "opc.py", "line": 35}
+{"timestamp": "2025-05-02T09:19:13.394219", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[9]' (ID: 709) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:13.707757", "level": "INFO", "name": "uvicorn.error", "message": "Shutting down", "filename": "server.py", "line": 262}
+{"timestamp": "2025-05-02T09:19:13.707757", "level": "INFO", "name": "uvicorn.error", "message": "Shutting down", "filename": "server.py", "line": 262}
+{"timestamp": "2025-05-02T09:19:13.808932", "level": "INFO", "name": "uvicorn.error", "message": "Waiting for application shutdown.", "filename": "on.py", "line": 67}
+{"timestamp": "2025-05-02T09:19:13.808932", "level": "INFO", "name": "uvicorn.error", "message": "Waiting for application shutdown.", "filename": "on.py", "line": 67}
+Requested session timeout to be 3600000ms, got 30000ms instead
+{"timestamp": "2025-05-02T09:19:14.042304", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[10]' (ID: 710) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:14.737043", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[11]' (ID: 711) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:14.821879", "level": "ERROR", "name": "uvicorn.error", "message": "Traceback (most recent call last):\n  File \"/home/jfulguera/.local/lib/python3.13/site-packages/starlette/routing.py\", line 693, in lifespan\n    async with self.lifespan_context(app) as maybe_state:\n               ~~~~~~~~~~~~~~~~~~~~~^^^^^\n  File \"/usr/lib64/python3.13/contextlib.py\", line 221, in __aexit__\n    await anext(self.gen)\n  File \"/home/jfulguera/.local/lib/python3.13/site-packages/fastapi/routing.py\", line 133, in merged_lifespan\n    async with original_context(app) as maybe_original_state:\n               ~~~~~~~~~~~~~~~~^^^^^\n  File \"/usr/lib64/python3.13/contextlib.py\", line 221, in __aexit__\n    await anext(self.gen)\n  File \"/home/jfulguera/.local/lib/python3.13/site-packages/fastapi/routing.py\", line 133, in merged_lifespan\n    async with original_context(app) as maybe_original_state:\n               ~~~~~~~~~~~~~~~~^^^^^\n  File \"/usr/lib64/python3.13/contextlib.py\", line 221, in __aexit__\n    await anext(self.gen)\n  File \"/home/jfulguera/.local/lib/python3.13/site-packages/fastapi/routing.py\", line 133, in merged_lifespan\n    async with original_context(app) as maybe_original_state:\n               ~~~~~~~~~~~~~~~~^^^^^\n  File \"/usr/lib64/python3.13/contextlib.py\", line 221, in __aexit__\n    await anext(self.gen)\n  File \"/home/jfulguera/.local/lib/python3.13/site-packages/fastapi/routing.py\", line 133, in merged_lifespan\n    async with original_context(app) as maybe_original_state:\n               ~~~~~~~~~~~~~~~~^^^^^\n  File \"/usr/lib64/python3.13/contextlib.py\", line 221, in __aexit__\n    await anext(self.gen)\n  File \"/home/jfulguera/Im\u00e1genes/DEPLOY EFA/api_efa/main.py\", line 254, in lifespan\n    p2.terminate()  # Como backup si no se cerraron\n    ~~~~~~~~~~~~^^\n  File \"/usr/lib64/python3.13/multiprocessing/process.py\", line 133, in terminate\n    self._popen.terminate()\n    ^^^^^^^^^^^^^^^^^^^^^\nAttributeError: 'NoneType' object has no attribute 'terminate'\n", "filename": "on.py", "line": 134}
+{"timestamp": "2025-05-02T09:19:14.821879", "level": "ERROR", "name": "uvicorn.error", "message": "Traceback (most recent call last):\n  File \"/home/jfulguera/.local/lib/python3.13/site-packages/starlette/routing.py\", line 693, in lifespan\n    async with self.lifespan_context(app) as maybe_state:\n               ~~~~~~~~~~~~~~~~~~~~~^^^^^\n  File \"/usr/lib64/python3.13/contextlib.py\", line 221, in __aexit__\n    await anext(self.gen)\n  File \"/home/jfulguera/.local/lib/python3.13/site-packages/fastapi/routing.py\", line 133, in merged_lifespan\n    async with original_context(app) as maybe_original_state:\n               ~~~~~~~~~~~~~~~~^^^^^\n  File \"/usr/lib64/python3.13/contextlib.py\", line 221, in __aexit__\n    await anext(self.gen)\n  File \"/home/jfulguera/.local/lib/python3.13/site-packages/fastapi/routing.py\", line 133, in merged_lifespan\n    async with original_context(app) as maybe_original_state:\n               ~~~~~~~~~~~~~~~~^^^^^\n  File \"/usr/lib64/python3.13/contextlib.py\", line 221, in __aexit__\n    await anext(self.gen)\n  File \"/home/jfulguera/.local/lib/python3.13/site-packages/fastapi/routing.py\", line 133, in merged_lifespan\n    async with original_context(app) as maybe_original_state:\n               ~~~~~~~~~~~~~~~~^^^^^\n  File \"/usr/lib64/python3.13/contextlib.py\", line 221, in __aexit__\n    await anext(self.gen)\n  File \"/home/jfulguera/.local/lib/python3.13/site-packages/fastapi/routing.py\", line 133, in merged_lifespan\n    async with original_context(app) as maybe_original_state:\n               ~~~~~~~~~~~~~~~~^^^^^\n  File \"/usr/lib64/python3.13/contextlib.py\", line 221, in __aexit__\n    await anext(self.gen)\n  File \"/home/jfulguera/Im\u00e1genes/DEPLOY EFA/api_efa/main.py\", line 254, in lifespan\n    p2.terminate()  # Como backup si no se cerraron\n    ~~~~~~~~~~~~^^\n  File \"/usr/lib64/python3.13/multiprocessing/process.py\", line 133, in terminate\n    self._popen.terminate()\n    ^^^^^^^^^^^^^^^^^^^^^\nAttributeError: 'NoneType' object has no attribute 'terminate'\n", "filename": "on.py", "line": 134}
+{"timestamp": "2025-05-02T09:19:14.822746", "level": "ERROR", "name": "uvicorn.error", "message": "Application shutdown failed. Exiting.", "filename": "on.py", "line": 73}
+{"timestamp": "2025-05-02T09:19:14.822746", "level": "ERROR", "name": "uvicorn.error", "message": "Application shutdown failed. Exiting.", "filename": "on.py", "line": 73}
+{"timestamp": "2025-05-02T09:19:14.823060", "level": "INFO", "name": "uvicorn.error", "message": "Finished server process [103707]", "filename": "server.py", "line": 92}
+{"timestamp": "2025-05-02T09:19:14.823060", "level": "INFO", "name": "uvicorn.error", "message": "Finished server process [103707]", "filename": "server.py", "line": 92}
+{"timestamp": "2025-05-02T09:19:14.823609", "level": "INFO", "name": "uvicorn", "message": "\u2705 Conectado al servidor OPC UA.", "filename": "opc.py", "line": 24}
+{"timestamp": "2025-05-02T09:19:14.823738", "level": "INFO", "name": "uvicorn", "message": "No se encontr\u00f3 la conexi\u00f3n para poll_id: datos", "filename": "ws.py", "line": 28}
+Traceback (most recent call last):
+  File "/usr/lib64/python3.13/threading.py", line 1540, in _shutdown
+    _thread_shutdown()
+KeyboardInterrupt: 
+Exception ignored in atexit callback <function _exit_function at 0x7f70525ab4c0>:
+Traceback (most recent call last):
+  File "/usr/lib64/python3.13/multiprocessing/util.py", line 349, in _exit_function
+    p.join()
+  File "/usr/lib64/python3.13/multiprocessing/process.py", line 149, in join
+    res = self._popen.wait(timeout)
+  File "/usr/lib64/python3.13/multiprocessing/popen_fork.py", line 44, in wait
+    return self.poll(os.WNOHANG if timeout == 0.0 else 0)
+  File "/usr/lib64/python3.13/multiprocessing/popen_fork.py", line 28, in poll
+    pid, sts = os.waitpid(self.pid, flag)
+KeyboardInterrupt: 
+{"timestamp": "2025-05-02T09:19:15.456789", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[12]' (ID: 712) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:16.172070", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[13]' (ID: 713) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:16.733940", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[14]' (ID: 714) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:17.401205", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[15]' (ID: 715) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:18.117321", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[16]' (ID: 716) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:18.717808", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[17]' (ID: 717) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:19.473965", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[18]' (ID: 718) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:20.086644", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[19]' (ID: 719) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:20.731735", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[20]' (ID: 720) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:21.494212", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[21]' (ID: 721) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:21.991775", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[22]' (ID: 722) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:22.559045", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[23]' (ID: 723) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:23.088660", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[24]' (ID: 724) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:23.668207", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[25]' (ID: 725) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:24.257336", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[26]' (ID: 726) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:24.872441", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[27]' (ID: 727) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:25.397907", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[28]' (ID: 728) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:25.951378", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[29]' (ID: 729) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:26.608230", "level": "INFO", "name": "uvicorn", "message": "[INICIO] Grupo de alarma detectado: 'PULSADORES'", "filename": "opcAlarmas.py", "line": 49}
+{"timestamp": "2025-05-02T09:19:27.021295", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[0]' (ID: 800) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:27.638825", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[1]' (ID: 801) - Valor le\u00eddo: True", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:27.677095", "level": "INFO", "name": "uvicorn", "message": "[GUARDADO] Se registr\u00f3 la alarma '[1]' con ID 801 y estado 'True'", "filename": "opcAlarmas.py", "line": 106}
+{"timestamp": "2025-05-02T09:19:28.246549", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[2]' (ID: 802) - Valor le\u00eddo: True", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:28.272236", "level": "INFO", "name": "uvicorn", "message": "[GUARDADO] Se registr\u00f3 la alarma '[2]' con ID 802 y estado 'True'", "filename": "opcAlarmas.py", "line": 106}
+{"timestamp": "2025-05-02T09:19:28.862191", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[3]' (ID: 803) - Valor le\u00eddo: True", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:28.885499", "level": "INFO", "name": "uvicorn", "message": "[GUARDADO] Se registr\u00f3 la alarma '[3]' con ID 803 y estado 'True'", "filename": "opcAlarmas.py", "line": 106}
+{"timestamp": "2025-05-02T09:19:29.411841", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[4]' (ID: 804) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:29.973992", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[5]' (ID: 805) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:30.584905", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[6]' (ID: 806) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:31.092969", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[7]' (ID: 807) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:31.649424", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[8]' (ID: 808) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:32.265284", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[9]' (ID: 809) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:32.809711", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[10]' (ID: 810) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:33.391117", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[11]' (ID: 811) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:34.021668", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[12]' (ID: 812) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:34.692533", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[13]' (ID: 813) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:35.229632", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[14]' (ID: 814) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:35.853378", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[15]' (ID: 815) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:36.409304", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[16]' (ID: 816) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:37.047412", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[17]' (ID: 817) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:37.690836", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[18]' (ID: 818) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:38.376238", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[19]' (ID: 819) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:39.197658", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[20]' (ID: 820) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:39.935622", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[21]' (ID: 821) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:40.627958", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[22]' (ID: 822) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:41.346359", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[23]' (ID: 823) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:42.040715", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[24]' (ID: 824) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:43.138297", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[25]' (ID: 825) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:43.949906", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[26]' (ID: 826) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:44.676805", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[27]' (ID: 827) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:45.578972", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[28]' (ID: 828) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:46.398561", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[29]' (ID: 829) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:47.077882", "level": "INFO", "name": "uvicorn", "message": "[INICIO] Grupo de alarma detectado: 'SERVOS'", "filename": "opcAlarmas.py", "line": 49}
+{"timestamp": "2025-05-02T09:19:47.690731", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[0]' (ID: 500) - Valor le\u00eddo: True", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:47.707214", "level": "INFO", "name": "uvicorn", "message": "[GUARDADO] Se registr\u00f3 la alarma '[0]' con ID 500 y estado 'True'", "filename": "opcAlarmas.py", "line": 106}
+{"timestamp": "2025-05-02T09:19:48.404405", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[1]' (ID: 501) - Valor le\u00eddo: True", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:48.421788", "level": "INFO", "name": "uvicorn", "message": "[GUARDADO] Se registr\u00f3 la alarma '[1]' con ID 501 y estado 'True'", "filename": "opcAlarmas.py", "line": 106}
+{"timestamp": "2025-05-02T09:19:49.132945", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[2]' (ID: 502) - Valor le\u00eddo: True", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:49.151675", "level": "INFO", "name": "uvicorn", "message": "[GUARDADO] Se registr\u00f3 la alarma '[2]' con ID 502 y estado 'True'", "filename": "opcAlarmas.py", "line": 106}
+{"timestamp": "2025-05-02T09:19:49.759702", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[3]' (ID: 503) - Valor le\u00eddo: True", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:49.778902", "level": "INFO", "name": "uvicorn", "message": "[GUARDADO] Se registr\u00f3 la alarma '[3]' con ID 503 y estado 'True'", "filename": "opcAlarmas.py", "line": 106}
+{"timestamp": "2025-05-02T09:19:50.422404", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[4]' (ID: 504) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:51.117881", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[5]' (ID: 505) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:51.681686", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[6]' (ID: 506) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:52.396049", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[7]' (ID: 507) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:53.216472", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[8]' (ID: 508) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:53.826909", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[9]' (ID: 509) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:54.464509", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[10]' (ID: 510) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:55.264446", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[11]' (ID: 511) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:56.005469", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[12]' (ID: 512) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:56.738215", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[13]' (ID: 513) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:57.284343", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[14]' (ID: 514) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:57.820733", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[15]' (ID: 515) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:58.465840", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[16]' (ID: 516) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:59.173121", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[17]' (ID: 517) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:59.812513", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[18]' (ID: 518) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:00.590325", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[19]' (ID: 519) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:01.520306", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[20]' (ID: 520) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:02.222426", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[21]' (ID: 521) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:02.938154", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[22]' (ID: 522) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:03.660056", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[23]' (ID: 523) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:04.204130", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[24]' (ID: 524) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:04.804096", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[25]' (ID: 525) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:05.361630", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[26]' (ID: 526) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:05.878942", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[27]' (ID: 527) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:06.498177", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[28]' (ID: 528) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:07.016363", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[29]' (ID: 529) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:07.529381", "level": "INFO", "name": "uvicorn", "message": "[INICIO] Grupo de alarma detectado: 'INICIO DE CICLO'", "filename": "opcAlarmas.py", "line": 49}
+{"timestamp": "2025-05-02T09:20:07.949800", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[0]' (ID: 600) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:08.460817", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[1]' (ID: 601) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:08.973432", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[2]' (ID: 602) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:09.484257", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[3]' (ID: 603) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:10.103035", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[4]' (ID: 604) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:10.819961", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[5]' (ID: 605) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:11.569309", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[6]' (ID: 606) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:12.146446", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[7]' (ID: 607) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:12.658010", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[8]' (ID: 608) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:13.444578", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[9]' (ID: 609) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:14.093566", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[10]' (ID: 610) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:14.709285", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[11]' (ID: 611) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:15.356139", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[12]' (ID: 612) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:16.036839", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[13]' (ID: 613) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:16.575533", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[14]' (ID: 614) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:17.262897", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[15]' (ID: 615) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:17.879431", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[16]' (ID: 616) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:18.597191", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[17]' (ID: 617) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:19.342009", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[18]' (ID: 618) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:19.928004", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[19]' (ID: 619) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:20.524909", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[20]' (ID: 620) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:21.106785", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[21]' (ID: 621) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:21.785597", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[22]' (ID: 622) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:22.484525", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[23]' (ID: 623) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:23.043841", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[24]' (ID: 624) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:23.899157", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[25]' (ID: 625) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:27.975165", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[26]' (ID: 626) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:28.498101", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[27]' (ID: 627) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:29.054003", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[28]' (ID: 628) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:29.572460", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[29]' (ID: 629) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:30.098585", "level": "INFO", "name": "uvicorn", "message": "[INICIO] Grupo de alarma detectado: 'GENERALES'", "filename": "opcAlarmas.py", "line": 49}
+{"timestamp": "2025-05-02T09:20:30.502576", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[0]' (ID: 400) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:31.032850", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[1]' (ID: 401) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:31.778018", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[2]' (ID: 402) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:32.459971", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[3]' (ID: 403) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:33.024082", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[4]' (ID: 404) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:33.898230", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[5]' (ID: 405) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:34.410220", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[6]' (ID: 406) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:34.929465", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[7]' (ID: 407) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:35.683594", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[8]' (ID: 408) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:36.430628", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[9]' (ID: 409) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:37.014206", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[10]' (ID: 410) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:37.626369", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[11]' (ID: 411) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:38.160864", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[12]' (ID: 412) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:38.958363", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[13]' (ID: 413) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:39.572599", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[14]' (ID: 414) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:40.291587", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[15]' (ID: 415) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:41.108185", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[16]' (ID: 416) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:41.825245", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[17]' (ID: 417) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:42.441033", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[18]' (ID: 418) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:43.093898", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[19]' (ID: 419) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:43.789926", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[20]' (ID: 420) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:44.383682", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[21]' (ID: 421) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:44.997406", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[22]' (ID: 422) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:45.712667", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[23]' (ID: 423) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:46.459582", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[24]' (ID: 424) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:47.063405", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[25]' (ID: 425) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:47.863420", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[26]' (ID: 426) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:48.528047", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[27]' (ID: 427) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:49.152165", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[28]' (ID: 428) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:50.011591", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[29]' (ID: 429) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:50.623278", "level": "INFO", "name": "uvicorn", "message": "[INICIO] Grupo de alarma detectado: 'POSICIONADOR'", "filename": "opcAlarmas.py", "line": 49}
+{"timestamp": "2025-05-02T09:20:51.137805", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[0]' (ID: 300) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:51.793403", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[1]' (ID: 301) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:52.570973", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[2]' (ID: 302) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:53.181205", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[3]' (ID: 303) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:53.946284", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[4]' (ID: 304) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:54.614259", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[5]' (ID: 305) - Valor le\u00eddo: True", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:54.631296", "level": "INFO", "name": "uvicorn", "message": "[GUARDADO] Se registr\u00f3 la alarma '[5]' con ID 305 y estado 'True'", "filename": "opcAlarmas.py", "line": 106}
+{"timestamp": "2025-05-02T09:20:55.248210", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[6]' (ID: 306) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:55.948305", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[7]' (ID: 307) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:56.645536", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[8]' (ID: 308) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:57.404091", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[9]' (ID: 309) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:57.962008", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[10]' (ID: 310) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:58.634073", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[11]' (ID: 311) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:59.241635", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[12]' (ID: 312) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:59.834993", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[13]' (ID: 313) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:00.550136", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[14]' (ID: 314) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:01.165016", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[15]' (ID: 315) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:01.780904", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[16]' (ID: 316) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:02.596099", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[17]' (ID: 317) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:03.210348", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[18]' (ID: 318) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:03.929689", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[19]' (ID: 319) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:04.642649", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[20]' (ID: 320) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:05.259982", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[21]' (ID: 321) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:06.078965", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[22]' (ID: 322) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:06.831158", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[23]' (ID: 323) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:07.508330", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[24]' (ID: 324) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:08.228575", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[25]' (ID: 325) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:08.843991", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[26]' (ID: 326) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:09.456254", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[27]' (ID: 327) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:10.114203", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[28]' (ID: 328) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:10.784123", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[29]' (ID: 329) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:11.502584", "level": "INFO", "name": "uvicorn", "message": "[INICIO] Grupo de alarma detectado: 'ROBOT'", "filename": "opcAlarmas.py", "line": 49}
+{"timestamp": "2025-05-02T09:21:12.013703", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[0]' (ID: 0) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:12.765097", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[1]' (ID: 1) - Valor le\u00eddo: True", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:12.784986", "level": "INFO", "name": "uvicorn", "message": "[GUARDADO] Se registr\u00f3 la alarma '[1]' con ID 1 y estado 'True'", "filename": "opcAlarmas.py", "line": 106}
+{"timestamp": "2025-05-02T09:21:13.344023", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[2]' (ID: 2) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:13.923230", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[3]' (ID: 3) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:14.570544", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[4]' (ID: 4) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:15.187007", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[5]' (ID: 5) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:15.829620", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[6]' (ID: 6) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:16.376986", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[7]' (ID: 7) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:17.025680", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[8]' (ID: 8) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:17.596271", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[9]' (ID: 9) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:18.105377", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[10]' (ID: 10) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:18.682229", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[11]' (ID: 11) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:19.307658", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[12]' (ID: 12) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:19.846954", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[13]' (ID: 13) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:20.406435", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[14]' (ID: 14) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:21.222093", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[15]' (ID: 15) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:21.838267", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[16]' (ID: 16) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:22.452177", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[17]' (ID: 17) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:23.268224", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[18]' (ID: 18) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:23.986011", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[19]' (ID: 19) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:24.700819", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[20]' (ID: 20) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:25.389242", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[21]' (ID: 21) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:25.931940", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[22]' (ID: 22) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:26.678280", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[23]' (ID: 23) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:27.498176", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[24]' (ID: 24) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:28.021768", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[25]' (ID: 25) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:28.709236", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[26]' (ID: 26) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:29.407511", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[27]' (ID: 27) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:30.030957", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[28]' (ID: 28) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:30.764994", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[29]' (ID: 29) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:31.558966", "level": "INFO", "name": "uvicorn", "message": "[INICIO] Grupo de alarma detectado: 'SDDA'", "filename": "opcAlarmas.py", "line": 49}
+{"timestamp": "2025-05-02T09:21:32.070768", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[0]' (ID: 100) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:32.709552", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[1]' (ID: 101) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:33.319451", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[2]' (ID: 102) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:33.914285", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[3]' (ID: 103) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:34.661619", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[4]' (ID: 104) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:35.245253", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[5]' (ID: 105) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:35.961469", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[6]' (ID: 106) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:36.711892", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[7]' (ID: 107) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:37.455300", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[8]' (ID: 108) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:38.012905", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[9]' (ID: 109) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:38.824790", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[10]' (ID: 110) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:39.438214", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[11]' (ID: 111) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:40.017423", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[12]' (ID: 112) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:40.667569", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[13]' (ID: 113) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:41.383331", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[14]' (ID: 114) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:42.203368", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[15]' (ID: 115) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:42.916363", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[16]' (ID: 116) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:43.498078", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[17]' (ID: 117) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:44.143680", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[18]' (ID: 118) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:44.656982", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[19]' (ID: 119) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:45.273549", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[20]' (ID: 120) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:45.885239", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[21]' (ID: 121) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:46.630322", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[22]' (ID: 122) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:47.215068", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[23]' (ID: 123) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:47.981093", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[24]' (ID: 124) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:48.648677", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[25]' (ID: 125) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:49.391934", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[26]' (ID: 126) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:49.979121", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[27]' (ID: 127) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:50.618188", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[28]' (ID: 128) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:51.511440", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[29]' (ID: 129) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:57.554446", "level": "WARNING", "name": "uvicorn", "message": "\u26a0\ufe0f Conexi\u00f3n OPC UA cerrada.", "filename": "opc.py", "line": 35}
+⏱ [UPDATE ALARMAS] Tiempo de ejecución: 3 minutos y 4 segundos
+evel": "INFO", "name": "uvicorn", "message": "\u2705 Conectado al servidor OPC UA.", "filename": "opc.py", "line": 24}
+{"timestamp": "2025-05-02T09:18:46.933979", "level": "INFO", "name": "uvicorn", "message": "Conectado al servidor OPC UA.", "filename": "main.py", "line": 235}
+{"timestamp": "2025-05-02T09:18:47.658137", "level": "INFO", "name": "uvicorn", "message": "\u2705 Conectado al servidor OPC UA.", "filename": "opc.py", "line": 24}
+{"timestamp": "2025-05-02T09:18:48.530440", "level": "INFO", "name": "uvicorn", "message": "[INICIO] Grupo de alarma detectado: 'FALLAS CILINDROS'", "filename": "opcAlarmas.py", "line": 49}
+{"timestamp": "2025-05-02T09:18:48.931688", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[0]' (ID: 200) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:18:49.005328", "level": "INFO", "name": "uvicorn", "message": "----------DATO 1 INCIIO DEL CICLO: False", "filename": "opcService.py", "line": 173}
+{"timestamp": "2025-05-02T09:18:49.288695", "level": "INFO", "name": "uvicorn", "message": "ESTADO CICLO DES False - ULTIMO ESTADO: None", "filename": "opcService.py", "line": 177}
+{"timestamp": "2025-05-02T09:18:49.519584", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[1]' (ID: 201) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:18:49.600890", "level": "ERROR", "name": "uvicorn", "message": "Error al obtener la conexi\u00f3n OPC del PLC:", "filename": "opcService.py", "line": 321}
+{"timestamp": "2025-05-02T09:18:49.601198", "level": "INFO", "name": "uvicorn", "message": "\ud83d\udd04 Intentando reconectar al servidor OPC UA...", "filename": "opc.py", "line": 41}
+{"timestamp": "2025-05-02T09:18:50.042805", "level": "WARNING", "name": "uvicorn", "message": "\u26a0\ufe0f Conexi\u00f3n OPC UA cerrada.", "filename": "opc.py", "line": 35}
+{"timestamp": "2025-05-02T09:18:50.043543", "level": "INFO", "name": "uvicorn.error", "message": "Application startup complete.", "filename": "on.py", "line": 62}
+{"timestamp": "2025-05-02T09:18:50.043543", "level": "INFO", "name": "uvicorn.error", "message": "Application startup complete.", "filename": "on.py", "line": 62}
+{"timestamp": "2025-05-02T09:18:50.044885", "level": "INFO", "name": "uvicorn.error", "message": "Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)", "filename": "server.py", "line": 214}
+{"timestamp": "2025-05-02T09:18:50.044885", "level": "INFO", "name": "uvicorn.error", "message": "Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)", "filename": "server.py", "line": 214}
+{"timestamp": "2025-05-02T09:18:50.363887", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[2]' (ID: 202) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:18:50.808977", "level": "INFO", "name": "uvicorn", "message": "\u2705 Conectado al servidor OPC UA.", "filename": "opc.py", "line": 24}
+{"timestamp": "2025-05-02T09:18:50.809346", "level": "INFO", "name": "uvicorn", "message": "No se encontr\u00f3 la conexi\u00f3n para poll_id: datos", "filename": "ws.py", "line": 28}
+{"timestamp": "2025-05-02T09:18:51.101142", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[3]' (ID: 203) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:18:51.653402", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[4]' (ID: 204) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:18:52.252332", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[5]' (ID: 205) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:18:52.869405", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[6]' (ID: 206) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:18:53.383220", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[7]' (ID: 207) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:18:53.891004", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[8]' (ID: 208) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:18:54.401963", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[9]' (ID: 209) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:18:54.762788", "level": "INFO", "name": "uvicorn", "message": "----------DATO 1 INCIIO DEL CICLO: False", "filename": "opcService.py", "line": 173}
+{"timestamp": "2025-05-02T09:18:54.985471", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[10]' (ID: 210) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:18:55.045388", "level": "INFO", "name": "uvicorn", "message": "ESTADO CICLO DES False - ULTIMO ESTADO: None", "filename": "opcService.py", "line": 177}
+{"timestamp": "2025-05-02T09:18:55.293572", "level": "ERROR", "name": "uvicorn", "message": "Error al obtener la conexi\u00f3n OPC del PLC:", "filename": "opcService.py", "line": 321}
+{"timestamp": "2025-05-02T09:18:55.293763", "level": "INFO", "name": "uvicorn", "message": "\ud83d\udd04 Intentando reconectar al servidor OPC UA...", "filename": "opc.py", "line": 41}
+{"timestamp": "2025-05-02T09:18:55.807715", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[11]' (ID: 211) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:18:55.807954", "level": "WARNING", "name": "uvicorn", "message": "\u26a0\ufe0f Conexi\u00f3n OPC UA cerrada.", "filename": "opc.py", "line": 35}
+{"timestamp": "2025-05-02T09:18:56.488579", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[12]' (ID: 212) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:18:56.573506", "level": "INFO", "name": "uvicorn", "message": "\u2705 Conectado al servidor OPC UA.", "filename": "opc.py", "line": 24}
+{"timestamp": "2025-05-02T09:18:56.573831", "level": "INFO", "name": "uvicorn", "message": "No se encontr\u00f3 la conexi\u00f3n para poll_id: datos", "filename": "ws.py", "line": 28}
+{"timestamp": "2025-05-02T09:18:57.146842", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[13]' (ID: 213) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:18:57.750831", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[14]' (ID: 214) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:18:58.289813", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[15]' (ID: 215) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:18:58.900604", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[16]' (ID: 216) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:18:59.412441", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[17]' (ID: 217) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:18:59.947180", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[18]' (ID: 218) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:00.464325", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[19]' (ID: 219) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:00.536775", "level": "INFO", "name": "uvicorn", "message": "----------DATO 1 INCIIO DEL CICLO: False", "filename": "opcService.py", "line": 173}
+{"timestamp": "2025-05-02T09:19:00.817809", "level": "INFO", "name": "uvicorn", "message": "ESTADO CICLO DES False - ULTIMO ESTADO: None", "filename": "opcService.py", "line": 177}
+{"timestamp": "2025-05-02T09:19:01.001609", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[20]' (ID: 220) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:01.066261", "level": "ERROR", "name": "uvicorn", "message": "Error al obtener la conexi\u00f3n OPC del PLC:", "filename": "opcService.py", "line": 321}
+{"timestamp": "2025-05-02T09:19:01.066767", "level": "INFO", "name": "uvicorn", "message": "\ud83d\udd04 Intentando reconectar al servidor OPC UA...", "filename": "opc.py", "line": 41}
+{"timestamp": "2025-05-02T09:19:01.503376", "level": "WARNING", "name": "uvicorn", "message": "\u26a0\ufe0f Conexi\u00f3n OPC UA cerrada.", "filename": "opc.py", "line": 35}
+{"timestamp": "2025-05-02T09:19:01.830226", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[21]' (ID: 221) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:02.303652", "level": "INFO", "name": "uvicorn", "message": "\u2705 Conectado al servidor OPC UA.", "filename": "opc.py", "line": 24}
+{"timestamp": "2025-05-02T09:19:02.303955", "level": "INFO", "name": "uvicorn", "message": "No se encontr\u00f3 la conexi\u00f3n para poll_id: datos", "filename": "ws.py", "line": 28}
+{"timestamp": "2025-05-02T09:19:02.558439", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[22]' (ID: 222) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:03.278971", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[23]' (ID: 223) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:03.998225", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[24]' (ID: 224) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:04.516645", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[25]' (ID: 225) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:05.074075", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[26]' (ID: 226) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:05.601343", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[27]' (ID: 227) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:06.130409", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[28]' (ID: 228) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:06.321574", "level": "INFO", "name": "uvicorn", "message": "----------DATO 1 INCIIO DEL CICLO: False", "filename": "opcService.py", "line": 173}
+{"timestamp": "2025-05-02T09:19:06.586756", "level": "INFO", "name": "uvicorn", "message": "ESTADO CICLO DES False - ULTIMO ESTADO: None", "filename": "opcService.py", "line": 177}
+{"timestamp": "2025-05-02T09:19:06.655290", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[29]' (ID: 229) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:06.855618", "level": "ERROR", "name": "uvicorn", "message": "Error al obtener la conexi\u00f3n OPC del PLC:", "filename": "opcService.py", "line": 321}
+{"timestamp": "2025-05-02T09:19:06.855876", "level": "INFO", "name": "uvicorn", "message": "\ud83d\udd04 Intentando reconectar al servidor OPC UA...", "filename": "opc.py", "line": 41}
+{"timestamp": "2025-05-02T09:19:07.371264", "level": "WARNING", "name": "uvicorn", "message": "\u26a0\ufe0f Conexi\u00f3n OPC UA cerrada.", "filename": "opc.py", "line": 35}
+{"timestamp": "2025-05-02T09:19:07.537104", "level": "INFO", "name": "uvicorn", "message": "[INICIO] Grupo de alarma detectado: 'CANCELACION'", "filename": "opcAlarmas.py", "line": 49}
+{"timestamp": "2025-05-02T09:19:08.075702", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[0]' (ID: 700) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:08.154555", "level": "INFO", "name": "uvicorn", "message": "\u2705 Conectado al servidor OPC UA.", "filename": "opc.py", "line": 24}
+{"timestamp": "2025-05-02T09:19:08.154943", "level": "INFO", "name": "uvicorn", "message": "No se encontr\u00f3 la conexi\u00f3n para poll_id: datos", "filename": "ws.py", "line": 28}
+{"timestamp": "2025-05-02T09:19:08.631535", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[1]' (ID: 701) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:09.270224", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[2]' (ID: 702) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:09.825122", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[3]' (ID: 703) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:10.346024", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[4]' (ID: 704) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:10.853849", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[5]' (ID: 705) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:11.365290", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[6]' (ID: 706) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:11.896593", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[7]' (ID: 707) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:12.085998", "level": "INFO", "name": "uvicorn", "message": "----------DATO 1 INCIIO DEL CICLO: False", "filename": "opcService.py", "line": 173}
+{"timestamp": "2025-05-02T09:19:12.371679", "level": "INFO", "name": "uvicorn", "message": "ESTADO CICLO DES False - ULTIMO ESTADO: None", "filename": "opcService.py", "line": 177}
+{"timestamp": "2025-05-02T09:19:12.425581", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[8]' (ID: 708) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:12.629718", "level": "ERROR", "name": "uvicorn", "message": "Error al obtener la conexi\u00f3n OPC del PLC:", "filename": "opcService.py", "line": 321}
+{"timestamp": "2025-05-02T09:19:12.629952", "level": "INFO", "name": "uvicorn", "message": "\ud83d\udd04 Intentando reconectar al servidor OPC UA...", "filename": "opc.py", "line": 41}
+{"timestamp": "2025-05-02T09:19:13.206002", "level": "WARNING", "name": "uvicorn", "message": "\u26a0\ufe0f Conexi\u00f3n OPC UA cerrada.", "filename": "opc.py", "line": 35}
+{"timestamp": "2025-05-02T09:19:13.394219", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[9]' (ID: 709) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:13.707757", "level": "INFO", "name": "uvicorn.error", "message": "Shutting down", "filename": "server.py", "line": 262}
+{"timestamp": "2025-05-02T09:19:13.707757", "level": "INFO", "name": "uvicorn.error", "message": "Shutting down", "filename": "server.py", "line": 262}
+{"timestamp": "2025-05-02T09:19:13.808932", "level": "INFO", "name": "uvicorn.error", "message": "Waiting for application shutdown.", "filename": "on.py", "line": 67}
+{"timestamp": "2025-05-02T09:19:13.808932", "level": "INFO", "name": "uvicorn.error", "message": "Waiting for application shutdown.", "filename": "on.py", "line": 67}
+{"timestamp": "2025-05-02T09:19:14.042304", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[10]' (ID: 710) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:14.737043", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[11]' (ID: 711) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:14.821879", "level": "ERROR", "name": "uvicorn.error", "message": "Traceback (most recent call last):\n  File \"/home/jfulguera/.local/lib/python3.13/site-packages/starlette/routing.py\", line 693, in lifespan\n    async with self.lifespan_context(app) as maybe_state:\n               ~~~~~~~~~~~~~~~~~~~~~^^^^^\n  File \"/usr/lib64/python3.13/contextlib.py\", line 221, in __aexit__\n    await anext(self.gen)\n  File \"/home/jfulguera/.local/lib/python3.13/site-packages/fastapi/routing.py\", line 133, in merged_lifespan\n    async with original_context(app) as maybe_original_state:\n               ~~~~~~~~~~~~~~~~^^^^^\n  File \"/usr/lib64/python3.13/contextlib.py\", line 221, in __aexit__\n    await anext(self.gen)\n  File \"/home/jfulguera/.local/lib/python3.13/site-packages/fastapi/routing.py\", line 133, in merged_lifespan\n    async with original_context(app) as maybe_original_state:\n               ~~~~~~~~~~~~~~~~^^^^^\n  File \"/usr/lib64/python3.13/contextlib.py\", line 221, in __aexit__\n    await anext(self.gen)\n  File \"/home/jfulguera/.local/lib/python3.13/site-packages/fastapi/routing.py\", line 133, in merged_lifespan\n    async with original_context(app) as maybe_original_state:\n               ~~~~~~~~~~~~~~~~^^^^^\n  File \"/usr/lib64/python3.13/contextlib.py\", line 221, in __aexit__\n    await anext(self.gen)\n  File \"/home/jfulguera/.local/lib/python3.13/site-packages/fastapi/routing.py\", line 133, in merged_lifespan\n    async with original_context(app) as maybe_original_state:\n               ~~~~~~~~~~~~~~~~^^^^^\n  File \"/usr/lib64/python3.13/contextlib.py\", line 221, in __aexit__\n    await anext(self.gen)\n  File \"/home/jfulguera/Im\u00e1genes/DEPLOY EFA/api_efa/main.py\", line 254, in lifespan\n    p2.terminate()  # Como backup si no se cerraron\n    ~~~~~~~~~~~~^^\n  File \"/usr/lib64/python3.13/multiprocessing/process.py\", line 133, in terminate\n    self._popen.terminate()\n    ^^^^^^^^^^^^^^^^^^^^^\nAttributeError: 'NoneType' object has no attribute 'terminate'\n", "filename": "on.py", "line": 134}
+{"timestamp": "2025-05-02T09:19:14.821879", "level": "ERROR", "name": "uvicorn.error", "message": "Traceback (most recent call last):\n  File \"/home/jfulguera/.local/lib/python3.13/site-packages/starlette/routing.py\", line 693, in lifespan\n    async with self.lifespan_context(app) as maybe_state:\n               ~~~~~~~~~~~~~~~~~~~~~^^^^^\n  File \"/usr/lib64/python3.13/contextlib.py\", line 221, in __aexit__\n    await anext(self.gen)\n  File \"/home/jfulguera/.local/lib/python3.13/site-packages/fastapi/routing.py\", line 133, in merged_lifespan\n    async with original_context(app) as maybe_original_state:\n               ~~~~~~~~~~~~~~~~^^^^^\n  File \"/usr/lib64/python3.13/contextlib.py\", line 221, in __aexit__\n    await anext(self.gen)\n  File \"/home/jfulguera/.local/lib/python3.13/site-packages/fastapi/routing.py\", line 133, in merged_lifespan\n    async with original_context(app) as maybe_original_state:\n               ~~~~~~~~~~~~~~~~^^^^^\n  File \"/usr/lib64/python3.13/contextlib.py\", line 221, in __aexit__\n    await anext(self.gen)\n  File \"/home/jfulguera/.local/lib/python3.13/site-packages/fastapi/routing.py\", line 133, in merged_lifespan\n    async with original_context(app) as maybe_original_state:\n               ~~~~~~~~~~~~~~~~^^^^^\n  File \"/usr/lib64/python3.13/contextlib.py\", line 221, in __aexit__\n    await anext(self.gen)\n  File \"/home/jfulguera/.local/lib/python3.13/site-packages/fastapi/routing.py\", line 133, in merged_lifespan\n    async with original_context(app) as maybe_original_state:\n               ~~~~~~~~~~~~~~~~^^^^^\n  File \"/usr/lib64/python3.13/contextlib.py\", line 221, in __aexit__\n    await anext(self.gen)\n  File \"/home/jfulguera/Im\u00e1genes/DEPLOY EFA/api_efa/main.py\", line 254, in lifespan\n    p2.terminate()  # Como backup si no se cerraron\n    ~~~~~~~~~~~~^^\n  File \"/usr/lib64/python3.13/multiprocessing/process.py\", line 133, in terminate\n    self._popen.terminate()\n    ^^^^^^^^^^^^^^^^^^^^^\nAttributeError: 'NoneType' object has no attribute 'terminate'\n", "filename": "on.py", "line": 134}
+{"timestamp": "2025-05-02T09:19:14.822746", "level": "ERROR", "name": "uvicorn.error", "message": "Application shutdown failed. Exiting.", "filename": "on.py", "line": 73}
+{"timestamp": "2025-05-02T09:19:14.822746", "level": "ERROR", "name": "uvicorn.error", "message": "Application shutdown failed. Exiting.", "filename": "on.py", "line": 73}
+{"timestamp": "2025-05-02T09:19:14.823060", "level": "INFO", "name": "uvicorn.error", "message": "Finished server process [103707]", "filename": "server.py", "line": 92}
+{"timestamp": "2025-05-02T09:19:14.823060", "level": "INFO", "name": "uvicorn.error", "message": "Finished server process [103707]", "filename": "server.py", "line": 92}
+{"timestamp": "2025-05-02T09:19:14.823609", "level": "INFO", "name": "uvicorn", "message": "\u2705 Conectado al servidor OPC UA.", "filename": "opc.py", "line": 24}
+{"timestamp": "2025-05-02T09:19:14.823738", "level": "INFO", "name": "uvicorn", "message": "No se encontr\u00f3 la conexi\u00f3n para poll_id: datos", "filename": "ws.py", "line": 28}
+{"timestamp": "2025-05-02T09:19:15.456789", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[12]' (ID: 712) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:16.172070", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[13]' (ID: 713) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:16.733940", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[14]' (ID: 714) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:17.401205", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[15]' (ID: 715) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:18.117321", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[16]' (ID: 716) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:18.717808", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[17]' (ID: 717) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:19.473965", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[18]' (ID: 718) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:20.086644", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[19]' (ID: 719) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:20.731735", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[20]' (ID: 720) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:21.494212", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[21]' (ID: 721) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:21.991775", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[22]' (ID: 722) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:22.559045", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[23]' (ID: 723) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:23.088660", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[24]' (ID: 724) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:23.668207", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[25]' (ID: 725) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:24.257336", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[26]' (ID: 726) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:24.872441", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[27]' (ID: 727) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:25.397907", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[28]' (ID: 728) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:25.951378", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[29]' (ID: 729) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:26.608230", "level": "INFO", "name": "uvicorn", "message": "[INICIO] Grupo de alarma detectado: 'PULSADORES'", "filename": "opcAlarmas.py", "line": 49}
+{"timestamp": "2025-05-02T09:19:27.021295", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[0]' (ID: 800) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:27.638825", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[1]' (ID: 801) - Valor le\u00eddo: True", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:27.677095", "level": "INFO", "name": "uvicorn", "message": "[GUARDADO] Se registr\u00f3 la alarma '[1]' con ID 801 y estado 'True'", "filename": "opcAlarmas.py", "line": 106}
+{"timestamp": "2025-05-02T09:19:28.246549", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[2]' (ID: 802) - Valor le\u00eddo: True", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:28.272236", "level": "INFO", "name": "uvicorn", "message": "[GUARDADO] Se registr\u00f3 la alarma '[2]' con ID 802 y estado 'True'", "filename": "opcAlarmas.py", "line": 106}
+{"timestamp": "2025-05-02T09:19:28.862191", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[3]' (ID: 803) - Valor le\u00eddo: True", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:28.885499", "level": "INFO", "name": "uvicorn", "message": "[GUARDADO] Se registr\u00f3 la alarma '[3]' con ID 803 y estado 'True'", "filename": "opcAlarmas.py", "line": 106}
+{"timestamp": "2025-05-02T09:19:29.411841", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[4]' (ID: 804) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:29.973992", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[5]' (ID: 805) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:30.584905", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[6]' (ID: 806) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:31.092969", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[7]' (ID: 807) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:31.649424", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[8]' (ID: 808) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:32.265284", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[9]' (ID: 809) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:32.809711", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[10]' (ID: 810) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:33.391117", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[11]' (ID: 811) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:34.021668", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[12]' (ID: 812) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:34.692533", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[13]' (ID: 813) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:35.229632", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[14]' (ID: 814) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:35.853378", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[15]' (ID: 815) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:36.409304", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[16]' (ID: 816) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:37.047412", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[17]' (ID: 817) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:37.690836", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[18]' (ID: 818) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:38.376238", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[19]' (ID: 819) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:39.197658", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[20]' (ID: 820) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:39.935622", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[21]' (ID: 821) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:40.627958", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[22]' (ID: 822) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:41.346359", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[23]' (ID: 823) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:42.040715", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[24]' (ID: 824) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:43.138297", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[25]' (ID: 825) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:43.949906", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[26]' (ID: 826) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:44.676805", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[27]' (ID: 827) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:45.578972", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[28]' (ID: 828) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:46.398561", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[29]' (ID: 829) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:47.077882", "level": "INFO", "name": "uvicorn", "message": "[INICIO] Grupo de alarma detectado: 'SERVOS'", "filename": "opcAlarmas.py", "line": 49}
+{"timestamp": "2025-05-02T09:19:47.690731", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[0]' (ID: 500) - Valor le\u00eddo: True", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:47.707214", "level": "INFO", "name": "uvicorn", "message": "[GUARDADO] Se registr\u00f3 la alarma '[0]' con ID 500 y estado 'True'", "filename": "opcAlarmas.py", "line": 106}
+{"timestamp": "2025-05-02T09:19:48.404405", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[1]' (ID: 501) - Valor le\u00eddo: True", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:48.421788", "level": "INFO", "name": "uvicorn", "message": "[GUARDADO] Se registr\u00f3 la alarma '[1]' con ID 501 y estado 'True'", "filename": "opcAlarmas.py", "line": 106}
+{"timestamp": "2025-05-02T09:19:49.132945", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[2]' (ID: 502) - Valor le\u00eddo: True", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:49.151675", "level": "INFO", "name": "uvicorn", "message": "[GUARDADO] Se registr\u00f3 la alarma '[2]' con ID 502 y estado 'True'", "filename": "opcAlarmas.py", "line": 106}
+{"timestamp": "2025-05-02T09:19:49.759702", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[3]' (ID: 503) - Valor le\u00eddo: True", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:49.778902", "level": "INFO", "name": "uvicorn", "message": "[GUARDADO] Se registr\u00f3 la alarma '[3]' con ID 503 y estado 'True'", "filename": "opcAlarmas.py", "line": 106}
+{"timestamp": "2025-05-02T09:19:50.422404", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[4]' (ID: 504) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:51.117881", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[5]' (ID: 505) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:51.681686", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[6]' (ID: 506) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:52.396049", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[7]' (ID: 507) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:53.216472", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[8]' (ID: 508) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:53.826909", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[9]' (ID: 509) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:54.464509", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[10]' (ID: 510) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:55.264446", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[11]' (ID: 511) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:56.005469", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[12]' (ID: 512) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:56.738215", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[13]' (ID: 513) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:57.284343", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[14]' (ID: 514) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:57.820733", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[15]' (ID: 515) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:58.465840", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[16]' (ID: 516) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:59.173121", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[17]' (ID: 517) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:19:59.812513", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[18]' (ID: 518) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:00.590325", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[19]' (ID: 519) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:01.520306", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[20]' (ID: 520) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:02.222426", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[21]' (ID: 521) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:02.938154", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[22]' (ID: 522) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:03.660056", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[23]' (ID: 523) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:04.204130", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[24]' (ID: 524) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:04.804096", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[25]' (ID: 525) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:05.361630", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[26]' (ID: 526) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:05.878942", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[27]' (ID: 527) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:06.498177", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[28]' (ID: 528) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:07.016363", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[29]' (ID: 529) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:07.529381", "level": "INFO", "name": "uvicorn", "message": "[INICIO] Grupo de alarma detectado: 'INICIO DE CICLO'", "filename": "opcAlarmas.py", "line": 49}
+{"timestamp": "2025-05-02T09:20:07.949800", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[0]' (ID: 600) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:08.460817", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[1]' (ID: 601) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:08.973432", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[2]' (ID: 602) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:09.484257", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[3]' (ID: 603) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:10.103035", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[4]' (ID: 604) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:10.819961", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[5]' (ID: 605) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:11.569309", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[6]' (ID: 606) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:12.146446", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[7]' (ID: 607) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:12.658010", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[8]' (ID: 608) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:13.444578", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[9]' (ID: 609) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:14.093566", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[10]' (ID: 610) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:14.709285", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[11]' (ID: 611) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:15.356139", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[12]' (ID: 612) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:16.036839", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[13]' (ID: 613) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:16.575533", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[14]' (ID: 614) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:17.262897", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[15]' (ID: 615) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:17.879431", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[16]' (ID: 616) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:18.597191", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[17]' (ID: 617) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:19.342009", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[18]' (ID: 618) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:19.928004", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[19]' (ID: 619) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:20.524909", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[20]' (ID: 620) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:21.106785", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[21]' (ID: 621) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:21.785597", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[22]' (ID: 622) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:22.484525", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[23]' (ID: 623) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:23.043841", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[24]' (ID: 624) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:23.899157", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[25]' (ID: 625) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:27.975165", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[26]' (ID: 626) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:28.498101", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[27]' (ID: 627) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:29.054003", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[28]' (ID: 628) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:29.572460", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[29]' (ID: 629) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:30.098585", "level": "INFO", "name": "uvicorn", "message": "[INICIO] Grupo de alarma detectado: 'GENERALES'", "filename": "opcAlarmas.py", "line": 49}
+{"timestamp": "2025-05-02T09:20:30.502576", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[0]' (ID: 400) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:31.032850", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[1]' (ID: 401) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:31.778018", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[2]' (ID: 402) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:32.459971", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[3]' (ID: 403) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:33.024082", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[4]' (ID: 404) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:33.898230", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[5]' (ID: 405) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:34.410220", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[6]' (ID: 406) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:34.929465", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[7]' (ID: 407) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:35.683594", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[8]' (ID: 408) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:36.430628", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[9]' (ID: 409) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:37.014206", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[10]' (ID: 410) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:37.626369", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[11]' (ID: 411) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:38.160864", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[12]' (ID: 412) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:38.958363", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[13]' (ID: 413) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:39.572599", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[14]' (ID: 414) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:40.291587", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[15]' (ID: 415) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:41.108185", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[16]' (ID: 416) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:41.825245", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[17]' (ID: 417) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:42.441033", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[18]' (ID: 418) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:43.093898", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[19]' (ID: 419) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:43.789926", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[20]' (ID: 420) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:44.383682", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[21]' (ID: 421) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:44.997406", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[22]' (ID: 422) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:45.712667", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[23]' (ID: 423) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:46.459582", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[24]' (ID: 424) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:47.063405", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[25]' (ID: 425) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:47.863420", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[26]' (ID: 426) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:48.528047", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[27]' (ID: 427) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:49.152165", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[28]' (ID: 428) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:50.011591", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[29]' (ID: 429) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:50.623278", "level": "INFO", "name": "uvicorn", "message": "[INICIO] Grupo de alarma detectado: 'POSICIONADOR'", "filename": "opcAlarmas.py", "line": 49}
+{"timestamp": "2025-05-02T09:20:51.137805", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[0]' (ID: 300) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:51.793403", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[1]' (ID: 301) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:52.570973", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[2]' (ID: 302) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:53.181205", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[3]' (ID: 303) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:53.946284", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[4]' (ID: 304) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:54.614259", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[5]' (ID: 305) - Valor le\u00eddo: True", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:54.631296", "level": "INFO", "name": "uvicorn", "message": "[GUARDADO] Se registr\u00f3 la alarma '[5]' con ID 305 y estado 'True'", "filename": "opcAlarmas.py", "line": 106}
+{"timestamp": "2025-05-02T09:20:55.248210", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[6]' (ID: 306) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:55.948305", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[7]' (ID: 307) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:56.645536", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[8]' (ID: 308) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:57.404091", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[9]' (ID: 309) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:57.962008", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[10]' (ID: 310) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:58.634073", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[11]' (ID: 311) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:59.241635", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[12]' (ID: 312) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:20:59.834993", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[13]' (ID: 313) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:00.550136", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[14]' (ID: 314) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:01.165016", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[15]' (ID: 315) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:01.780904", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[16]' (ID: 316) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:02.596099", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[17]' (ID: 317) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:03.210348", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[18]' (ID: 318) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:03.929689", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[19]' (ID: 319) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:04.642649", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[20]' (ID: 320) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:05.259982", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[21]' (ID: 321) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:06.078965", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[22]' (ID: 322) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:06.831158", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[23]' (ID: 323) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:07.508330", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[24]' (ID: 324) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:08.228575", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[25]' (ID: 325) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:08.843991", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[26]' (ID: 326) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:09.456254", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[27]' (ID: 327) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:10.114203", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[28]' (ID: 328) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:10.784123", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[29]' (ID: 329) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:11.502584", "level": "INFO", "name": "uvicorn", "message": "[INICIO] Grupo de alarma detectado: 'ROBOT'", "filename": "opcAlarmas.py", "line": 49}
+{"timestamp": "2025-05-02T09:21:12.013703", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[0]' (ID: 0) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:12.765097", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[1]' (ID: 1) - Valor le\u00eddo: True", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:12.784986", "level": "INFO", "name": "uvicorn", "message": "[GUARDADO] Se registr\u00f3 la alarma '[1]' con ID 1 y estado 'True'", "filename": "opcAlarmas.py", "line": 106}
+{"timestamp": "2025-05-02T09:21:13.344023", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[2]' (ID: 2) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:13.923230", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[3]' (ID: 3) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:14.570544", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[4]' (ID: 4) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:15.187007", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[5]' (ID: 5) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:15.829620", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[6]' (ID: 6) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:16.376986", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[7]' (ID: 7) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:17.025680", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[8]' (ID: 8) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:17.596271", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[9]' (ID: 9) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:18.105377", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[10]' (ID: 10) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:18.682229", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[11]' (ID: 11) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:19.307658", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[12]' (ID: 12) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:19.846954", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[13]' (ID: 13) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:20.406435", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[14]' (ID: 14) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:21.222093", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[15]' (ID: 15) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:21.838267", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[16]' (ID: 16) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:22.452177", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[17]' (ID: 17) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:23.268224", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[18]' (ID: 18) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:23.986011", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[19]' (ID: 19) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:24.700819", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[20]' (ID: 20) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:25.389242", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[21]' (ID: 21) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:25.931940", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[22]' (ID: 22) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:26.678280", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[23]' (ID: 23) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:27.498176", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[24]' (ID: 24) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:28.021768", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[25]' (ID: 25) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:28.709236", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[26]' (ID: 26) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:29.407511", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[27]' (ID: 27) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:30.030957", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[28]' (ID: 28) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:30.764994", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[29]' (ID: 29) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:31.558966", "level": "INFO", "name": "uvicorn", "message": "[INICIO] Grupo de alarma detectado: 'SDDA'", "filename": "opcAlarmas.py", "line": 49}
+{"timestamp": "2025-05-02T09:21:32.070768", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[0]' (ID: 100) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:32.709552", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[1]' (ID: 101) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:33.319451", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[2]' (ID: 102) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:33.914285", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[3]' (ID: 103) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:34.661619", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[4]' (ID: 104) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:35.245253", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[5]' (ID: 105) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:35.961469", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[6]' (ID: 106) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:36.711892", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[7]' (ID: 107) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:37.455300", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[8]' (ID: 108) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:38.012905", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[9]' (ID: 109) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:38.824790", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[10]' (ID: 110) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:39.438214", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[11]' (ID: 111) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:40.017423", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[12]' (ID: 112) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:40.667569", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[13]' (ID: 113) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:41.383331", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[14]' (ID: 114) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:42.203368", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[15]' (ID: 115) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:42.916363", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[16]' (ID: 116) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:43.498078", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[17]' (ID: 117) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:44.143680", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[18]' (ID: 118) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:44.656982", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[19]' (ID: 119) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:45.273549", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[20]' (ID: 120) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:45.885239", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[21]' (ID: 121) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:46.630322", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[22]' (ID: 122) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:47.215068", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[23]' (ID: 123) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:47.981093", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[24]' (ID: 124) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:48.648677", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[25]' (ID: 125) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:49.391934", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[26]' (ID: 126) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:49.979121", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[27]' (ID: 127) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:50.618188", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[28]' (ID: 128) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:51.511440", "level": "INFO", "name": "uvicorn", "message": "[VALOR] Alarma '[29]' (ID: 129) - Valor le\u00eddo: False", "filename": "opcAlarmas.py", "line": 84}
+{"timestamp": "2025-05-02T09:21:57.554446", "level": "WARNING", "name": "uvicorn", "message": "\u26a0\ufe0f Conexi\u00f3n OPC UA cerrada.", "filename": "opc.py", "line": 35}

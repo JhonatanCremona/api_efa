@@ -7,6 +7,7 @@ class RecetarioXCiclo(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     cantidadNivelesFinalizado = Column(Integer, index=True)
+    cantidadNivelesSeleccionados = Column(Integer, index=True)
     pesoPorNivel = Column(Double, index=True)
 
     id_recetario = Column(Integer, ForeignKey("recetario.id"), nullable=False)

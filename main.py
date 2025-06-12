@@ -32,10 +32,13 @@ import time
 import socket
 
 from dotenv import load_dotenv
+from config.logger_config import logger
 import os
 
-ruta_principal = os.path.dirname(os.path.abspath(__file__))
+
 logger = logging.getLogger("uvicorn")
+ruta_principal = os.path.dirname(os.path.abspath(__file__))
+
 local_ip = socket.gethostbyname(socket.gethostname())
 
 opc_ip = os.getenv("OPC_SERVER_IP")
@@ -47,14 +50,10 @@ ruta_sql_recetario = os.path.join(ruta_principal, 'query', 'insert_recetario.sql
 ruta_sql_torre = os.path.join(ruta_principal,'query', 'insert_torre.sql')
 ruta_sql_torre_configuraciones = os.path.join(ruta_principal,"query","insert_torre_configuraciones.sql")
 
-ruta_sql_torre_ciclo = os.path.join(ruta_principal,"query","insert_ciclo_iffa.sql")
-ruta_sql_torre_receta_ciclo = os.path.join(ruta_principal,"query","insert_recetaxciclo_iffa.sql")
-
-#URL = f"opc.tcp://{local_ip}:4841"
 URL = f"opc.tcp://{opc_ip}:{opc_port}"
 opc_client = OPCUAClient(URL)
 
-#db.Base.metadata.drop_all(bind=db.engine)
+db.Base.metadata.drop_all(bind=db.engine)
 db.Base.metadata.create_all(bind=db.engine)
 
 listaDatosOpc = ObtenerNodosOpc(opc_client)
@@ -189,6 +188,38 @@ def proceso_central_opc_alarmas(stop_event):
         loop.run_until_complete(client.disconnect())
         loop.close()
 
+def proceso_central_opc_alarmas_2(stop_event):
+    from services.opcAlarmas import OpcAlarmas
+
+    client = OPCUAClient(URL)
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+    loop.run_until_complete(client.connect())
+    alarma_reader = OpcAlarmas(client)
+    async def central_opc_alarmas():
+        while not stop_event.is_set():
+            try:
+                inicio = time.time()
+                alarma_reader.leerAlarmasCeldaDesmoldeo()
+                fin = time.time()
+
+                duracion = fin - inicio
+
+                minutos = int(duracion // 60)
+                segundos = int(duracion % 60)
+
+                print(f"⏱ [UPDATE ALARMAS] Tiempo de ejecución: {minutos} minutos y {segundos} segundos")
+
+                await asyncio.sleep(5)
+            except Exception as e:
+                logger.warning(f"Error en el render alarmas: {e}")
+    try:
+        loop.run_until_complete(central_opc_alarmas())
+    finally:
+        loop.run_until_complete(client.disconnect())
+        loop.close()
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):       
     session = db.SessionLocal()
@@ -238,13 +269,15 @@ async def lifespan(app: FastAPI):
         #p1 = Process(target=proceso_central_opc_ws, daemon=True) // OMITIR
         p2 = Process(target=proceso_central_opc_escritura, args=(stop_event,),daemon=True)
         p3 = Process(target=proceso_central_opc_recetas, args=(stop_event,),daemon=True)
-        p4 = Process(target=proceso_central_opc_alarmas,args=(stop_event,), daemon=True)
+        #p4 = Process(target=proceso_central_opc_alarmas,args=(stop_event,), daemon=True)
 
+        p4 = Process(target=proceso_central_opc_alarmas_2,args=(stop_event,), daemon=True)
         #p1.start()
         
-        p2.start()
-        p3.start()
-        p4.start()
+        #p2.start()
+        #p3.start()
+        
+        #p4.start()
         yield
     finally:
         #p1.terminate()
