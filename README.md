@@ -49,6 +49,7 @@ Sigue los siguientes pasos para instalar y ejecutar el proyecto:
     pip install pandas openpyxl
     pip install passlib
     pip install bcrypt
+    pip install Pillow
     pip install --upgrade pip
     ```
 
