@@ -10,17 +10,20 @@ from models.alarmaHistorico import HistoricoAlarma
 import logging
 import re
 import json
+import os
+
 logger = logging.getLogger("uvicorn")
 
 LISTA_COMPLETA_ALARMAS = {}
 LISTA_FRONT_ALARMAS = []
+INDICE_OPC = os.getenv("INDICE_OPC_UA")
 
 class OpcAlarmas:
     def __init__(self,conexion_servidor):
         self.conexion_servidor = conexion_servidor
 
     async def leerAlarmasRobot(self):
-        global LISTA_COMPLETA_ALARMAS, LISTA_FRONT_ALARMAS
+        global LISTA_COMPLETA_ALARMAS, LISTA_FRONT_ALARMAS, INDICE_OPC
         dict_unico_alarmas = {}
         grupo_nombre = None
         try:
@@ -30,14 +33,14 @@ class OpcAlarmas:
             objects_node = root_node.get_child(["0:Objects"])
             server_interface_node = objects_node.get_child(["3:ServerInterfaces"])
 
-            server_interface_1 = server_interface_node.get_child(["4:Server interface_1"])
+            server_interface_1 = server_interface_node.get_child([f"{INDICE_OPC}:Server interface_1"])
             if not server_interface_1:
                 logger.error("No se encontró el nodo 'Server interface_1'.")
                 return None
 
-            datos_opc_a_enviar = server_interface_1.get_child(["4:DATOS OPC A ENVIAR"])
+            datos_opc_a_enviar = server_interface_1.get_child([f"{INDICE_OPC}:DATOS OPC A ENVIAR"])
             
-            listaGeneralAlarmas = datos_opc_a_enviar.get_child(["4:Alarmas"])
+            listaGeneralAlarmas = datos_opc_a_enviar.get_child([f"{INDICE_OPC}:Alarmas"])
 
             for child in listaGeneralAlarmas.get_children():
                 logger.debug(f"[FOR-ALARMAS] Evaluando item en grupo '{grupo_nombre}'")

@@ -29,12 +29,14 @@ from routers import usuarios, graficosHistorico, productividad, configuracionesH
 import logging
 import asyncio
 import time
+import socket
 
 from dotenv import load_dotenv
 import os
 
 ruta_principal = os.path.dirname(os.path.abspath(__file__))
 logger = logging.getLogger("uvicorn")
+local_ip = socket.gethostbyname(socket.gethostname())
 
 opc_ip = os.getenv("OPC_SERVER_IP")
 opc_port = os.getenv("OPC_SERVER_PORT")
@@ -45,8 +47,10 @@ ruta_sql_recetario = os.path.join(ruta_principal, 'query', 'insert_recetario.sql
 ruta_sql_torre = os.path.join(ruta_principal,'query', 'insert_torre.sql')
 ruta_sql_torre_configuraciones = os.path.join(ruta_principal,"query","insert_torre_configuraciones.sql")
 
+ruta_sql_torre_ciclo = os.path.join(ruta_principal,"query","insert_ciclo_iffa.sql")
+ruta_sql_torre_receta_ciclo = os.path.join(ruta_principal,"query","insert_recetaxciclo_iffa.sql")
 
-
+#URL = f"opc.tcp://{local_ip}:4841"
 URL = f"opc.tcp://{opc_ip}:{opc_port}"
 opc_client = OPCUAClient(URL)
 
@@ -81,7 +85,7 @@ async def central_opc_render_ws():
             try:
                 data = await listaDatosOpc.conexionOpcPLC()
                 await ws_manager.send_message("datos", data)
-                await asyncio.sleep(10.0)
+                await asyncio.sleep(2.0)
             except Exception as e:
                 logger.error(f"Error en el lector del OPC (lectura datos): {e}")
 
@@ -237,6 +241,7 @@ async def lifespan(app: FastAPI):
         p4 = Process(target=proceso_central_opc_alarmas,args=(stop_event,), daemon=True)
 
         #p1.start()
+        
         p2.start()
         p3.start()
         p4.start()
@@ -262,9 +267,6 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     lifespan=lifespan,
-    docs_url=None, 
-    redoc_url=None, 
-    openapi_url=None
     )
 app.add_middleware(
     CORSMiddleware,
@@ -279,6 +281,7 @@ app.include_router(usuarios.RouterUsers)
 app.include_router(graficosHistorico.RoutersGraficosH)
 app.include_router(productividad.RouterProductividad)
 app.include_router(configuracionesHTTP.RouterConfiguraciones)
+
 @app.websocket("/ws/{id}")
 async def resumen_desmoldeo(websocket: WebSocket, id: str):
     await websocket.accept()
