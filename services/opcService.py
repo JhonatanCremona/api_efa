@@ -534,7 +534,7 @@ class ObtenerNodosOpc:
             
             listaRespuesta.append(listaCelda)
             listaRespuesta.append(listaDatosGeneral)
-
+            
             with open('alarmas.json', 'r') as file:
                 data = json.load(file)
             alarmas = list(data.values())
