@@ -53,7 +53,7 @@ ruta_sql_torre_configuraciones = os.path.join(ruta_principal,"query","insert_tor
 URL = f"opc.tcp://{opc_ip}:{opc_port}"
 opc_client = OPCUAClient(URL)
 
-db.Base.metadata.drop_all(bind=db.engine)
+#db.Base.metadata.drop_all(bind=db.engine)
 db.Base.metadata.create_all(bind=db.engine)
 
 listaDatosOpc = ObtenerNodosOpc(opc_client)
@@ -269,15 +269,16 @@ async def lifespan(app: FastAPI):
         #p1 = Process(target=proceso_central_opc_ws, daemon=True) // OMITIR
         p2 = Process(target=proceso_central_opc_escritura, args=(stop_event,),daemon=True)
         p3 = Process(target=proceso_central_opc_recetas, args=(stop_event,),daemon=True)
-        #p4 = Process(target=proceso_central_opc_alarmas,args=(stop_event,), daemon=True)
-
         p4 = Process(target=proceso_central_opc_alarmas_2,args=(stop_event,), daemon=True)
+
+        #p4 = Process(target=proceso_central_opc_alarmas,args=(stop_event,), daemon=True) // OMITIR
+
+        
         #p1.start()
         
-        #p2.start()
-        #p3.start()
-        
-        #p4.start()
+        p2.start()
+        p3.start()
+        p4.start()
         yield
     finally:
         #p1.terminate()
