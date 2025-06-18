@@ -271,14 +271,14 @@ async def lifespan(app: FastAPI):
         p3 = Process(target=proceso_central_opc_recetas, args=(stop_event,),daemon=True)
         p4 = Process(target=proceso_central_opc_alarmas_2,args=(stop_event,), daemon=True)
 
-        #p4 = Process(target=proceso_central_opc_alarmas,args=(stop_event,), daemon=True) // OMITIR
+        #p4 = Process(target=proceso_central_opc_alarmas,args=(stop_event,), daemon=True) 
 
         
         #p1.start()
         
         p2.start()
         p3.start()
-        p4.start()
+        #p4.start()
         yield
     finally:
         #p1.terminate()

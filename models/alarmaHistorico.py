@@ -12,7 +12,7 @@ class HistoricoAlarma(Base):
     estadoAlarma = Column(Boolean, index=True)
 
     id_alarma = Column(Integer, ForeignKey("alarma.id"), nullable=False)
-    alarma = relationship("Alarma", back_populates="historicoAlarma")
+    alarma = relationship("Alarma", back_populates="historicoalarma")
 
     id_ciclo_desmoldeo = Column(Integer, ForeignKey("ciclodesmoldeo.id"), nullable=True)
-    ciclodesmoldeo = relationship("CicloDesmoldeo", back_populates="historicoAlarma")
+    ciclodesmoldeo = relationship("CicloDesmoldeo", back_populates="historicoalarma")

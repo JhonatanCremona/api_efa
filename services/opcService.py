@@ -201,6 +201,7 @@ class ObtenerNodosOpc:
             self.fin_cancelado_anterior = False
 
         try:
+            """
             if INDICE_OPC != 2:
                 root_node = await self.conexion_servidor.get_objects_nodos()
                 objects_node = root_node.get_child(["0:Objects"])
@@ -209,8 +210,13 @@ class ObtenerNodosOpc:
                 root_node = await self.conexion_servidor.get_objects_nodos()
                 objects_node = root_node.get_child(["0:Objects"])
                 server_interface_node = objects_node.get_child(["3:ServerInterfaces"])
+            """
+            root_node = await self.conexion_servidor.get_objects_nodos()
+            objects_node = root_node.get_child(["0:Objects"])
+            server_interface_node = objects_node.get_child(["3:ServerInterfaces"])
+            
 
-            server_interface_1 = server_interface_node.get_child([f"{INDICE_OPC}:Server interface_1"])
+            server_interface_1 = server_interface_node.get_child([f"0:Server interface_1"])
             if not server_interface_1:
                 logger.error("No se encontró el nodo 'Server interface_1'.")
                 return None
@@ -575,7 +581,7 @@ class ObtenerNodosOpc:
             objects_node = root_node.get_child(["0:Objects"])
             server_interface_node = objects_node.get_child(["3:ServerInterfaces"])
 
-            server_interface_1 = server_interface_node.get_child([f"{INDICE_OPC}:Server interface_1"])
+            server_interface_1 = server_interface_node.get_child([f"0:Server interface_1"])
             if not server_interface_1:
                 logger.error("No se encontró el nodo 'Server interface_1'.")
                 return None
@@ -701,7 +707,7 @@ class ObtenerNodosOpc:
             objects_node = root_node.get_child(["0:Objects"])
             server_interface_node = objects_node.get_child(["3:ServerInterfaces"])
 
-            server_interface_1 = server_interface_node.get_child([f"{INDICE_OPC}:Server interface_1"])
+            server_interface_1 = server_interface_node.get_child([f"0:Server interface_1"])
             if not server_interface_1:
                 logger.error("No se encontró el nodo 'Server interface_1'.")
                 return None
@@ -1036,7 +1042,7 @@ class ObtenerNodosOpc:
             objects_node = root_node.get_child(["0:Objects"])
             server_interface_node = objects_node.get_child(["3:ServerInterfaces"])
 
-            server_interface_1 = server_interface_node.get_child([f"{INDICE_OPC}:Server interface_1"])
+            server_interface_1 = server_interface_node.get_child([f"0:Server interface_1"])
             if not server_interface_1:
                 logger.error("No se encontró 'Server interface_1'.")
                 return False
