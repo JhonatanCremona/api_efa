@@ -25,7 +25,8 @@ class WSManager:
                 except Exception as e:
                     logger.error(f"Error al enviar mensaje a WebSocket: {e}")
         else:
-            logger.info(f"No se encontró la conexión para poll_id: {poll_id}")
+            #logger.info(f"No se encontró la conexión para poll_id: {poll_id}")
+            pass
 
 ws_manager = WSManager() 
 
