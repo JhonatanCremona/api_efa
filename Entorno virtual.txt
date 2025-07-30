@@ -1,0 +1,24 @@
+Crear entorno virtual de 0
+Remove-Item -Recurse -Force venv
+
+Python -m venv venv
+
+.\venv\Scripts\activate
+
+pip install "fastapi[standard]"
+pip install PyMySQL
+pip install sqlalchemy
+pip install cryptography
+pip install opcua
+pip install python-jose
+pip install pandas openpyxl
+pip install passlib
+pip install bcrypt
+pip install --upgrade pip
+
+
+Ejecutar entorno virtual
+
+.\venv\Scripts\actívate
+
+fastapi run main.py

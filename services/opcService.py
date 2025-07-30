@@ -140,7 +140,7 @@ def obtenerTiempo(estadoCiclo):
         tiempoCiclo = 0
         fechaInicioCIclo = 0
         ulEstado = None
-    logger.info(f"ULTIMO ESTADO CICLO TT: {ulEstado}")
+    opc_logger.info(f"ULTIMO ESTADO CICLO TT: {ulEstado}")
 
     return tiempoCiclo
 
@@ -162,6 +162,36 @@ def formato_tiempo_mmss(segundos_totales):
     minutos = int(segundos_totales // 60)
     segundos = int(segundos_totales % 60)
     return f"{minutos:02d}:{segundos:02d}"
+
+class CustomFormatter(logging.Formatter):
+    # Colores ANSI
+    orange_bg = "\x1b[48;5;208m"  # Fondo naranja
+    white_fg = "\x1b[97;1m"         # Texto blanco
+    reset = "\x1b[0m"
+    format = "%(levelname)s [CICLOS BASE] %(message)s"
+
+    FORMATS = {
+        logging.DEBUG: orange_bg + white_fg + format + reset,
+        logging.INFO: orange_bg + white_fg + format + reset,
+        logging.WARNING: orange_bg + white_fg + format + reset,
+        logging.ERROR: orange_bg + white_fg + format + reset,
+        logging.CRITICAL: orange_bg + white_fg + format + reset
+    }
+
+    def format(self, record):
+        padding = "     "
+        colored_prefix = f"{padding}{self.orange_bg}{self.white_fg}{record.levelname} [CICLOS BASE]{self.reset}"
+        return f"{colored_prefix} {record.getMessage()}"
+
+# Crear logger personalizado
+opc_logger = logging.getLogger("opc_plc")
+opc_logger.setLevel(logging.INFO)
+
+# Crear handler para la consola
+ch = logging.StreamHandler()
+ch.setLevel(logging.INFO)
+ch.setFormatter(CustomFormatter())
+opc_logger.addHandler(ch)
 
 class ObtenerNodosOpc:
     def __init__(self, conexion_servidor):
@@ -188,35 +218,21 @@ class ObtenerNodosOpc:
         global ultimo_estado, ciclo_guardado, ULTIMO_NIVEL, PESO_ACTUAL_DESMOLDADO
         global CONTADOR_NIVELES_DESMOLDADOS, ultimo_estado_nivel_desmoldado
         global CONTADOR_CICLO_PAUSADO, ultimo_tiempo_check
-        global NIVELES_SELECCIONADOS_CICLO  # Agregamos la global para niveles seleccionados
-
+        global NIVELES_SELECCIONADOS_CICLO
 
         ciclo_guardado_por_flanco = False
         
         if not hasattr(self, 'ciclo_iniciado_anterior'):
             self.ciclo_iniciado_anterior = False
-        if not hasattr(self, 'fin_finalizado_anterior'):
-            self.fin_finalizado_anterior = False
         if not hasattr(self, 'fin_cancelado_anterior'):
             self.fin_cancelado_anterior = False
 
         try:
-            """
-            if INDICE_OPC != 2:
-                root_node = await self.conexion_servidor.get_objects_nodos()
-                objects_node = root_node.get_child(["0:Objects"])
-                server_interface_node = objects_node.get_child(["3:ServerInterfaces"])
-            else:
-                root_node = await self.conexion_servidor.get_objects_nodos()
-                objects_node = root_node.get_child(["0:Objects"])
-                server_interface_node = objects_node.get_child(["3:ServerInterfaces"])
-            """
             root_node = await self.conexion_servidor.get_objects_nodos()
             objects_node = root_node.get_child(["0:Objects"])
             server_interface_node = objects_node.get_child(["3:ServerInterfaces"])
             
-
-            server_interface_1 = server_interface_node.get_child([f"0:Server interface_1"])
+            server_interface_1 = server_interface_node.get_child([f"4:Server interface_1"])
             if not server_interface_1:
                 logger.error("No se encontró el nodo 'Server interface_1'.")
                 return None
@@ -231,15 +247,116 @@ class ObtenerNodosOpc:
             e_datosSeleccionado = datos_opc_a_enviar.get_child([f"{INDICE_OPC}:datosSeleccionados"])
             
             ciclo_iniciado_actual = self.get_node_value_safely(estado_equipo, "Ciclo_iniciado", False)
-            fin_finalizado = self.get_node_value_safely(estado_equipo, "finFinalizado", False)
             fin_cancelado = self.get_node_value_safely(estado_equipo, "finCancelado", False)
             
-            flanco_fin_finalizado = fin_finalizado and not self.fin_finalizado_anterior
             flanco_fin_cancelado = fin_cancelado and not self.fin_cancelado_anterior
-            flanco_fin_detectado = flanco_fin_finalizado or flanco_fin_cancelado
+            niveles_seleccionados = self.get_node_value_safely(e_datosSeleccionado, "nivelesSeleccionados", 0)
             
-            if flanco_fin_detectado and ciclo_actual is not None and not ciclo_guardado_por_flanco:
-                logger.info(f"[FLANCO FIN DETECTADO] finFinalizado={fin_finalizado}, finCancelado={fin_cancelado}")
+            # REORDENAMIENTO: Primero detectamos el flanco de niveles desmoldados e incrementamos el contador
+            niveles_desmoldados_bool = self.get_node_value_safely(estado_equipo, "nivelesDesmoldados", False)
+            if niveles_desmoldados_bool == True and ultimo_estado_nivel_desmoldado == False:
+                if ciclo_actual is not None:
+                    # Si ya hay un ciclo activo, incrementar el contador
+                    CONTADOR_NIVELES_DESMOLDADOS += 1
+                    logger.info(f"[NIVEL DESMOLDADO] Se detectó flanco de nivel desmoldado #{CONTADOR_NIVELES_DESMOLDADOS}")
+                    
+                    if RECETA_ACTUAL:
+                        PESO_FILA_PRODUCTO = RECETA_ACTUAL.get("PESO DEL PRODUCTO", 0) * (RECETA_ACTUAL.get("MOLDES POR NIVEL", 0) * RECETA_ACTUAL.get("PRODUCTOS POR MOLDE", 0))
+                        PESO_ACTUAL_DESMOLDADO = PESO_FILA_PRODUCTO * CONTADOR_NIVELES_DESMOLDADOS
+                        PESO_TOTAL_CICLO = PESO_ACTUAL_DESMOLDADO
+                        logger.info(f"[PESO] Actualizado por nivel desmoldado: {PESO_ACTUAL_DESMOLDADO} kg")
+                else:
+                    # NUEVA FUNCIONALIDAD: Si no hay ciclo activo, crear uno automáticamente
+                    logger.info("[NIVEL DESMOLDADO SIN CICLO] Se detectó flanco de nivel desmoldado sin ciclo activo, creando nuevo ciclo")
+                    
+                    # Inicializar contadores y variables para el nuevo ciclo
+                    CONTADOR_CICLO_PAUSADO = 0
+                    CONTADOR_NIVELES_DESMOLDADOS = 1  # Comenzamos en 1 porque ya se está desmoldando el primer nivel
+                    ultimo_tiempo_check = datetime.now()
+                    ESTADO_CICLO_DESMOLDEO = True
+                    ciclo_guardado_por_flanco = False
+                    
+                    # Obtener información de la receta actual
+                    id_receta = self.get_node_value_safely(e_datosSeleccionado, "N_receta_actual", 1)
+                    NIVELES_SELECCIONADOS_CICLO = self.get_node_value_safely(e_datosSeleccionado, "nivelesSeleccionados", 0)
+                    logger.info(f"[NIVEL DESMOLDADO SIN CICLO] Usando receta ID: {id_receta}, Niveles seleccionados: {NIVELES_SELECCIONADOS_CICLO}")
+                    
+                    # Cargar datos de la receta
+                    receta_db = db_session.query(Recetario).filter(Recetario.id == id_receta).first()
+                    RECETA_ACTUAL.clear()
+                    
+                    if receta_db:
+                        RECETA_ACTUAL["NOMBRE"] = receta_db.codigoProducto
+                        RECETA_ACTUAL["NUMERO DE GRIPPER"] = receta_db.nroGripper
+                        RECETA_ACTUAL["TIPO DE MOLDE"] = receta_db.tipoMolde
+                        RECETA_ACTUAL["ANCHO PRODUCTO"] = receta_db.anchoProducto
+                        RECETA_ACTUAL["ALTO DE PRODUCTO"] = receta_db.altoProducto
+                        RECETA_ACTUAL["LARGO DE PRODUCTO"] = receta_db.largoProducto
+                        RECETA_ACTUAL["PESO DEL PRODUCTO"] = receta_db.pesoProducto
+                        RECETA_ACTUAL["MOLDES POR NIVEL"] = receta_db.moldesNivel
+                        RECETA_ACTUAL["ALTO DE MOLDE"] = receta_db.altoMolde
+                        RECETA_ACTUAL["LARGO DE MOLDE"] = receta_db.largoMolde
+                        RECETA_ACTUAL["ALTURA AJUSTE"] = receta_db.ajusteAltura
+                        RECETA_ACTUAL["CANTIDAD NIVELES"] = receta_db.cantidadNiveles
+                        RECETA_ACTUAL["DELTA ENTRE NIVELES"] = receta_db.deltaNiveles
+                        RECETA_ACTUAL["ALTURA N1"] = receta_db.n1Altura
+                        RECETA_ACTUAL["ALTURA DE BASTIDOR"] = receta_db.bastidorAltura
+                        RECETA_ACTUAL["ALTURA AJUSTE N1"] = receta_db.ajusteN1Altura
+                        RECETA_ACTUAL["PRODUCTOS POR MOLDE"] = receta_db.productosMolde
+                        
+                        for key, value in RECETA_ACTUAL.items():
+                            logger.info(f"--------------- Receta actual: {key} = {value}")
+                        
+                        try:
+                            # Crear nuevo ciclo en la base de datos
+                            ciclo_desmoldeo = CicloDesmoldeo(
+                                fecha_inicio= datetime.now(),
+                                fecha_fin=None,
+                                estadoMaquina= estado_maquina.get(self.get_node_value_safely(estado_equipo, "Estado_actual", 1), error),
+                                bandaDesmolde= banda_desmolde.get(self.get_node_value_safely(e_desmoldeo, "desmoldeobanda", 1), error),
+                                tiempoDesmolde=0.0,
+                                tiempoPausado=0.0,
+                                pesoDesmoldado = 0,
+                                id_etapa= 1,
+                                id_torre= self.get_node_value_safely(e_datosSeleccionado, "N_torre_actual", 1)
+                            )
+                            
+                            db_session.add(ciclo_desmoldeo)
+                            db_session.commit()
+                            db_session.refresh(ciclo_desmoldeo)
+                            
+                            # Calcular el peso por nivel
+                            PESO_FILA_PRODUCTO = RECETA_ACTUAL.get("PESO DEL PRODUCTO", 0) * (RECETA_ACTUAL.get("MOLDES POR NIVEL", 0) * RECETA_ACTUAL.get("PRODUCTOS POR MOLDE", 0))
+                            PESO_ACTUAL_DESMOLDADO = PESO_FILA_PRODUCTO * CONTADOR_NIVELES_DESMOLDADOS
+                            PESO_TOTAL_CICLO = PESO_ACTUAL_DESMOLDADO
+                            
+                            # Crear registro en RecetarioXCiclo
+                            db_recetaXCiclo = RecetarioXCiclo(
+                                cantidadNivelesFinalizado = 1,  # Ya se desmoldó un nivel
+                                cantidadNivelesSeleccionados = NIVELES_SELECCIONADOS_CICLO,
+                                pesoPorNivel = PESO_FILA_PRODUCTO,
+                                id_recetario = id_receta,
+                                id_ciclo_desmoldeo = ciclo_desmoldeo.id
+                            )
+                            
+                            db_session.add(db_recetaXCiclo)
+                            db_session.commit()
+                            
+                            # Establecer el ciclo actual
+                            ciclo_actual = ciclo_desmoldeo
+                            logger.info(f"[NIVEL DESMOLDADO SIN CICLO] Nuevo ciclo creado con ID: {ciclo_desmoldeo.id}, nivel inicial: 1, peso calculado: {PESO_ACTUAL_DESMOLDADO} kg")
+                            
+                        except Exception as e:
+                            db_session.rollback()
+                            logger.error(f"[ERROR NIVEL DESMOLDADO SIN CICLO] Error al crear nuevo ciclo: {e}")
+                    else:
+                        logger.error(f"[NIVEL DESMOLDADO SIN CICLO] No se encontró la receta con ID {id_receta} en la base de datos")
+
+            ultimo_estado_nivel_desmoldado = niveles_desmoldados_bool
+            
+            # AHORA DESPUÉS DEL INCREMENTO verificamos si se ha alcanzado o superado el número de niveles seleccionados
+            if ciclo_actual is not None and not ciclo_guardado_por_flanco and CONTADOR_NIVELES_DESMOLDADOS >= niveles_seleccionados and niveles_seleccionados > 0:
+                logger.info(f"[CICLO COMPLETADO] Niveles desmoldados ({CONTADOR_NIVELES_DESMOLDADOS}) alcanzaron o superaron los niveles seleccionados ({niveles_seleccionados})")
                 
                 try:
                     ciclo_actualizar = db_session.query(CicloDesmoldeo).filter(CicloDesmoldeo.id == ciclo_actual.id).first()
@@ -249,25 +366,33 @@ class ObtenerNodosOpc:
                             logger.warning(f"ID de receta inválido: {id_receta}, usando valor predeterminado 1")
                             id_receta = 1
                         
-                        # Recalcular el peso independientemente del estado de PESO_ACTUAL_DESMOLDADO
+                        # Recalcular el peso
                         PESO_FILA_PRODUCTO = RECETA_ACTUAL.get("PESO DEL PRODUCTO", 0) * (RECETA_ACTUAL.get("MOLDES POR NIVEL", 0) * RECETA_ACTUAL.get("PRODUCTOS POR MOLDE", 0))
                         peso_calculado = PESO_FILA_PRODUCTO * CONTADOR_NIVELES_DESMOLDADOS
                         
-                        logger.info(f"[FLANCO FIN] Recalculando peso final: {PESO_FILA_PRODUCTO} kg × {CONTADOR_NIVELES_DESMOLDADOS} niveles = {peso_calculado} kg")
+                        logger.info(f"[CICLO COMPLETADO] Recalculando peso final: {PESO_FILA_PRODUCTO} kg × {CONTADOR_NIVELES_DESMOLDADOS} niveles = {peso_calculado} kg")
                         
-                        db_recetaXCiclo = RecetarioXCiclo(
-                            cantidadNivelesFinalizado = CONTADOR_NIVELES_DESMOLDADOS,
-                            pesoPorNivel = PESO_FILA_PRODUCTO,
-                            id_recetario = id_receta,
-                            id_ciclo_desmoldeo = ciclo_actualizar.id,
-                            cantidadNivelesSeleccionados = NIVELES_SELECCIONADOS_CICLO
-                        )
-                        db_session.add(db_recetaXCiclo)
+                        # MODIFICACIÓN: Actualizar el registro existente en RecetarioXCiclo
+                        receta_ciclo = db_session.query(RecetarioXCiclo).filter(RecetarioXCiclo.id_ciclo_desmoldeo == ciclo_actual.id).first()
+                        if receta_ciclo:
+                            # Actualizar solo el campo cantidadNivelesFinalizado
+                            receta_ciclo.cantidadNivelesFinalizado = CONTADOR_NIVELES_DESMOLDADOS
+                            logger.info(f"[CICLO COMPLETADO] RecetaXCiclo actualizado para ciclo {ciclo_actual.id}, niveles finalizados: {CONTADOR_NIVELES_DESMOLDADOS}")
+                        else:
+                            # Si por alguna razón no existe, crearlo (caso de respaldo)
+                            logger.warning(f"[CICLO COMPLETADO] No se encontró RecetaXCiclo para ciclo {ciclo_actual.id}, creando nuevo registro")
+                            db_recetaXCiclo = RecetarioXCiclo(
+                                cantidadNivelesFinalizado = CONTADOR_NIVELES_DESMOLDADOS,
+                                cantidadNivelesSeleccionados = NIVELES_SELECCIONADOS_CICLO,
+                                pesoPorNivel = PESO_FILA_PRODUCTO,
+                                id_recetario = id_receta,
+                                id_ciclo_desmoldeo = ciclo_actualizar.id
+                            )
+                            db_session.add(db_recetaXCiclo)
+                        
                         db_session.commit()
-                        logger.info(f"[FLANCO FIN] RecetaXCiclo guardado con ID receta: {id_receta}, ID RecetaXCiclo: {db_recetaXCiclo.id}")
                         
                         ciclo_actualizar.fecha_fin = datetime.now()
-                        # Usar el peso recién calculado en lugar de PESO_ACTUAL_DESMOLDADO
                         ciclo_actualizar.pesoDesmoldado = peso_calculado
                         
                         tiempo_desmolde_segundos = (datetime.now() - ciclo_actualizar.fecha_inicio).total_seconds()
@@ -275,59 +400,79 @@ class ObtenerNodosOpc:
                         
                         ciclo_actualizar.tiempoDesmolde = formato_tiempo_mmss(tiempo_desmolde_segundos)
                         ciclo_actualizar.tiempoPausado = formato_tiempo_mmss(tiempo_pausado_segundos)
-                        
-                        # Verificar si realmente se completaron todos los niveles seleccionados
-                        if flanco_fin_finalizado and CONTADOR_NIVELES_DESMOLDADOS == NIVELES_SELECCIONADOS_CICLO:
-                            ciclo_actualizar.estadoMaquina = "FINALIZADO"
-                            logger.info(f"[FLANCO FIN] Ciclo {ciclo_actualizar.id} marcado como FINALIZADO (niveles desmoldados: {CONTADOR_NIVELES_DESMOLDADOS}/{NIVELES_SELECCIONADOS_CICLO})")
-                        else:
-                            # Si hay menos niveles desmoldados que seleccionados, o si es cancelado manualmente
-                            ciclo_actualizar.estadoMaquina = "CANCELADO"
-                            if flanco_fin_finalizado:
-                                logger.info(f"[FLANCO FIN] Ciclo {ciclo_actualizar.id} marcado como CANCELADO por niveles incompletos (niveles desmoldados: {CONTADOR_NIVELES_DESMOLDADOS}/{NIVELES_SELECCIONADOS_CICLO})")
-                            else:
-                                logger.info(f"[FLANCO FIN] Ciclo {ciclo_actualizar.id} marcado como CANCELADO manualmente")
+                        ciclo_actualizar.estadoMaquina = "FINALIZADO"
                         
                         db_session.commit()
                         ciclo_guardado_por_flanco = True
-                        # Añadir el peso al log para verificación
-                        logger.info(f"[FLANCO FIN] Ciclo actualizado con ID: {ciclo_actualizar.id}, Estado: {ciclo_actualizar.estadoMaquina}, Peso guardado: {ciclo_actualizar.pesoDesmoldado} kg")
+                        logger.info(f"[CICLO COMPLETADO] Ciclo {ciclo_actualizar.id} marcado como FINALIZADO, Peso guardado: {ciclo_actualizar.pesoDesmoldado} kg")
                         
                         ciclo_actual = None
                         ESTADO_CICLO_DESMOLDEO = False
                     else:
-                        logger.error(f"[FLANCO FIN] No se encontró ciclo con ID {ciclo_actual.id} para finalizar")
+                        logger.error(f"[CICLO COMPLETADO] No se encontró ciclo con ID {ciclo_actual.id} para finalizar")
                 except Exception as e:
                     db_session.rollback()
-                    logger.error(f"[ERROR FLANCO FIN] Error al finalizar ciclo: {e}")
-
-            if fin_finalizado:
-                niveles_seleccionados = self.get_node_value_safely(e_datosSeleccionado, "nivelesSeleccionados", 0)
-                
-                if ciclo_actual is not None and CONTADOR_NIVELES_DESMOLDADOS < niveles_seleccionados:
-                    logger.info(f"[CICLO FINALIZADO] Actualizando contador de niveles a total configurado: {niveles_seleccionados}")
-                    CONTADOR_NIVELES_DESMOLDADOS = niveles_seleccionados
-                    
-                    if RECETA_ACTUAL:
-                        PESO_FILA_PRODUCTO = RECETA_ACTUAL.get("PESO DEL PRODUCTO", 0) * (RECETA_ACTUAL.get("MOLDES POR NIVEL", 0) * RECETA_ACTUAL.get("PRODUCTOS POR MOLDE", 0))
-                        PESO_ACTUAL_DESMOLDADO = PESO_FILA_PRODUCTO * CONTADOR_NIVELES_DESMOLDADOS
-                        PESO_TOTAL_CICLO = PESO_ACTUAL_DESMOLDADO
-                        logger.info(f"[RECÁLCULO PESO] Peso actualizado al total: {PESO_ACTUAL_DESMOLDADO} kg")
-
-            niveles_desmoldados_bool = self.get_node_value_safely(estado_equipo, "nivelesDesmoldados", False)
-            if niveles_desmoldados_bool == True and ultimo_estado_nivel_desmoldado == False:
-                if ciclo_actual is not None:
-                    CONTADOR_NIVELES_DESMOLDADOS += 1
-                    logger.info(f"[NIVEL DESMOLDADO] Se detectó flanco de nivel desmoldado #{CONTADOR_NIVELES_DESMOLDADOS}")
-                    
-                    if RECETA_ACTUAL:
-                        PESO_FILA_PRODUCTO = RECETA_ACTUAL.get("PESO DEL PRODUCTO", 0) * (RECETA_ACTUAL.get("MOLDES POR NIVEL", 0) * RECETA_ACTUAL.get("PRODUCTOS POR MOLDE", 0))
-                        PESO_ACTUAL_DESMOLDADO = PESO_FILA_PRODUCTO * CONTADOR_NIVELES_DESMOLDADOS
-                        PESO_TOTAL_CICLO = PESO_ACTUAL_DESMOLDADO
-                        logger.info(f"[PESO] Actualizado por nivel desmoldado: {PESO_ACTUAL_DESMOLDADO} kg")
-
-            ultimo_estado_nivel_desmoldado = niveles_desmoldados_bool
+                    logger.error(f"[ERROR CICLO COMPLETADO] Error al finalizar ciclo: {e}")
             
+            # Procesamiento de cancelación manual
+            if flanco_fin_cancelado and ciclo_actual is not None and not ciclo_guardado_por_flanco:
+                logger.info(f"[CANCELACIÓN MANUAL] Se detectó cancelación manual del ciclo")
+                
+                try:
+                    ciclo_actualizar = db_session.query(CicloDesmoldeo).filter(CicloDesmoldeo.id == ciclo_actual.id).first()
+                    if ciclo_actualizar:
+                        id_receta = self.get_node_value_safely(e_datosSeleccionado, "N_receta_actual", 1)
+                        if id_receta <= 0:
+                            logger.warning(f"ID de receta inválido: {id_receta}, usando valor predeterminado 1")
+                            id_receta = 1
+                        
+                        PESO_FILA_PRODUCTO = RECETA_ACTUAL.get("PESO DEL PRODUCTO", 0) * (RECETA_ACTUAL.get("MOLDES POR NIVEL", 0) * RECETA_ACTUAL.get("PRODUCTOS POR MOLDE", 0))
+                        peso_calculado = PESO_FILA_PRODUCTO * CONTADOR_NIVELES_DESMOLDADOS
+                        
+                        logger.info(f"[CANCELACIÓN MANUAL] Recalculando peso final: {PESO_FILA_PRODUCTO} kg × {CONTADOR_NIVELES_DESMOLDADOS} niveles = {peso_calculado} kg")
+                        
+                        # MODIFICACIÓN: Actualizar el registro existente en RecetarioXCiclo
+                        receta_ciclo = db_session.query(RecetarioXCiclo).filter(RecetarioXCiclo.id_ciclo_desmoldeo == ciclo_actual.id).first()
+                        if receta_ciclo:
+                            # Actualizar solo el campo cantidadNivelesFinalizado
+                            receta_ciclo.cantidadNivelesFinalizado = CONTADOR_NIVELES_DESMOLDADOS
+                            logger.info(f"[CANCELACIÓN MANUAL] RecetaXCiclo actualizado para ciclo {ciclo_actual.id}, niveles finalizados: {CONTADOR_NIVELES_DESMOLDADOS}")
+                        else:
+                            # Si por alguna razón no existe, crearlo (caso de respaldo)
+                            logger.warning(f"[CANCELACIÓN MANUAL] No se encontró RecetaXCiclo para ciclo {ciclo_actual.id}, creando nuevo registro")
+                            db_recetaXCiclo = RecetarioXCiclo(
+                                cantidadNivelesFinalizado = CONTADOR_NIVELES_DESMOLDADOS,
+                                cantidadNivelesSeleccionados = NIVELES_SELECCIONADOS_CICLO,
+                                pesoPorNivel = PESO_FILA_PRODUCTO,
+                                id_recetario = id_receta,
+                                id_ciclo_desmoldeo = ciclo_actualizar.id
+                            )
+                            db_session.add(db_recetaXCiclo)
+                        
+                        db_session.commit()
+                        
+                        ciclo_actualizar.fecha_fin = datetime.now()
+                        ciclo_actualizar.pesoDesmoldado = peso_calculado
+                        
+                        tiempo_desmolde_segundos = (datetime.now() - ciclo_actualizar.fecha_inicio).total_seconds()
+                        tiempo_pausado_segundos = CONTADOR_CICLO_PAUSADO
+                        
+                        ciclo_actualizar.tiempoDesmolde = formato_tiempo_mmss(tiempo_desmolde_segundos)
+                        ciclo_actualizar.tiempoPausado = formato_tiempo_mmss(tiempo_pausado_segundos)
+                        ciclo_actualizar.estadoMaquina = "CANCELADO"
+                        
+                        db_session.commit()
+                        ciclo_guardado_por_flanco = True
+                        logger.info(f"[CANCELACIÓN MANUAL] Ciclo {ciclo_actualizar.id} marcado como CANCELADO, Peso guardado: {ciclo_actualizar.pesoDesmoldado} kg")
+                        
+                        ciclo_actual = None
+                        ESTADO_CICLO_DESMOLDEO = False
+                    else:
+                        logger.error(f"[CANCELACIÓN MANUAL] No se encontró ciclo con ID {ciclo_actual.id} para finalizar")
+                except Exception as e:
+                    db_session.rollback()
+                    logger.error(f"[ERROR CANCELACIÓN MANUAL] Error al finalizar ciclo: {e}")
+
             listaDatos = estado_equipo.get_children()
             for child in listaDatos:
                 browse_name = child.get_browse_name().Name
@@ -356,18 +501,27 @@ class ObtenerNodosOpc:
                             
                             PESO_FILA_PRODUCTO = RECETA_ACTUAL.get("PESO DEL PRODUCTO", 0) * (RECETA_ACTUAL.get("MOLDES POR NIVEL", 0) * RECETA_ACTUAL.get("PRODUCTOS POR MOLDE", 0))
                             
-                            # Recalcular el peso explícitamente
                             peso_calculado = PESO_FILA_PRODUCTO * CONTADOR_NIVELES_DESMOLDADOS
                             logger.info(f"[CICLO SOLAPADO] Recalculando peso: {PESO_FILA_PRODUCTO} kg × {CONTADOR_NIVELES_DESMOLDADOS} niveles = {peso_calculado} kg")
                             
-                            db_recetaXCiclo = RecetarioXCiclo(
-                                cantidadNivelesFinalizado = CONTADOR_NIVELES_DESMOLDADOS,
-                                pesoPorNivel = PESO_FILA_PRODUCTO,
-                                id_recetario = id_receta,
-                                id_ciclo_desmoldeo = ciclo_actualizar.id,
-                                cantidadNivelesSeleccionados = NIVELES_SELECCIONADOS_CICLO
-                            )
-                            db_session.add(db_recetaXCiclo)
+                            # MODIFICACIÓN: Actualizar el registro existente en RecetarioXCiclo
+                            receta_ciclo = db_session.query(RecetarioXCiclo).filter(RecetarioXCiclo.id_ciclo_desmoldeo == ciclo_actual.id).first()
+                            if receta_ciclo:
+                                # Actualizar solo el campo cantidadNivelesFinalizado
+                                receta_ciclo.cantidadNivelesFinalizado = CONTADOR_NIVELES_DESMOLDADOS
+                                logger.info(f"[CICLO SOLAPADO] RecetaXCiclo actualizado para ciclo {ciclo_actual.id}, niveles finalizados: {CONTADOR_NIVELES_DESMOLDADOS}")
+                            else:
+                                # Si por alguna razón no existe, crearlo (caso de respaldo)
+                                logger.warning(f"[CICLO SOLAPADO] No se encontró RecetaXCiclo para ciclo {ciclo_actual.id}, creando nuevo registro")
+                                db_recetaXCiclo = RecetarioXCiclo(
+                                    cantidadNivelesFinalizado = CONTADOR_NIVELES_DESMOLDADOS,
+                                    cantidadNivelesSeleccionados = NIVELES_SELECCIONADOS_CICLO,
+                                    pesoPorNivel = PESO_FILA_PRODUCTO,
+                                    id_recetario = id_receta,
+                                    id_ciclo_desmoldeo = ciclo_actualizar.id
+                                )
+                                db_session.add(db_recetaXCiclo)
+                            
                             db_session.commit()
                             
                             ciclo_actualizar.fecha_fin = datetime.now()
@@ -394,27 +548,45 @@ class ObtenerNodosOpc:
                 ESTADO_CICLO_DESMOLDEO = True
                 ciclo_guardado_por_flanco = False
 
-                indiceRecetaActual = self.get_node_value_safely(e_datosSeleccionado, "N_receta_actual", 1) - 1
-                e_receta_actual = datos_opc_a_enviar.get_child([f"{INDICE_OPC}:RECETARIO"]).get_child([f"{INDICE_OPC}:[{indiceRecetaActual}]"])
-                childremRecetaA = e_receta_actual.get_children()
+                id_receta = self.get_node_value_safely(e_datosSeleccionado, "N_receta_actual", 1)
+                
+                receta_db = db_session.query(Recetario).filter(Recetario.id == id_receta).first()
                 
                 RECETA_ACTUAL.clear()
-                for child in childremRecetaA:
-                    RECETA_ACTUAL[child.get_browse_name().Name] = child.get_value()
-                    logger.info(f"--------------- Receta actual: {child.get_browse_name().Name} = {child.get_value()}")
-
-                fin_cancelado_verificacion = self.get_node_value_safely(estado_equipo, "finCancelado", False)
-                fin_finalizado_verificacion = self.get_node_value_safely(estado_equipo, "finFinalizado", False)
+                if receta_db:
+                    RECETA_ACTUAL["NOMBRE"] = receta_db.codigoProducto
+                    RECETA_ACTUAL["NUMERO DE GRIPPER"] = receta_db.nroGripper
+                    RECETA_ACTUAL["TIPO DE MOLDE"] = receta_db.tipoMolde
+                    RECETA_ACTUAL["ANCHO PRODUCTO"] = receta_db.anchoProducto
+                    RECETA_ACTUAL["ALTO DE PRODUCTO"] = receta_db.altoProducto
+                    RECETA_ACTUAL["LARGO DE PRODUCTO"] = receta_db.largoProducto
+                    RECETA_ACTUAL["PESO DEL PRODUCTO"] = receta_db.pesoProducto
+                    RECETA_ACTUAL["MOLDES POR NIVEL"] = receta_db.moldesNivel
+                    RECETA_ACTUAL["ALTO DE MOLDE"] = receta_db.altoMolde
+                    RECETA_ACTUAL["LARGO DE MOLDE"] = receta_db.largoMolde
+                    RECETA_ACTUAL["ALTURA AJUSTE"] = receta_db.ajusteAltura
+                    RECETA_ACTUAL["CANTIDAD NIVELES"] = receta_db.cantidadNiveles
+                    RECETA_ACTUAL["DELTA ENTRE NIVELES"] = receta_db.deltaNiveles
+                    RECETA_ACTUAL["ALTURA N1"] = receta_db.n1Altura
+                    RECETA_ACTUAL["ALTURA DE BASTIDOR"] = receta_db.bastidorAltura
+                    RECETA_ACTUAL["ALTURA AJUSTE N1"] = receta_db.ajusteN1Altura
+                    RECETA_ACTUAL["PRODUCTOS POR MOLDE"] = receta_db.productosMolde
+                    
+                    for key, value in RECETA_ACTUAL.items():
+                        logger.info(f"--------------- Receta actual: {key} = {value}")
+                else:
+                    logger.error(f"[FLANCO CICLO_INICIADO] No se encontró la receta con ID {id_receta} en la base de datos")
                 
-                ciclo_ya_cancelado = fin_cancelado_verificacion or fin_finalizado_verificacion
+                fin_cancelado_verificacion = self.get_node_value_safely(estado_equipo, "finCancelado", False)
+                
+                ciclo_ya_cancelado = fin_cancelado_verificacion
                 
                 if ciclo_ya_cancelado:
                     logger.warning("[CICLO CANCELADO DURANTE INICIO] Se detectó cancelación mientras se procesaba el inicio")
                     
-                    # Crear ciclo ya marcado como cancelado
                     ciclo_desmoldeo = CicloDesmoldeo(
                         fecha_inicio=datetime.now(),
-                        fecha_fin=datetime.now(),  # Misma fecha inicio y fin
+                        fecha_fin=datetime.now(),
                         estadoMaquina="CANCELADO",
                         bandaDesmolde=banda_desmolde.get(self.get_node_value_safely(e_desmoldeo, "desmoldeobanda", 1), error),
                         tiempoDesmolde="00:00",
@@ -440,7 +612,27 @@ class ObtenerNodosOpc:
                     db_session.commit()
                     db_session.refresh(ciclo_desmoldeo)
                     
+                    # MODIFICACIÓN: Crear registro en RecetarioXCiclo al iniciar ciclo
+                    PESO_FILA_PRODUCTO = RECETA_ACTUAL.get("PESO DEL PRODUCTO", 0) * (RECETA_ACTUAL.get("MOLDES POR NIVEL", 0) * RECETA_ACTUAL.get("PRODUCTOS POR MOLDE", 0))
+                    
+                    db_recetaXCiclo = RecetarioXCiclo(
+                        cantidadNivelesFinalizado = 0,  # Inicia en 0
+                        cantidadNivelesSeleccionados = NIVELES_SELECCIONADOS_CICLO,
+                        pesoPorNivel = PESO_FILA_PRODUCTO,
+                        id_recetario = id_receta,
+                        id_ciclo_desmoldeo = ciclo_desmoldeo.id
+                    )
+                    db_session.add(db_recetaXCiclo)
+                    db_session.commit()
+                    logger.info(f"[NUEVO CICLO] RecetaXCiclo creado para ciclo {ciclo_desmoldeo.id}, niveles seleccionados: {NIVELES_SELECCIONADOS_CICLO}")
+                    
                     if ciclo_ya_cancelado:
+                        # Si el ciclo ya está cancelado, actualizar inmediatamente RecetaXCiclo
+                        receta_ciclo = db_session.query(RecetarioXCiclo).filter(RecetarioXCiclo.id_ciclo_desmoldeo == ciclo_desmoldeo.id).first()
+                        if receta_ciclo:
+                            receta_ciclo.cantidadNivelesFinalizado = 0  # Se cancela antes de empezar
+                            db_session.commit()
+                        
                         logger.info(f"[CICLO CANCELADO DURANTE INICIO] Ciclo {ciclo_desmoldeo.id} creado y marcado como CANCELADO automáticamente")
                         ESTADO_CICLO_DESMOLDEO = False
                         ciclo_actual = None  # No establecer como ciclo actual
@@ -454,19 +646,18 @@ class ObtenerNodosOpc:
             
             # Actualizar estados anteriores para la próxima detección de flancos
             self.ciclo_iniciado_anterior = ciclo_iniciado_actual
-            self.fin_finalizado_anterior = fin_finalizado
             self.fin_cancelado_anterior = fin_cancelado
             
             if ciclo_iniciado_actual is False and ESTADO_CICLO_DESMOLDEO is True:
                 if not ciclo_guardado_por_flanco and ciclo_actual is not None:
-                    logger.warning(f"[CICLO NO FINALIZADO] Ciclo_iniciado cambió a FALSE sin flanco fin para ciclo {ciclo_actual.id}")
+                    logger.warning(f"[CICLO NO FINALIZADO] Ciclo_iniciado cambió a FALSE sin finalización para ciclo {ciclo_actual.id}")
                 ESTADO_CICLO_DESMOLDEO = False
             else:
                 ESTADO_CICLO_DESMOLDEO = ciclo_iniciado_actual
             
             if self.get_node_value_safely(e_sdda, "sdda_nivel_actual", 0) > 0:
                 ULTIMO_NIVEL = self.get_node_value_safely(e_sdda, "sdda_nivel_actual", 0)
-                logger.info(f"VALOR NIVEL ACTUAL: {ULTIMO_NIVEL}")
+                opc_logger.info(f"VALOR NIVEL ACTUAL: {ULTIMO_NIVEL}")
             
             if flag_nivel != ULTIMO_NIVEL and ESTADO_CICLO_DESMOLDEO == True:
                 receta_proximo = db_session.query(Recetario).filter(Recetario.id == self.get_node_value_safely(e_datosSeleccionado, "N_receta_actual", 1)).first()
