@@ -355,59 +355,55 @@ class ObtenerNodosOpc:
             ultimo_estado_nivel_desmoldado = niveles_desmoldados_bool
             
             # AHORA DESPUÉS DEL INCREMENTO verificamos si se ha alcanzado o superado el número de niveles seleccionados
-            if ciclo_actual is not None and not ciclo_guardado_por_flanco and CONTADOR_NIVELES_DESMOLDADOS >= niveles_seleccionados and niveles_seleccionados > 0:
-                opc_logger.info(f"[CICLO COMPLETADO] Niveles desmoldados ({CONTADOR_NIVELES_DESMOLDADOS}) alcanzaron o superaron los niveles seleccionados ({niveles_seleccionados})")
+            if ciclo_actual is not None and not ciclo_guardado_por_flanco:
+                # Obtener cantidadNivelesSeleccionados de la base de datos para el ciclo actual
+                recetario_ciclo = db_session.query(RecetarioXCiclo).filter(RecetarioXCiclo.id_ciclo_desmoldeo == ciclo_actual.id).first()
                 
-                try:
-                    ciclo_actualizar = db_session.query(CicloDesmoldeo).filter(CicloDesmoldeo.id == ciclo_actual.id).first()
-                    if ciclo_actualizar:
-                        id_receta = self.get_node_value_safely(e_datosSeleccionado, "N_receta_actual", 1)
-                        if id_receta <= 0:
-                            opc_logger.warning(f"ID de receta inválido: {id_receta}, usando valor predeterminado 1")
-                            id_receta = 1
+                if recetario_ciclo:
+                    niveles_seleccionados_db = recetario_ciclo.cantidadNivelesSeleccionados
+                    opc_logger.info(f"[VERIFICACIÓN] Niveles Seleccionados para el ciclo {ciclo_actual.id}: {niveles_seleccionados_db}")
+                    
+                    if CONTADOR_NIVELES_DESMOLDADOS == niveles_seleccionados_db:
+                        opc_logger.info(f"[CICLO COMPLETADO] Niveles desmoldados ({CONTADOR_NIVELES_DESMOLDADOS}) alcanzaron los niveles seleccionados ({niveles_seleccionados_db})")
                         
-                        PESO_FILA_PRODUCTO = RECETA_ACTUAL.get("PESO DEL PRODUCTO", 0) * (RECETA_ACTUAL.get("MOLDES POR NIVEL", 0) * RECETA_ACTUAL.get("PRODUCTOS POR MOLDE", 0))
-                        peso_calculado = PESO_FILA_PRODUCTO * CONTADOR_NIVELES_DESMOLDADOS
-                        
-                        receta_ciclo = db_session.query(RecetarioXCiclo).filter(RecetarioXCiclo.id_ciclo_desmoldeo == ciclo_actual.id).first()
-                        if receta_ciclo:
-                            # Actualizar solo el campo cantidadNivelesFinalizado
-                            receta_ciclo.cantidadNivelesFinalizado = CONTADOR_NIVELES_DESMOLDADOS
-                            #opc_logger.info(f"[CICLO COMPLETADO] RecetaXCiclo actualizado para ciclo {ciclo_actual.id}, niveles finalizados: {CONTADOR_NIVELES_DESMOLDADOS}")
-                        else:
-                            opc_logger.warning(f"[CICLO COMPLETADO] No se encontró RecetaXCiclo para ciclo {ciclo_actual.id}, creando nuevo registro")
-                            db_recetaXCiclo = RecetarioXCiclo(
-                                cantidadNivelesFinalizado = CONTADOR_NIVELES_DESMOLDADOS,
-                                cantidadNivelesSeleccionados = NIVELES_SELECCIONADOS_CICLO,
-                                pesoPorNivel = PESO_FILA_PRODUCTO,
-                                id_recetario = id_receta,
-                                id_ciclo_desmoldeo = ciclo_actualizar.id
-                            )
-                            db_session.add(db_recetaXCiclo)
-                        
-                        db_session.commit()
-                        
-                        ciclo_actualizar.fecha_fin = datetime.now()
-                        ciclo_actualizar.pesoDesmoldado = peso_calculado
-                        
-                        tiempo_desmolde_segundos = (datetime.now() - ciclo_actualizar.fecha_inicio).total_seconds()
-                        tiempo_pausado_segundos = CONTADOR_CICLO_PAUSADO
-                        
-                        ciclo_actualizar.tiempoDesmolde = formato_tiempo_mmss(tiempo_desmolde_segundos)
-                        ciclo_actualizar.tiempoPausado = formato_tiempo_mmss(tiempo_pausado_segundos)
-                        ciclo_actualizar.estadoMaquina = "FINALIZADO"
-                        
-                        db_session.commit()
-                        ciclo_guardado_por_flanco = True
-                        opc_logger.info(f"[CICLO COMPLETADO] Ciclo {ciclo_actualizar.id} marcado como FINALIZADO, Peso guardado: {ciclo_actualizar.pesoDesmoldado} kg")
-                        
-                        ciclo_actual = None
-                        ESTADO_CICLO_DESMOLDEO = False
-                    else:
-                        opc_logger.error(f"[CICLO COMPLETADO] No se encontró ciclo con ID {ciclo_actual.id} para finalizar")
-                except Exception as e:
-                    db_session.rollback()
-                    opc_logger.error(f"[ERROR CICLO COMPLETADO] Error al finalizar ciclo: {e}")
+                        try:
+                            ciclo_actualizar = db_session.query(CicloDesmoldeo).filter(CicloDesmoldeo.id == ciclo_actual.id).first()
+                            if ciclo_actualizar:
+                                id_receta = self.get_node_value_safely(e_datosSeleccionado, "N_receta_actual", 1)
+                                if id_receta <= 0:
+                                    opc_logger.warning(f"ID de receta inválido: {id_receta}, usando valor predeterminado 1")
+                                    id_receta = 1
+                                
+                                PESO_FILA_PRODUCTO = RECETA_ACTUAL.get("PESO DEL PRODUCTO", 0) * (RECETA_ACTUAL.get("MOLDES POR NIVEL", 0) * RECETA_ACTUAL.get("PRODUCTOS POR MOLDE", 0))
+                                peso_calculado = PESO_FILA_PRODUCTO * CONTADOR_NIVELES_DESMOLDADOS
+                                
+                                # Actualizar cantidadNivelesFinalizado
+                                recetario_ciclo.cantidadNivelesFinalizado = CONTADOR_NIVELES_DESMOLDADOS
+                                db_session.commit()
+                                
+                                ciclo_actualizar.fecha_fin = datetime.now()
+                                ciclo_actualizar.pesoDesmoldado = peso_calculado
+                                
+                                tiempo_desmolde_segundos = (datetime.now() - ciclo_actualizar.fecha_inicio).total_seconds()
+                                tiempo_pausado_segundos = CONTADOR_CICLO_PAUSADO
+                                
+                                ciclo_actualizar.tiempoDesmolde = formato_tiempo_mmss(tiempo_desmolde_segundos)
+                                ciclo_actualizar.tiempoPausado = formato_tiempo_mmss(tiempo_pausado_segundos)
+                                ciclo_actualizar.estadoMaquina = "FINALIZADO"
+                                
+                                db_session.commit()
+                                ciclo_guardado_por_flanco = True
+                                opc_logger.info(f"[CICLO COMPLETADO] Ciclo {ciclo_actualizar.id} marcado como FINALIZADO, Peso guardado: {ciclo_actualizar.pesoDesmoldado} kg")
+                                
+                                ciclo_actual = None
+                                ESTADO_CICLO_DESMOLDEO = False
+                            else:
+                                opc_logger.error(f"[CICLO COMPLETADO] No se encontró ciclo con ID {ciclo_actual.id} para finalizar")
+                        except Exception as e:
+                            db_session.rollback()
+                            opc_logger.error(f"[ERROR CICLO COMPLETADO] Error al finalizar ciclo: {e}")
+                else:
+                    opc_logger.error(f"[ERROR] No se encontró registro RecetarioXCiclo para el ciclo {ciclo_actual.id}")
             
             # Procesamiento de cancelación manual
             if flanco_fin_cancelado and ciclo_actual is not None and not ciclo_guardado_por_flanco:
@@ -765,7 +761,7 @@ class ObtenerNodosOpc:
             objects_node = root_node.get_child(["0:Objects"])
             server_interface_node = objects_node.get_child(["3:ServerInterfaces"])
 
-            server_interface_1 = server_interface_node.get_child([f"0:Server interface_1"])
+            server_interface_1 = server_interface_node.get_child([f"4:Server interface_1"])
             if not server_interface_1:
                 logger.error("No se encontró el nodo 'Server interface_1'.")
                 return None
@@ -891,7 +887,7 @@ class ObtenerNodosOpc:
             objects_node = root_node.get_child(["0:Objects"])
             server_interface_node = objects_node.get_child(["3:ServerInterfaces"])
 
-            server_interface_1 = server_interface_node.get_child([f"0:Server interface_1"])
+            server_interface_1 = server_interface_node.get_child([f"4:Server interface_1"])
             if not server_interface_1:
                 logger.error("No se encontró el nodo 'Server interface_1'.")
                 return None
@@ -1226,7 +1222,7 @@ class ObtenerNodosOpc:
             objects_node = root_node.get_child(["0:Objects"])
             server_interface_node = objects_node.get_child(["3:ServerInterfaces"])
 
-            server_interface_1 = server_interface_node.get_child([f"0:Server interface_1"])
+            server_interface_1 = server_interface_node.get_child([f"4:Server interface_1"])
             if not server_interface_1:
                 logger.error("No se encontró 'Server interface_1'.")
                 return False
