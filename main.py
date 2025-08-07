@@ -35,6 +35,7 @@ from dotenv import load_dotenv
 from config.logger_config import logger
 import os
 
+from email_utils import tarea_exportar_y_enviar
 
 logger = logging.getLogger("uvicorn")
 ruta_principal = os.path.dirname(os.path.abspath(__file__))
@@ -53,7 +54,7 @@ ruta_sql_torre_configuraciones = os.path.join(ruta_principal,"query","insert_tor
 URL = f"opc.tcp://{opc_ip}:{opc_port}"
 opc_client = OPCUAClient(URL)
 
-db.Base.metadata.drop_all(bind=db.engine)
+#db.Base.metadata.drop_all(bind=db.engine)
 db.Base.metadata.create_all(bind=db.engine)
 
 listaDatosOpc = ObtenerNodosOpc(opc_client)
@@ -265,6 +266,7 @@ async def lifespan(app: FastAPI):
         await opc_client.connect()
         logger.info("Conectado al servidor OPC UA.")
         asyncio.create_task(central_opc_render_ws())
+        asyncio.create_task(tarea_exportar_y_enviar())
 
         #p1 = Process(target=proceso_central_opc_ws, daemon=True) // OMITIR
         p2 = Process(target=proceso_central_opc_escritura, args=(stop_event,),daemon=True) #Actualizar correcciones al PLC
