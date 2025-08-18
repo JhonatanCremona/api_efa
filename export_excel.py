@@ -14,6 +14,63 @@ logger = logging.getLogger("uvicorn")
 load_dotenv()
 TIEMPO_EXCEL = int(os.getenv("TIEMPO_EXCEL", 1))
 
+def formatear_header_multilinea(header_text, max_chars_por_linea=20, max_lineas=2):
+    """
+    Divide un encabezado largo en múltiples líneas si es necesario.
+    Args:
+        header_text: El texto del encabezado
+        max_chars_por_linea: Máximo de caracteres por línea
+        max_lineas: Máximo número de líneas (máximo 1 salto = 2 líneas)
+    Returns:
+        String con saltos de línea donde sea apropiado
+    """
+    if len(header_text) <= max_chars_por_linea:
+        return header_text
+    
+    # Buscar espacios o caracteres de separación para dividir
+    palabras = header_text.split(' ')
+    if len(palabras) == 1:
+        # Si es una sola palabra muy larga, buscar otros separadores
+        if '[' in header_text and ']' in header_text:
+            # Dividir antes del corchete
+            parte1 = header_text[:header_text.find('[')].strip()
+            parte2 = header_text[header_text.find('['):].strip()
+            return f"{parte1}\n{parte2}"
+        else:
+            return header_text  # No dividir si no hay separadores naturales
+    
+    # Dividir en líneas manteniendo palabras completas
+    lineas = []
+    linea_actual = ""
+    
+    for palabra in palabras:
+        if len(linea_actual + " " + palabra) <= max_chars_por_linea:
+            if linea_actual:
+                linea_actual += " " + palabra
+            else:
+                linea_actual = palabra
+        else:
+            if linea_actual:
+                lineas.append(linea_actual)
+                linea_actual = palabra
+                # Si ya tenemos el máximo de líneas, agregar el resto a la última línea
+                if len(lineas) >= max_lineas - 1:
+                    # Agregar todas las palabras restantes a la línea actual
+                    palabras_restantes = palabras[palabras.index(palabra):]
+                    linea_actual = " ".join(palabras_restantes)
+                    break
+            else:
+                lineas.append(palabra)
+    
+    if linea_actual:
+        lineas.append(linea_actual)
+    
+    # Asegurar que no excedamos el máximo de líneas
+    if len(lineas) > max_lineas:
+        lineas = lineas[:max_lineas]
+    
+    return "\n".join(lineas)
+
 def normalizar_tiempo(tiempo_str):
     """Convierte 'mm:ss' o 'hh:mm:ss' a 'hh:mm:ss'."""
     if not isinstance(tiempo_str, str):
@@ -145,6 +202,7 @@ def obtener_cantidad_ciclos_por_recetario(fecha):
             FROM recetarioxciclo rxc
             JOIN ciclodesmoldeo cd ON rxc.id_ciclo_desmoldeo = cd.id
             WHERE DATE(cd.fecha_inicio) = :fecha
+            AND cd.estadoMaquina != 'CANCELADO AL INICIAR'
             GROUP BY rxc.id_recetario
         """)
         result = session.execute(query, {"fecha": fecha})
@@ -161,7 +219,7 @@ def obtener_ciclos_cancelados_por_recetario(fecha):
             FROM recetarioxciclo rxc
             JOIN ciclodesmoldeo cd ON rxc.id_ciclo_desmoldeo = cd.id
             WHERE DATE(cd.fecha_inicio) = :fecha
-            AND (cd.estadoMaquina = 'CANCELADO' OR cd.estadoMaquina = 'CANCELADO AL INICIAR')
+            AND cd.estadoMaquina = 'CANCELADO'
             GROUP BY rxc.id_recetario
         """)
         result = session.execute(query, {"fecha": fecha})
@@ -290,11 +348,11 @@ def obtener_segundos_por_nivel_por_recetario(tiempos_totales, niveles_desmoldado
             
             # Calcular segundos por nivel (si hay niveles)
             if niveles > 0:
-                segundos_por_nivel[id_recetario] = f"{int(segundos_totales / niveles)} seg"
+                segundos_por_nivel[id_recetario] = int(segundos_totales / niveles)
             else:
-                segundos_por_nivel[id_recetario] = "N/A seg"
+                segundos_por_nivel[id_recetario] = "0"
         except Exception:
-            segundos_por_nivel[id_recetario] = "N/A seg"
+            segundos_por_nivel[id_recetario] = "0"
     
     return segundos_por_nivel
 
@@ -318,6 +376,83 @@ def calcular_porcentaje_fallas(ciclos_totales, ciclos_cancelados):
             porcentajes[id_recetario] = 0
     
     return porcentajes
+
+def obtener_niveles_fallados_por_recetario(fecha):
+    """
+    Obtiene los niveles fallados (cuenta de ciclos cancelados) para cada recetario.
+    Args:
+        fecha: Fecha en formato "YYYY-MM-DD"
+    Returns:
+        Diccionario {id_recetario: niveles_fallados}
+    """
+    session = SessionLocal()
+    try:
+        query = text("""
+            SELECT rxc.id_recetario, COUNT(DISTINCT rxc.id_ciclo_desmoldeo) as niveles_fallados
+            FROM recetarioxciclo rxc
+            JOIN ciclodesmoldeo cd ON rxc.id_ciclo_desmoldeo = cd.id
+            WHERE DATE(cd.fecha_inicio) = :fecha
+            AND cd.estadoMaquina = 'CANCELADO'
+            GROUP BY rxc.id_recetario
+        """)
+        result = session.execute(query, {"fecha": fecha})
+        # Crear un diccionario {id_recetario: niveles_fallados}
+        return {row[0]: row[1] for row in result.fetchall()}
+    finally:
+        session.close()
+
+def obtener_niveles_ciclados_neto_por_recetario(fecha):
+    """
+    Obtiene los niveles ciclados neto (niveles totales + niveles de ciclos cancelados) para cada recetario.
+    Args:
+        fecha: Fecha en formato "YYYY-MM-DD"
+    Returns:
+        Diccionario {id_recetario: niveles_ciclados_neto}
+    """
+    session = SessionLocal()
+    try:
+        query = text("""
+            SELECT rxc.id_recetario, SUM(rxc.cantidadNivelesSeleccionados) as niveles_ciclados_neto
+            FROM recetarioxciclo rxc
+            JOIN ciclodesmoldeo cd ON rxc.id_ciclo_desmoldeo = cd.id
+            WHERE DATE(cd.fecha_inicio) = :fecha
+            GROUP BY rxc.id_recetario
+        """)
+        result = session.execute(query, {"fecha": fecha})
+        # Crear un diccionario {id_recetario: niveles_ciclados_neto}
+        return {row[0]: row[1] for row in result.fetchall()}
+    finally:
+        session.close()
+
+def calcular_eficiencia_bruta_por_recetario(niveles_fallados, niveles_desmoldados):
+    """
+    Calcula la eficiencia bruta para cada recetario usando la fórmula:
+    (1 - niveles_fallados / (niveles_desmoldados + niveles_fallados)) * 100
+    Args:
+        niveles_fallados: Diccionario {id_recetario: niveles_fallados}
+        niveles_desmoldados: Diccionario {id_recetario: niveles_desmoldados}
+    Returns:
+        Diccionario {id_recetario: eficiencia_bruta}
+    """
+    eficiencias = {}
+    
+    # Obtener todos los id_recetario únicos de ambos diccionarios
+    todos_ids = set(niveles_fallados.keys()) | set(niveles_desmoldados.keys())
+    
+    for id_recetario in todos_ids:
+        fallados = niveles_fallados.get(id_recetario, 0)
+        desmoldados = niveles_desmoldados.get(id_recetario, 0)
+        
+        # Niveles ciclados neto = niveles desmoldados correctamente + niveles fallados
+        niveles_ciclados_neto = desmoldados + fallados
+        
+        if niveles_ciclados_neto > 0:
+            eficiencia = (1 - fallados / niveles_ciclados_neto) * 100
+            eficiencias[id_recetario] = round(eficiencia, 2)
+        else:
+            eficiencias[id_recetario] = 0.0
+    
+    return eficiencias
 
 def obtener_detalles_ciclos_por_fecha(fecha):
     """
@@ -352,7 +487,7 @@ def obtener_detalles_ciclos_por_fecha(fecha):
                     WHEN 2 THEN 
                         CASE 
                             WHEN cd.id_torre <= 19 THEN cd.id_torre + 13
-                            ELSE cd.id_torre + 91
+                            ELSE cd.id_torre + 90
                         END
                     WHEN 3 THEN cd.id_torre + 32
                     WHEN 4 THEN cd.id_torre + 36
@@ -369,6 +504,400 @@ def obtener_detalles_ciclos_por_fecha(fecha):
         return result.fetchall()
     finally:
         session.close()
+
+def export_ciclodesmoldeo_efa_to_excel(file_path, fecha_hoy):
+    """
+    Genera un Excel simplificado para EFA que solo contiene:
+    - Hoja 1: RESUMEN DE PRODUCTIVIDAD | EFA ALIMENTOS
+    - Hoja 2: RESUMEN DE PRODUCTIVIDAD POR TORRE | EFA ALIMENTOS
+    """
+    logger.info(f"Exportando datos de ciclodesmoldeo EFA para la fecha: {fecha_hoy}")
+
+    fecha_inicio = pd.to_datetime(fecha_hoy)
+    fecha_inicio_str = fecha_inicio.strftime("%Y-%m-%d")
+
+    fecha_fin = pd.to_datetime(fecha_hoy)
+    fecha_fin_str = fecha_fin.strftime("%Y-%m-%d")
+    
+    # Verificar si hay datos antes de crear el Excel
+    id_recetarios = obtener_id_recetario_por_fecha(fecha_inicio_str)
+    
+    # Si no hay datos, retornar False para indicar que no hay registros
+    if not id_recetarios:
+        logger.info(f"No se encontraron datos para la fecha: {fecha_hoy}")
+        return False
+
+    try:
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Productividad | EFA"
+
+        logo_path = os.path.join(os.path.dirname(__file__), "static", "cremonarecort.png")
+        
+        # ------------------ PRIMERA HOJA: RESUMEN DE PRODUCTIVIDAD CLIENTE ------------------
+        
+        if os.path.exists(logo_path):
+            img = XLImage(logo_path)
+            img.height = 35
+            img.width = 140
+            ws.add_image(img, "F3")
+
+        ws.merge_cells("A1:F1")
+        ws["A1"] = "RESUMEN DE PRODUCTIVIDAD | EFA ALIMENTOS"
+        ws["A1"].font = Font(size=16, bold=True)
+        ws["A1"].alignment = Alignment(horizontal="center")
+        ws["A1"].fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
+
+        ws["A3"] = "Fecha inicial de filtrado:"
+        ws["A3"].font = Font(size=12, bold=True)
+        ws["A4"] = "Fecha final de filtrado:"
+        ws["A4"].font = Font(size=12, bold=True)
+        ws["B3"] = fecha_inicio_str
+        ws["B4"] = fecha_fin_str
+
+        # Obtener datos necesarios
+        codigos_producto = obtener_codigos_producto_por_ids_recetario(id_recetarios)
+        cantidad_ciclos = obtener_cantidad_ciclos_por_recetario(fecha_inicio_str)
+        ciclos_cancelados = obtener_ciclos_cancelados_por_recetario(fecha_inicio_str)
+        pesos_totales = obtener_peso_total_por_recetario(fecha_inicio_str)
+        tiempos_totales = obtener_tiempo_total_por_recetario(fecha_inicio_str)
+        niveles_desmoldados = obtener_niveles_desmoldados_por_recetario(fecha_inicio_str)
+        
+        # Obtener datos para calcular eficiencia bruta
+        niveles_fallados = obtener_niveles_fallados_por_recetario(fecha_inicio_str)
+        niveles_ciclados_neto = obtener_niveles_ciclados_neto_por_recetario(fecha_inicio_str)
+        
+        # Calcular segundos por nivel y eficiencia bruta
+        segundos_por_nivel = obtener_segundos_por_nivel_por_recetario(tiempos_totales, niveles_desmoldados)
+        eficiencia_bruta = calcular_eficiencia_bruta_por_recetario(niveles_fallados, niveles_desmoldados)
+
+        # Encabezados simplificados
+        headers_cliente = [
+            "Producto",
+            "Cantidad de ciclos",
+            "Peso total desmoldado [kg]",
+            "Tiempo util desmoldado [HH:MM:SS]",
+            "Niveles desmoldados\ncorrectamente",
+            "Segundos/Nivel [seg]"
+        ]
+        
+        # Añadir línea vacía y encabezados
+        ws.append([])  # Línea vacía
+        ws.append(headers_cliente)
+
+        # Guardar la fila donde empiezan los encabezados para la definición de la tabla
+        first_table_first_row = ws.max_row
+        
+        # Aplicar formato multilínea a los encabezados
+        for col in range(1, len(headers_cliente) + 1):
+            cell = ws.cell(row=first_table_first_row, column=col)
+            cell.alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
+        
+        # Ajustar altura de la fila de encabezados
+        ws.row_dimensions[first_table_first_row].height = 45
+        
+        if id_recetarios:
+            # Ordenar id_recetarios de forma ascendente
+            id_recetarios_ordenados = sorted(id_recetarios)
+            for id_recetario in id_recetarios_ordenados:
+                codigo_producto = codigos_producto.get(id_recetario, "DESCONOCIDO")
+                ciclos = cantidad_ciclos.get(id_recetario, 0)
+                peso_total = pesos_totales.get(id_recetario, 0.0)
+                tiempo_total = tiempos_totales.get(id_recetario, "00:00:00")
+                niveles = niveles_desmoldados.get(id_recetario, 0)
+                seg_por_nivel = segundos_por_nivel.get(id_recetario, "0")
+                eficiencia = eficiencia_bruta.get(id_recetario, 0.0)
+                
+                ws.append([
+                    codigo_producto,    # Producto
+                    ciclos,             # Cantidad de ciclos
+                    peso_total, # Peso total desmoldado
+                    tiempo_total,       # Tiempo total desmoldado
+                    niveles,            # Niveles desmoldados correctamente
+                    seg_por_nivel       # Segundos/Nivel
+                ])
+        else:
+            # Si no hay datos, agregar una fila con "Sin datos"
+            ws.append([
+                "DESCONOCIDO",      # Producto
+                0,                  # Cantidad de ciclos
+                "0.0",           # Peso total desmoldado
+                "00:00:00",         # Tiempo total desmoldado
+                0,                  # Niveles desmoldados correctamente
+                "0"           # Segundos/Nivel
+            ])
+        
+        # Calcular y agregar fila de totales
+        total_ciclos = sum(cantidad_ciclos.values())
+        total_peso = sum(pesos_totales.values())
+        
+        # Calcular el tiempo total en segundos
+        total_segundos = 0
+        for tiempo in tiempos_totales.values():
+            partes = tiempo.split(":")
+            segundos = int(partes[0]) * 3600 + int(partes[1]) * 60 + int(partes[2])
+            total_segundos += segundos
+            
+        # Convertir segundos totales a formato hh:mm:ss
+        horas_total = total_segundos // 3600
+        minutos_total = (total_segundos % 3600) // 60
+        segundos_total = total_segundos % 60
+        tiempo_total_formato = f"{horas_total:02d}:{minutos_total:02d}:{segundos_total:02d}"
+        
+        # Calcular el total de niveles desmoldados
+        total_niveles = sum(niveles_desmoldados.values())
+        
+        # Calcular segundos por nivel total
+        segundos_por_nivel_total = "0"
+        if total_niveles > 0:
+            segundos_por_nivel_total = int(total_segundos / total_niveles)
+        
+        # Calcular la eficiencia bruta total usando la fórmula
+        total_niveles_fallados = sum(niveles_fallados.values())
+        # Niveles ciclados neto = niveles desmoldados correctamente + niveles fallados
+        total_niveles_ciclados_neto = total_niveles + total_niveles_fallados
+        eficiencia_bruta_total = 0.0
+        if total_niveles_ciclados_neto > 0:
+            eficiencia_bruta_total = round((1 - (total_niveles_fallados / total_niveles_ciclados_neto)) * 100, 2)
+        
+        # Agregar fila de totales
+        ws.append([
+            "TOTALES",            # Producto
+            total_ciclos,         # Cantidad de ciclos
+            total_peso,           # Peso total desmoldado
+            tiempo_total_formato, # Tiempo total desmoldado
+            total_niveles,        # Niveles desmoldados correctamente
+            segundos_por_nivel_total  # Segundos/Nivel
+        ])
+        
+        # Dar formato a la fila de totales
+        fila_totales = ws.max_row
+        ws.row_dimensions[fila_totales].height = 30
+        
+        # Aplicar estilo negrita a la fila de totales
+        for col in range(1, 7):  # 6 columnas (A-F)
+            cell = ws.cell(row=fila_totales, column=col)
+            cell.font = Font(bold=True)
+            cell.alignment = Alignment(vertical='center')
+            
+            # Añadir un borde superior para destacar que es una fila de totales
+            thin_border = Border(top=Side(style='thin'))
+            cell.border = thin_border
+        
+        # Crear la primera tabla
+        first_table_last_row = ws.max_row
+        
+        # Agregar la primera tabla
+        first_table = Table(displayName="ResumenProductividadCliente", ref=f"A{first_table_first_row}:F{first_table_last_row}")
+        first_style = TableStyleInfo(
+            name="TableStyleMedium9", showFirstColumn=False,
+            showLastColumn=False, showRowStripes=True, showColumnStripes=False
+        )
+        first_table.tableStyleInfo = first_style
+        ws.add_table(first_table)
+        
+        # ------------------ SEGUNDA HOJA: RESUMEN DE PRODUCTIVIDAD POR TORRE CLIENTE ------------------
+        
+        # Crear una nueva hoja
+        ws_torre = wb.create_sheet("Torres | EFA")
+        
+        # Insertar logo en la nueva hoja
+        if os.path.exists(logo_path):
+            img2 = XLImage(logo_path)
+            img2.height = 35
+            img2.width = 140
+            ws_torre.add_image(img2, "L3")
+
+        # Encabezado de la nueva hoja
+        ws_torre.merge_cells("A1:M1")  # Fusionar celdas para el título (13 columnas)
+        ws_torre["A1"] = "RESUMEN DE PRODUCTIVIDAD POR TORRE | EFA ALIMENTOS"
+        ws_torre["A1"].font = Font(size=16, bold=True)
+        ws_torre["A1"].alignment = Alignment(horizontal="center")
+        ws_torre["A1"].fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
+
+        ws_torre["A3"] = "Fecha inicial de filtrado:"
+        ws_torre["A3"].font = Font(size=12, bold=True)
+        ws_torre["A4"] = "Fecha final de filtrado:"
+        ws_torre["A4"].font = Font(size=12, bold=True)
+        ws_torre["B3"] = fecha_inicio_str
+        ws_torre["B4"] = fecha_fin_str
+
+        # Encabezados para la tabla por torre (sin "Recuento de Fallas")
+        headers_torre_cliente = [
+            "ID Ciclo",
+            "Producto",
+            "Torre",
+            "Niveles\nDesmoldados",
+            "Niveles\nSeleccionados",
+            "Peso Desmoldado [kg]",
+            "Tipo de Fin",
+            "Cinta de\nDesmolde",
+            "Inicio [AAAA-MM-DD HH:MM:SS]",
+            "Fin [AAAA-MM-DD HH:MM:SS]",
+            "Tiempo Desmolde\n[MM:SS]",
+            "Tiempo Pausado\n[MM:SS]",
+            "Tiempo Útil\n[MM:SS]"
+        ]
+        
+        # Añadir línea vacía y encabezados
+        ws_torre.append([])  # Línea vacía
+        ws_torre.append(headers_torre_cliente)
+        
+        # Guardar la fila donde empiezan los encabezados para la definición de la tabla
+        torre_table_first_row = ws_torre.max_row
+        
+        # Aplicar formato multilínea a los encabezados de torres
+        for col in range(1, len(headers_torre_cliente) + 1):
+            cell = ws_torre.cell(row=torre_table_first_row, column=col)
+            cell.alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
+        
+        # Ajustar altura de la fila de encabezados de torres
+        ws_torre.row_dimensions[torre_table_first_row].height = 45
+        
+        # Obtener datos detallados de los ciclos
+        detalles_ciclos = obtener_detalles_ciclos_por_fecha(fecha_inicio_str)
+        
+        if detalles_ciclos:
+            for ciclo in detalles_ciclos:
+                # Formatear fechas
+                fecha_inicio = ciclo[8].strftime("%Y-%m-%d %H:%M:%S") if ciclo[8] else "N/A"
+                fecha_fin = ciclo[9].strftime("%Y-%m-%d %H:%M:%S") if ciclo[9] else "N/A"
+                
+                # Obtener tiempos directamente de la base
+                tiempo_pausado_str = ciclo[10] or "00:00"
+                tiempo_desmolde_str = ciclo[11] or "00:00"
+                
+                # Convertir a formato MM:SS
+                tiempo_pausado_mm_ss = tiempo_a_mm_ss(tiempo_pausado_str)
+                tiempo_desmolde_mm_ss = tiempo_a_mm_ss(tiempo_desmolde_str)
+                tiempo_util_mm_ss = calcular_tiempo_util_mm_ss(tiempo_desmolde_str, tiempo_pausado_str)
+                
+                # Obtener tipo de fin
+                tipo_fin = ciclo[6] or "N/A"
+                
+                ws_torre.append([
+                    ciclo[0],                  # ID Ciclo
+                    ciclo[1] or "DESCONOCIDO", # Producto
+                    ciclo[2] or "N/A",         # Torre
+                    ciclo[3] or 0,             # Niveles Desmoldados
+                    ciclo[4] or 0,             # Niveles Seleccionados
+                    ciclo[5] or 0, # Peso Desmoldado
+                    tipo_fin,                  # Tipo de Fin
+                    ciclo[7] or "N/A",         # Cinta de Desmolde
+                    fecha_inicio,              # Inicio
+                    fecha_fin,                 # Fin
+                    tiempo_desmolde_mm_ss,     # Tiempo Desmolde [MM:SS]
+                    tiempo_pausado_mm_ss,      # Tiempo Pausado [MM:SS]
+                    tiempo_util_mm_ss          # Tiempo Útil [MM:SS]
+                ])
+        else:
+            # Si no hay datos, agregar una fila con "Sin datos"
+            ws_torre.append([
+                "Sin datos",    # ID Ciclo
+                "DESCONOCIDO",  # Producto
+                "N/A",          # Torre
+                0,              # Niveles Desmoldados
+                0,              # Niveles Seleccionados
+                0,      # Peso Desmoldado
+                "N/A",          # Tipo de Fin
+                "N/A",          # Cinta de Desmolde
+                "N/A",          # Inicio
+                "N/A",          # Fin
+                "00:00",        # Tiempo Desmolde [MM:SS]
+                "00:00",        # Tiempo Pausado [MM:SS]
+                "00:00"         # Tiempo Útil [MM:SS]
+            ])
+        
+        # Definir la tabla de torre
+        torre_table_last_row = ws_torre.max_row
+        
+        # Aplicar formato de color rojo claro a las filas con "CANCELADO AL INICIAR"
+        light_red_fill = PatternFill(start_color="FFCCCC", end_color="FFCCCC", fill_type="solid")
+        
+        # Recorrer las filas de datos (excluyendo encabezados)
+        for row_num in range(torre_table_first_row + 1, torre_table_last_row + 1):
+            tipo_fin_cell = ws_torre[f"G{row_num}"]  # Columna G es "Tipo de Fin"
+            if tipo_fin_cell.value == "CANCELADO AL INICIAR":
+                # Aplicar color de fondo rojo claro a toda la fila
+                for col_num in range(1, 14):  # Columnas A-M (13 columnas)
+                    cell = ws_torre.cell(row=row_num, column=col_num)
+                    cell.fill = light_red_fill
+        
+        # Agregar la tabla de torre
+        torre_table = Table(displayName="ResumenProductividadTorreCliente", ref=f"A{torre_table_first_row}:M{torre_table_last_row}")
+        torre_style = TableStyleInfo(
+            name="TableStyleMedium9", showFirstColumn=False,
+            showLastColumn=False, showRowStripes=True, showColumnStripes=False
+        )
+        torre_table.tableStyleInfo = torre_style
+        ws_torre.add_table(torre_table)
+        
+        # Ajustar ancho de columnas para ambas hojas
+        for sheet in [ws, ws_torre]:
+            for col in sheet.columns:
+                max_data_length = 0
+                max_header_length = 0
+                column = None
+                is_header_multiline = False
+                
+                for cell in col:
+                    if hasattr(cell, "column_letter"):
+                        column = cell.column_letter
+                    else:
+                        continue
+                        
+                    try:
+                        if cell.value:
+                            cell_str = str(cell.value)
+                            
+                            # Detectar si es un encabezado (filas 5-7 típicamente contienen encabezados)
+                            if 5 <= cell.row <= 8 and ('[' in cell_str or 'Tiempo' in cell_str or 'Nivel' in cell_str or 'Peso' in cell_str):
+                                # Es un encabezado
+                                if '\n' in cell_str:
+                                    lines = cell_str.split('\n')
+                                    max_header_length = max(len(line) for line in lines)
+                                    is_header_multiline = True
+                                else:
+                                    max_header_length = len(cell_str)
+                            else:
+                                # Es dato normal
+                                if cell.row > 8:  # Evitar títulos y fechas
+                                    max_data_length = max(max_data_length, len(cell_str))
+                    except:
+                        pass
+                
+                if column:
+                    # Establecer ancho fijo de 25 para la primera columna (A)
+                    if column == "A":
+                        final_width = 25
+                    else:
+                        # Calcular ancho basándose en el contenido más largo (header vs datos)
+                        content_width = max(max_header_length, max_data_length)
+                        
+                        # Establecer rangos específicos por tipo de columna
+                        if column == "B":
+                            # Para columna Producto, usar el mayor entre header y contenido, con mínimo 10
+                            final_width = min(max(content_width + 2, 10), 25)
+                        elif "Tiempo" in str(max_header_length) or "MM:SS" in str(max_header_length):
+                            final_width = 12  # Columnas de tiempo
+                        elif is_header_multiline:
+                            # Para encabezados multilínea, usar la línea más larga + pequeño margen
+                            final_width = min(max(max_header_length + 2, 10), 20)
+                        elif "[kg]" in str(sheet[column + "6"].value or "") or "Peso" in str(sheet[column + "6"].value or ""):
+                            final_width = min(max(content_width + 2, 12), 16)  # Columnas de peso
+                        elif "[seg]" in str(sheet[column + "6"].value or ""):
+                            final_width = 21  # Segundos/Nivel
+                        else:
+                            final_width = min(max(content_width + 2, 10), 25)  # Otras columnas
+                    
+                    sheet.column_dimensions[column].width = final_width
+
+        wb.save(file_path)
+        logger.info(f"Archivo Excel EFA generado en: {file_path}")
+        return True  # Retornar True indicando que se generó el Excel exitosamente
+    except Exception as e:
+        logger.error(f"Error exportando a Excel EFA: {e}")
+        raise
 
 def export_ciclodesmoldeo_to_excel(file_path, fecha_hoy):
     logger.info(f"Exportando datos de ciclodesmoldeo para la fecha: {fecha_hoy}")
@@ -400,14 +929,14 @@ def export_ciclodesmoldeo_to_excel(file_path, fecha_hoy):
             ws.add_image(img, "H3")
 
         ws.merge_cells("A1:I1")
-        ws["A1"] = "RESUMEN DE PRODUCTIVIDAD CREMINOX"
+        ws["A1"] = "RESUMEN DE PRODUCTIVIDAD | CREMINOX"
         ws["A1"].font = Font(size=16, bold=True)
         ws["A1"].alignment = Alignment(horizontal="center")
         ws["A1"].fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
 
         ws["A3"] = "Fecha inicial de filtrado:"
         ws["A3"].font = Font(size=12, bold=True)
-        ws["A4"] = "Fecha final de filtrado"
+        ws["A4"] = "Fecha final de filtrado:"
         ws["A4"].font = Font(size=12, bold=True)
         ws["B3"] = fecha_inicio_str
         ws["B4"] = fecha_fin_str
@@ -419,9 +948,14 @@ def export_ciclodesmoldeo_to_excel(file_path, fecha_hoy):
         tiempos_totales = obtener_tiempo_total_por_recetario(fecha_inicio_str)
         niveles_desmoldados = obtener_niveles_desmoldados_por_recetario(fecha_inicio_str)
         
-        # Calcular segundos por nivel y porcentaje de fallas
+        # Obtener datos para calcular eficiencia bruta
+        niveles_fallados = obtener_niveles_fallados_por_recetario(fecha_inicio_str)
+        niveles_ciclados_neto = obtener_niveles_ciclados_neto_por_recetario(fecha_inicio_str)
+        
+        # Calcular segundos por nivel, porcentaje de fallas y eficiencia bruta
         segundos_por_nivel = obtener_segundos_por_nivel_por_recetario(tiempos_totales, niveles_desmoldados)
         porcentaje_fallas = calcular_porcentaje_fallas(cantidad_ciclos, ciclos_cancelados)
+        eficiencia_bruta = calcular_eficiencia_bruta_por_recetario(niveles_fallados, niveles_desmoldados)
 
         # Añadir las nuevas columnas a los encabezados
         headers = [
@@ -430,34 +964,46 @@ def export_ciclodesmoldeo_to_excel(file_path, fecha_hoy):
             "Cantidad de ciclos",
             "Peso total desmoldado [kg]",
             "Tiempo util desmoldado [HH:MM:SS]",
-            "Niveles desmoldados correctamente",
-            "Segundos/Nivel",
-            "Eficiencia bruta",   # Nueva columna (se deja vacía)
-            "% Falla"             # Nueva columna con porcentaje de fallas
+            "Niveles desmoldados\ncorrectamente",
+            "Segundos/Nivel [seg]",
+            "Eficiencia bruta",
+            "% Falla"
         ]
         ws.append([])  # Línea vacía
         ws.append(headers)
 
+        # Aplicar formato multilínea a los encabezados principales
+        header_row = ws.max_row
+        for col in range(1, len(headers) + 1):
+            cell = ws.cell(row=header_row, column=col)
+            cell.alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
+        
+        # Ajustar altura de la fila de encabezados principales
+        ws.row_dimensions[header_row].height = 45
+
         if id_recetarios:
-            for id_recetario in id_recetarios:
+            # Ordenar id_recetarios de forma ascendente
+            id_recetarios_ordenados = sorted(id_recetarios)
+            for id_recetario in id_recetarios_ordenados:
                 codigo_producto = codigos_producto.get(id_recetario, "DESCONOCIDO")
                 ciclos = cantidad_ciclos.get(id_recetario, 0)
                 peso_total = pesos_totales.get(id_recetario, 0.0)
                 tiempo_total = tiempos_totales.get(id_recetario, "00:00:00")
                 niveles = niveles_desmoldados.get(id_recetario, 0)
-                seg_por_nivel = segundos_por_nivel.get(id_recetario, "N/A seg")
+                seg_por_nivel = segundos_por_nivel.get(id_recetario, "0")
                 falla_porcentaje = porcentaje_fallas.get(id_recetario, 0)
+                eficiencia = eficiencia_bruta.get(id_recetario, 0.0)
                 
-                # Añadir las nuevas columnas en la fila
+                # Añadir las columnas en la fila
                 ws.append([
                     str(id_recetario),
                     codigo_producto,
                     ciclos,
-                    f"{peso_total} kg",
+                    peso_total,
                     tiempo_total,
                     niveles,
                     seg_por_nivel,
-                    "",                # Eficiencia bruta (vacía)
+                    f"{eficiencia}%",      # Eficiencia bruta con formato de porcentaje
                     f"{falla_porcentaje}%"  # % Falla
                 ])
         else:
@@ -466,11 +1012,11 @@ def export_ciclodesmoldeo_to_excel(file_path, fecha_hoy):
                 "Sin datos",
                 "DESCONOCIDO",
                 0,
-                "0.0 kg",
+                "0.0",
                 "00:00",
                 0,
-                "N/A seg",
-                "",                # Eficiencia bruta (vacía)
+                "0",
+                "0.0%",            # Eficiencia bruta
                 "0%"               # % Falla
             ])
             
@@ -497,25 +1043,33 @@ def export_ciclodesmoldeo_to_excel(file_path, fecha_hoy):
         total_niveles = sum(niveles_desmoldados.values())
         
         # Calcular segundos por nivel total
-        segundos_por_nivel_total = "N/A seg"
+        segundos_por_nivel_total = "0"
         if total_niveles > 0:
-            segundos_por_nivel_total = f"{int(total_segundos / total_niveles)} seg"
+            segundos_por_nivel_total = int(total_segundos / total_niveles)
         
         # Calcular el porcentaje de fallas total (ciclos cancelados totales / ciclos totales * 100)
         porcentaje_falla_total = 0
         if total_ciclos > 0:
             porcentaje_falla_total = round((total_ciclos_cancelados / total_ciclos) * 100, 2)
         
+        # Calcular la eficiencia bruta total usando la fórmula
+        total_niveles_fallados = sum(niveles_fallados.values())
+        # Niveles ciclados neto = niveles desmoldados correctamente + niveles fallados
+        total_niveles_ciclados_neto = total_niveles + total_niveles_fallados
+        eficiencia_bruta_total = 0.0
+        if total_niveles_ciclados_neto > 0:
+            eficiencia_bruta_total = round((1 - (total_niveles_fallados / total_niveles_ciclados_neto)) * 100, 2)
+        
         # Agregar la fila de totales
         ws.append([
             "TOTALES",            # ID Receta
             "",                   # Producto
             total_ciclos,         # Cantidad de ciclos
-            f"{total_peso} kg",   # Peso total desmoldado
+            total_peso,   # Peso total desmoldado
             tiempo_total_formato, # Tiempo total desmoldado
             total_niveles,        # Niveles desmoldados correctamente
             segundos_por_nivel_total,  # Segundos/Nivel
-            "",                   # Eficiencia bruta (vacía)
+            f"{eficiencia_bruta_total}%",  # Eficiencia bruta total
             f"{porcentaje_falla_total}%"  # % Falla (total)
         ])
         
@@ -536,7 +1090,7 @@ def export_ciclodesmoldeo_to_excel(file_path, fecha_hoy):
         first_table_row = ws.max_row - len(id_recetarios or [1]) - 1  # La fila de encabezados
         last_table_row = ws.max_row  # La última fila de datos (incluyendo totales)
 
-        # Actualizar la referencia de la tabla para incluir las nuevas columnas y la fila de totales
+        # Agregar la primera tabla
         table = Table(displayName="ResumenProductividad", ref=f"A{first_table_row}:I{last_table_row}")
         style = TableStyleInfo(
             name="TableStyleMedium9", showFirstColumn=False,
@@ -544,6 +1098,17 @@ def export_ciclodesmoldeo_to_excel(file_path, fecha_hoy):
         )
         table.tableStyleInfo = style
         ws.add_table(table)
+        
+        # Ajustar ancho de la columna B basándose SOLO en la primera tabla
+        max_producto_length = 0
+        for row in range(first_table_row + 1, last_table_row + 1):  # +1 para saltar encabezados
+            cell_value = ws[f"B{row}"].value
+            if cell_value and str(cell_value) != "TOTALES":
+                max_producto_length = max(max_producto_length, len(str(cell_value)))
+        
+        # Establecer ancho para columna B basándose solo en la primera tabla
+        first_table_product_width = min(max(max_producto_length + 2, 10), 25)
+        ws.column_dimensions["B"].width = first_table_product_width
 
         # ------------------ SEGUNDA TABLA: RESUMEN DE PRODUCTIVIDAD CLIENTE ------------------
         
@@ -561,7 +1126,7 @@ def export_ciclodesmoldeo_to_excel(file_path, fecha_hoy):
         
         ws.merge_cells(f"A{segunda_tabla_titulo_fila}:F{segunda_tabla_titulo_fila}")
         cell = ws.cell(row=segunda_tabla_titulo_fila, column=1)
-        cell.value = "RESUMEN DE PRODUCTIVIDAD CLIENTE"
+        cell.value = "RESUMEN DE PRODUCTIVIDAD | EFA ALIMENTOS"
         cell.font = Font(size=16, bold=True)
         cell.alignment = Alignment(horizontal="center")
         cell.fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
@@ -595,31 +1160,42 @@ def export_ciclodesmoldeo_to_excel(file_path, fecha_hoy):
             "Cantidad de ciclos",
             "Peso total desmoldado [kg]",
             "Tiempo util desmoldado [HH:MM:SS]",
-            "Niveles desmoldados correctamente",
-            "Segundos/Nivel"
+            "Niveles desmoldados\ncorrectamente",
+            "Segundos/Nivel [seg]"
         ]
         
         # Agregar encabezados
         for col, header in enumerate(headers_cliente, 1):
             ws.cell(row=headers_row, column=col, value=header)
+        
+        # Aplicar formato multilínea a los encabezados de cliente
+        for col in range(1, len(headers_cliente) + 1):
+            cell = ws.cell(row=headers_row, column=col)
+            cell.alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
+        
+        # Ajustar altura de la fila de encabezados de cliente
+        ws.row_dimensions[headers_row].height = 45
                 
         # Guardar la fila donde empiezan los encabezados para la definición de la tabla
         second_table_first_row = headers_row
         
         if id_recetarios:
-            for id_recetario in id_recetarios:
+            # Ordenar id_recetarios de forma ascendente
+            id_recetarios_ordenados = sorted(id_recetarios)
+            for id_recetario in id_recetarios_ordenados:
                 codigo_producto = codigos_producto.get(id_recetario, "DESCONOCIDO")
                 ciclos = cantidad_ciclos.get(id_recetario, 0)
                 peso_total = pesos_totales.get(id_recetario, 0.0)
                 tiempo_total = tiempos_totales.get(id_recetario, "00:00:00")
                 niveles = niveles_desmoldados.get(id_recetario, 0)
-                seg_por_nivel = segundos_por_nivel.get(id_recetario, "N/A seg")
+                seg_por_nivel = segundos_por_nivel.get(id_recetario, "0")
+                eficiencia = eficiencia_bruta.get(id_recetario, 0.0)
                 
                 # Añadir solo las columnas especificadas en la segunda tabla
                 ws.append([
                     codigo_producto,    # Producto
                     ciclos,             # Cantidad de ciclos
-                    f"{peso_total} kg", # Peso total desmoldado
+                    peso_total, # Peso total desmoldado
                     tiempo_total,       # Tiempo total desmoldado
                     niveles,            # Niveles desmoldados correctamente
                     seg_por_nivel       # Segundos/Nivel
@@ -629,17 +1205,17 @@ def export_ciclodesmoldeo_to_excel(file_path, fecha_hoy):
             ws.append([
                 "DESCONOCIDO",      # Producto
                 0,                  # Cantidad de ciclos
-                "0.0 kg",           # Peso total desmoldado
+                "0.0",           # Peso total desmoldado
                 "00:00",            # Tiempo total desmoldado
                 0,                  # Niveles desmoldados correctamente
-                "N/A seg"           # Segundos/Nivel
+                "0"           # Segundos/Nivel
             ])
         
         # Agregar fila de totales a la segunda tabla
         ws.append([
             "TOTALES",            # Producto
             total_ciclos,         # Cantidad de ciclos
-            f"{total_peso} kg",   # Peso total desmoldado
+            total_peso,   # Peso total desmoldado
             tiempo_total_formato, # Tiempo total desmoldado
             total_niveles,        # Niveles desmoldados correctamente
             segundos_por_nivel_total  # Segundos/Nivel
@@ -681,18 +1257,18 @@ def export_ciclodesmoldeo_to_excel(file_path, fecha_hoy):
             img3 = XLImage(logo_path)
             img3.height = 35
             img3.width = 140
-            ws_torre.add_image(img3, "N3")
+            ws_torre.add_image(img3, "M3")
 
         # Encabezado de la nueva hoja
         ws_torre.merge_cells("A1:N1")  # Fusionar celdas para el título (14 columnas)
-        ws_torre["A1"] = "RESUMEN DE PRODUCTIVIDAD POR TORRE CREMINOX"
+        ws_torre["A1"] = "RESUMEN DE PRODUCTIVIDAD POR TORRE | CREMINOX"
         ws_torre["A1"].font = Font(size=16, bold=True)
         ws_torre["A1"].alignment = Alignment(horizontal="center")
         ws_torre["A1"].fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
 
         ws_torre["A3"] = "Fecha inicial de filtrado:"
         ws_torre["A3"].font = Font(size=12, bold=True)
-        ws_torre["A4"] = "Fecha final de filtrado"
+        ws_torre["A4"] = "Fecha final de filtrado:"
         ws_torre["A4"].font = Font(size=12, bold=True)
         ws_torre["B3"] = fecha_inicio_str
         ws_torre["B4"] = fecha_fin_str
@@ -702,16 +1278,16 @@ def export_ciclodesmoldeo_to_excel(file_path, fecha_hoy):
             "ID Ciclo",
             "Producto",
             "Torre",
-            "Niveles Desmoldados",
-            "Niveles Seleccionados",
+            "Niveles\nDesmoldados",
+            "Niveles\nSeleccionados",
             "Peso Desmoldado [kg]",
             "Tipo de Fin",
-            "Cinta de Desmolde",
+            "Cinta de\nDesmolde",
             "Inicio [AAAA-MM-DD HH:MM:SS]",
             "Fin [AAAA-MM-DD HH:MM:SS]",
-            "Tiempo Desmolde [MM:SS]",
-            "Tiempo Pausado [MM:SS]",
-            "Tiempo Útil [MM:SS]",
+            "Tiempo Desmolde\n[MM:SS]",
+            "Tiempo Pausado\n[MM:SS]",
+            "Tiempo Útil\n[MM:SS]",
             "Recuento de Fallas"
         ]
         
@@ -721,6 +1297,14 @@ def export_ciclodesmoldeo_to_excel(file_path, fecha_hoy):
         
         # Guardar la fila donde empiezan los encabezados para la definición de la tabla
         torre_table_first_row = ws_torre.max_row
+        
+        # Aplicar formato multilínea a los encabezados de torres ingeniería
+        for col in range(1, len(headers_torre) + 1):
+            cell = ws_torre.cell(row=torre_table_first_row, column=col)
+            cell.alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
+        
+        # Ajustar altura de la fila de encabezados de torres ingeniería
+        ws_torre.row_dimensions[torre_table_first_row].height = 45
         
         # Obtener datos detallados de los ciclos
         detalles_ciclos = obtener_detalles_ciclos_por_fecha(fecha_inicio_str)
@@ -757,7 +1341,7 @@ def export_ciclodesmoldeo_to_excel(file_path, fecha_hoy):
                     ciclo[2] or "N/A",         # Torre
                     ciclo[3] or 0,             # Niveles Desmoldados
                     ciclo[4] or 0,             # Niveles Seleccionados
-                    f"{ciclo[5]} kg" if ciclo[5] else "0.00 kg", # Peso Desmoldado
+                    ciclo[5] or 0, # Peso Desmoldado
                     tipo_fin,                  # Tipo de Fin
                     ciclo[7] or "N/A",         # Cinta de Desmolde
                     fecha_inicio,              # Inicio
@@ -775,7 +1359,7 @@ def export_ciclodesmoldeo_to_excel(file_path, fecha_hoy):
                 "N/A",          # Torre
                 0,              # Niveles Desmoldados
                 0,              # Niveles Seleccionados
-                "0.00 kg",      # Peso Desmoldado
+                0,      # Peso Desmoldado
                 "N/A",          # Tipo de Fin
                 "N/A",          # Cinta de Desmolde
                 "N/A",          # Inicio
@@ -788,6 +1372,18 @@ def export_ciclodesmoldeo_to_excel(file_path, fecha_hoy):
         
         # Definir la tabla de torre
         torre_table_last_row = ws_torre.max_row
+        
+        # Aplicar formato de color rojo claro a las filas con "CANCELADO AL INICIAR"
+        light_red_fill = PatternFill(start_color="FFCCCC", end_color="FFCCCC", fill_type="solid")
+        
+        # Recorrer las filas de datos (excluyendo encabezados)
+        for row_num in range(torre_table_first_row + 1, torre_table_last_row + 1):
+            tipo_fin_cell = ws_torre[f"G{row_num}"]  # Columna G es "Tipo de Fin"
+            if tipo_fin_cell.value == "CANCELADO AL INICIAR":
+                # Aplicar color de fondo rojo claro a toda la fila
+                for col_num in range(1, 15):  # Columnas A-N (14 columnas)
+                    cell = ws_torre.cell(row=row_num, column=col_num)
+                    cell.fill = light_red_fill
         
         # Agregar la tabla de torre
         torre_table = Table(displayName="ResumenProductividadTorre", ref=f"A{torre_table_first_row}:N{torre_table_last_row}")
@@ -814,7 +1410,7 @@ def export_ciclodesmoldeo_to_excel(file_path, fecha_hoy):
         
         ws_torre.merge_cells(f"A{segunda_tabla_torres_titulo_fila}:M{segunda_tabla_torres_titulo_fila}")
         cell = ws_torre.cell(row=segunda_tabla_torres_titulo_fila, column=1)
-        cell.value = "RESUMEN DE PRODUCTIVIDAD POR TORRE CLIENTE"
+        cell.value = "RESUMEN DE PRODUCTIVIDAD POR TORRE | EFA ALIMENTOS"
         cell.font = Font(size=16, bold=True)
         cell.alignment = Alignment(horizontal="center")
         cell.fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
@@ -838,23 +1434,23 @@ def export_ciclodesmoldeo_to_excel(file_path, fecha_hoy):
             img4 = XLImage(logo_path)
             img4.height = 35
             img4.width = 140
-            ws_torre.add_image(img4, f"M{fecha_row_torres}")  # Logo alineado a la derecha
+            ws_torre.add_image(img4, f"L{fecha_row_torres}")  # Logo alineado a la derecha
 
         # Encabezados para la segunda tabla por torre (sin "Recuento de Fallas")
         headers_torre_cliente = [
             "ID Ciclo",
             "Producto",
             "Torre",
-            "Niveles Desmoldados",
-            "Niveles Seleccionados",
+            "Niveles\nDesmoldados",
+            "Niveles\nSeleccionados",
             "Peso Desmoldado [kg]",
             "Tipo de Fin",
-            "Cinta de Desmolde",
+            "Cinta de\nDesmolde",
             "Inicio [AAAA-MM-DD HH:MM:SS]",
             "Fin [AAAA-MM-DD HH:MM:SS]",
-            "Tiempo Desmolde [MM:SS]",
-            "Tiempo Pausado [MM:SS]",
-            "Tiempo Útil [MM:SS]"
+            "Tiempo Desmolde\n[MM:SS]",
+            "Tiempo Pausado\n[MM:SS]",
+            "Tiempo Útil\n[MM:SS]"
         ]
         
         # Añadir los encabezados de la segunda tabla (después de la fecha)
@@ -863,6 +1459,14 @@ def export_ciclodesmoldeo_to_excel(file_path, fecha_hoy):
         # Agregar encabezados
         for col, header in enumerate(headers_torre_cliente, 1):
             ws_torre.cell(row=headers_row_torres, column=col, value=header)
+        
+        # Aplicar formato multilínea a los encabezados de la segunda tabla de torres
+        for col in range(1, len(headers_torre_cliente) + 1):
+            cell = ws_torre.cell(row=headers_row_torres, column=col)
+            cell.alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
+        
+        # Ajustar altura de la fila de encabezados de la segunda tabla de torres
+        ws_torre.row_dimensions[headers_row_torres].height = 45
                 
         # Guardar la fila donde empiezan los encabezados para la definición de la segunda tabla
         second_torre_table_first_row = headers_row_torres
@@ -892,7 +1496,7 @@ def export_ciclodesmoldeo_to_excel(file_path, fecha_hoy):
                     ciclo[2] or "N/A",         # Torre
                     ciclo[3] or 0,             # Niveles Desmoldados
                     ciclo[4] or 0,             # Niveles Seleccionados
-                    f"{ciclo[5]} kg" if ciclo[5] else "0.00 kg", # Peso Desmoldado
+                    ciclo[5] or 0, # Peso Desmoldado
                     tipo_fin,                  # Tipo de Fin
                     ciclo[7] or "N/A",         # Cinta de Desmolde
                     fecha_inicio,              # Inicio
@@ -910,7 +1514,7 @@ def export_ciclodesmoldeo_to_excel(file_path, fecha_hoy):
                 "N/A",          # Torre
                 0,              # Niveles Desmoldados
                 0,              # Niveles Seleccionados
-                "0.00 kg",      # Peso Desmoldado
+                0,      # Peso Desmoldado
                 "N/A",          # Tipo de Fin
                 "N/A",          # Cinta de Desmolde
                 "N/A",          # Inicio
@@ -924,6 +1528,15 @@ def export_ciclodesmoldeo_to_excel(file_path, fecha_hoy):
         # Crear la segunda tabla de torre
         second_torre_table_last_row = ws_torre.max_row  # La última fila de datos
         
+        # Aplicar formato de color rojo claro a las filas con "CANCELADO AL INICIAR" en la segunda tabla
+        for row_num in range(second_torre_table_first_row + 1, second_torre_table_last_row + 1):
+            tipo_fin_cell = ws_torre[f"G{row_num}"]  # Columna G es "Tipo de Fin"
+            if tipo_fin_cell.value == "CANCELADO AL INICIAR":
+                # Aplicar color de fondo rojo claro a toda la fila
+                for col_num in range(1, 14):  # Columnas A-M (13 columnas para la segunda tabla)
+                    cell = ws_torre.cell(row=row_num, column=col_num)
+                    cell.fill = light_red_fill
+        
         # Agregar la segunda tabla de torre
         second_torre_table = Table(displayName="ResumenProductividadTorreCliente", ref=f"A{second_torre_table_first_row}:M{second_torre_table_last_row}")
         second_torre_style = TableStyleInfo(
@@ -933,48 +1546,71 @@ def export_ciclodesmoldeo_to_excel(file_path, fecha_hoy):
         second_torre_table.tableStyleInfo = second_torre_style
         ws_torre.add_table(second_torre_table)
         
-        # Ajustar ancho de columnas para ambas hojas
+        # Ajustar ancho de columnas para ambas hojas (excepto columna B en ws que ya se ajustó)
         for sheet in [ws, ws_torre]:
             for col in sheet.columns:
-                max_length = 0
+                max_data_length = 0
+                max_header_length = 0
                 column = None
+                is_header_multiline = False
+                
                 for cell in col:
-                    # Ignorar las primeras 4 filas (título, espacio, fecha, espacio)
-                    if cell.row <= 4:
-                        continue
-                        
                     if hasattr(cell, "column_letter"):
                         column = cell.column_letter
                     else:
                         continue
+                        
                     try:
                         if cell.value:
-                            # Calcular el largo del contenido de la celda
-                            cell_length = len(str(cell.value))
-                            max_length = max(max_length, cell_length)
+                            cell_str = str(cell.value)
+                            
+                            # Detectar si es un encabezado (filas 5-8 típicamente contienen encabezados)
+                            if 5 <= cell.row <= 10 and ('[' in cell_str or 'Tiempo' in cell_str or 'Nivel' in cell_str or 'Peso' in cell_str or 'ID' in cell_str):
+                                # Es un encabezado
+                                if '\n' in cell_str:
+                                    lines = cell_str.split('\n')
+                                    max_header_length = max(len(line) for line in lines)
+                                    is_header_multiline = True
+                                else:
+                                    max_header_length = len(cell_str)
+                            else:
+                                # Es dato normal
+                                if cell.row > 10:  # Evitar títulos y fechas
+                                    max_data_length = max(max_data_length, len(cell_str))
                     except:
                         pass
                 
                 if column:
-                    # Para encabezados, también revisar la primera fila de datos (que contiene los headers)
-                    header_row_found = False
-                    for cell in sheet[column]:
-                        if cell.row > 4 and cell.value and not header_row_found:
-                            # Esta debería ser la fila de encabezados
-                            if isinstance(cell.value, str) and ("[" in cell.value or "ID" in cell.value or "Producto" in cell.value):
-                                header_length = len(str(cell.value))
-                                max_length = max(max_length, header_length)
-                                header_row_found = True
-                                break
-                    
-                    # Establecer ancho fijo para la primera columna de la hoja de Torres
-                    if sheet == ws_torre and column == "A":
-                        final_width = 34.29
+                    # Establecer ancho fijo de 25 para la primera columna (A)
+                    if column == "A":
+                        final_width = 25
+                    # Saltar columna B en hoja ws porque ya se ajustó específicamente
+                    elif column == "B" and sheet == ws:
+                        continue  # No modificar, ya se ajustó arriba
                     else:
-                        # Establecer un ancho mínimo de 12 y máximo de 35 caracteres para el resto
-                        final_width = min(max(max_length + 3, 12), 35)
+                        # Calcular ancho basándose en el contenido más largo (header vs datos)
+                        content_width = max(max_header_length, max_data_length)
+                        
+                        # Establecer rangos específicos por tipo de columna
+                        if column == "B":
+                            # Para otras hojas, usar la lógica normal
+                            final_width = min(max(content_width + 2, 10), 25)
+                        elif "Tiempo" in str(max_header_length) or "MM:SS" in str(max_header_length):
+                            final_width = 12  # Columnas de tiempo
+                        elif is_header_multiline:
+                            # Para encabezados multilínea, usar la línea más larga + pequeño margen
+                            final_width = min(max(max_header_length + 2, 10), 20)
+                        elif "[kg]" in str(sheet[column + "7"].value or "") or "Peso" in str(sheet[column + "7"].value or ""):
+                            final_width = min(max(content_width + 2, 12), 16)  # Columnas de peso
+                        elif "[seg]" in str(sheet[column + "7"].value or ""):
+                            final_width = 21  # Segundos/Nivel
+                        elif "%" in str(sheet[column + "7"].value or ""):
+                            final_width = 12  # Porcentajes
+                        else:
+                            final_width = min(max(content_width + 2, 10), 25)  # Otras columnas
                     
-                    sheet.column_dimensions[column].width = final_width
+                    if column != "B" or sheet != ws:  # Solo aplicar si no es la columna B en ws
+                        sheet.column_dimensions[column].width = final_width
 
         wb.save(file_path)
         logger.info(f"Archivo Excel generado en: {file_path}")
