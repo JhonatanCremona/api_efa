@@ -648,27 +648,70 @@ class ObtenerNodosOpc:
                 ULTIMO_NIVEL = self.get_node_value_safely(e_sdda, "sdda_nivel_actual", 0)
                 opc_logger.info(f"VALOR NIVEL ACTUAL: {ULTIMO_NIVEL}")
             
-            if flag_nivel != ULTIMO_NIVEL and ESTADO_CICLO_DESMOLDEO == True:
-                receta_proximo = db_session.query(Recetario).filter(Recetario.id == self.get_node_value_safely(e_datosSeleccionado, "N_receta_actual", 1)).first()
-                PESO_FILA_PRODUCTO = RECETA_ACTUAL.get("PESO DEL PRODUCTO", 0) * (RECETA_ACTUAL.get("MOLDES POR NIVEL", 0) * RECETA_ACTUAL.get("PRODUCTOS POR MOLDE", 0))
-                
-                PESO_ACTUAL_DESMOLDADO = PESO_FILA_PRODUCTO * CONTADOR_NIVELES_DESMOLDADOS
-                PESO_TOTAL_CICLO = PESO_ACTUAL_DESMOLDADO
-                flag_nivel = ULTIMO_NIVEL
-
+            id_receta_actual = self.get_node_value_safely(e_datosSeleccionado, "N_receta_actual", 1)
+            receta_db = db_session.query(Recetario).filter(Recetario.id == id_receta_actual).first()
+            
+            if receta_db:
+                RECETA_ACTUAL.clear()
+                RECETA_ACTUAL["NOMBRE"] = receta_db.codigoProducto
+                RECETA_ACTUAL["NUMERO DE GRIPPER"] = receta_db.nroGripper
+                RECETA_ACTUAL["TIPO DE MOLDE"] = receta_db.tipoMolde
+                RECETA_ACTUAL["ANCHO PRODUCTO"] = receta_db.anchoProducto
+                RECETA_ACTUAL["ALTO DE PRODUCTO"] = receta_db.altoProducto
+                RECETA_ACTUAL["LARGO DE PRODUCTO"] = receta_db.largoProducto
+                RECETA_ACTUAL["PESO DEL PRODUCTO"] = receta_db.pesoProducto
+                RECETA_ACTUAL["MOLDES POR NIVEL"] = receta_db.moldesNivel
+                RECETA_ACTUAL["ALTO DE MOLDE"] = receta_db.altoMolde
+                RECETA_ACTUAL["LARGO DE MOLDE"] = receta_db.largoMolde
+                RECETA_ACTUAL["ALTURA AJUSTE"] = receta_db.ajusteAltura
+                RECETA_ACTUAL["CANTIDAD NIVELES"] = receta_db.cantidadNiveles
+                RECETA_ACTUAL["DELTA ENTRE NIVELES"] = receta_db.deltaNiveles
+                RECETA_ACTUAL["ALTURA N1"] = receta_db.n1Altura
+                RECETA_ACTUAL["ALTURA DE BASTIDOR"] = receta_db.bastidorAltura
+                RECETA_ACTUAL["ALTURA AJUSTE N1"] = receta_db.ajusteN1Altura
+                RECETA_ACTUAL["PRODUCTOS POR MOLDE"] = receta_db.productosMolde
+            
+            receta_proximo = db_session.query(Recetario).filter(Recetario.id == self.get_node_value_safely(e_datosSeleccionado, "N_receta_actual", 1)).first()
+            
+            if not (ESTADO_CICLO_DESMOLDEO == False and ultimo_estado == True):
                 lista_resumen_general["idRecetaActual"] = self.get_node_value_safely(e_datosSeleccionado, "N_receta_actual", 0)
                 lista_resumen_general["idRecetaProxima"] = receta_proximo.codigoProducto if receta_proximo else ""
-                lista_resumen_general["CodigoProducto"] = RECETA_ACTUAL.get("NOMBRE")
-                lista_resumen_general["TotalNiveles"] = RECETA_ACTUAL.get("CANTIDAD NIVELES")
-                lista_resumen_general["TipoMolde"] = tipo_molde.get(RECETA_ACTUAL.get("TIPO DE MOLDE"))
-                        
+                lista_resumen_general["CodigoProducto"] = RECETA_ACTUAL.get("NOMBRE", "")
+                lista_resumen_general["TotalNiveles"] = RECETA_ACTUAL.get("CANTIDAD NIVELES", 0)
+                
+                #CORRECCION PORQUE EL VALOR DE TIPOMOLDE ESTA MAL EN BASE (VARCHAR)
+                tipo_molde_valor = RECETA_ACTUAL.get("TIPO DE MOLDE", 0)
+                if isinstance(tipo_molde_valor, str):
+                    try:
+                        tipo_molde_valor = int(tipo_molde_valor)
+                    except (ValueError, TypeError):
+                        tipo_molde_valor = 0
+                elif tipo_molde_valor is None:
+                    tipo_molde_valor = 0
+                resultado_tipo_molde = tipo_molde.get(tipo_molde_valor, "")
+                lista_resumen_general["TipoMolde"] = resultado_tipo_molde
+
                 lista_resumen_general["desmoldeoBanda"] = banda_desmolde.get(self.get_node_value_safely(e_desmoldeo, "desmoldeobanda", 0), error)
-                lista_resumen_general["PesoProducto"] = round(PESO_FILA_PRODUCTO, 2)
-                        
-                lista_resumen_general["sdda_nivel_actual"] = ULTIMO_NIVEL
+                lista_resumen_general["sdda_nivel_actual"] = ULTIMO_NIVEL if ULTIMO_NIVEL else 0
                 lista_resumen_general["NGripperActual"] = self.get_node_value_safely(e_datosGripper, "NGripperActual", 0)
-                lista_resumen_general["PesoActualDesmoldado"] = round(PESO_TOTAL_CICLO, 2)
                 lista_resumen_general["TorreActual"] = self.get_node_value_safely(e_datosSeleccionado, "N_torre_actual", 0)
+                
+                if RECETA_ACTUAL:
+                    PESO_FILA_PRODUCTO = RECETA_ACTUAL.get("PESO DEL PRODUCTO", 0) * (RECETA_ACTUAL.get("MOLDES POR NIVEL", 0) * RECETA_ACTUAL.get("PRODUCTOS POR MOLDE", 0))
+                    lista_resumen_general["PesoProducto"] = round(PESO_FILA_PRODUCTO, 2)
+                    PESO_ACTUAL_DESMOLDADO = PESO_FILA_PRODUCTO * CONTADOR_NIVELES_DESMOLDADOS
+                    PESO_TOTAL_CICLO = PESO_ACTUAL_DESMOLDADO
+                    lista_resumen_general["PesoActualDesmoldado"] = round(PESO_TOTAL_CICLO, 2)
+                else:
+                    lista_resumen_general["PesoProducto"] = 0.0
+                    lista_resumen_general["PesoActualDesmoldado"] = 0.0
+
+            if flag_nivel != ULTIMO_NIVEL and ESTADO_CICLO_DESMOLDEO == True:
+                flag_nivel = ULTIMO_NIVEL
+                if RECETA_ACTUAL:
+                    PESO_FILA_PRODUCTO = RECETA_ACTUAL.get("PESO DEL PRODUCTO", 0) * (RECETA_ACTUAL.get("MOLDES POR NIVEL", 0) * RECETA_ACTUAL.get("PRODUCTOS POR MOLDE", 0))
+                    PESO_ACTUAL_DESMOLDADO = PESO_FILA_PRODUCTO * CONTADOR_NIVELES_DESMOLDADOS
+                    PESO_TOTAL_CICLO = PESO_ACTUAL_DESMOLDADO
 
             estado_actual_valor = self.get_node_value_safely(estado_equipo, "Estado_actual", 1)
             actualizarContadorCicloPausado(estado_actual_valor)
@@ -696,9 +739,26 @@ class ObtenerNodosOpc:
             
             ultimo_estado = ESTADO_CICLO_DESMOLDEO
 
+            tiempo_transcurrido_websocket = "00:00 mm:ss"  # Valor por defecto
+            
+            if ciclo_actual is not None:
+                try:
+                    # Obtener el ciclo actual de la base de datos para obtener fecha_inicio
+                    ciclo_bd = db_session.query(CicloDesmoldeo).filter(CicloDesmoldeo.id == ciclo_actual.id).first()
+                    if ciclo_bd and ciclo_bd.fecha_inicio:
+                        # Calcular tiempo transcurrido desde fecha_inicio
+                        tiempo_transcurrido_segundos = (datetime.now() - ciclo_bd.fecha_inicio).total_seconds()
+                        # Convertir a formato mm:ss
+                        minutos = int(tiempo_transcurrido_segundos // 60)
+                        segundos = int(tiempo_transcurrido_segundos % 60)
+                        tiempo_transcurrido_websocket = f"{minutos:02d}:{segundos:02d} mm:ss"
+                except Exception as e:
+                    opc_logger.error(f"Error calculando tiempo transcurrido para WebSocket: {e}")
+                    tiempo_transcurrido_websocket = "00:00 mm:ss"
+
             TIEMPO_TRANSCURRIDO = obtenerTiempo(ESTADO_CICLO_DESMOLDEO)
             lista_resumen_general["estadoMaquina"] = estado_maquina.get(estado_actual_valor, error)
-            lista_resumen_general["TiempoTranscurrido"] = TIEMPO_TRANSCURRIDO
+            lista_resumen_general["TiempoTranscurrido"] = tiempo_transcurrido_websocket
             listaRespuesta.append(lista_resumen_general)
 
             lista_sector_io["banda_desmoldeo"] = banda_desmolde.get(self.get_node_value_safely(e_desmoldeo, "desmoldeobanda", 1), error)

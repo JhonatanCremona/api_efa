@@ -1,5 +1,17 @@
 {
-  "enviados": {},
+  "enviados": {
+    "2025-08-15": true,
+    "2025-08-16": true,
+    "2025-08-17": true,
+    "2025-08-20": true
+  },
   "correos_fallidos": {},
-  "correos_exitosos": {}
+  "correos_exitosos": {
+    "2025-08-18": {
+      "efa:pruebascremona@gmail.com": {
+        "enviado_en": "2025-08-20T08:23:29.196453",
+        "tipo_grupo": "efa"
+      }
+    }
+  }
 }
