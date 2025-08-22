@@ -325,7 +325,7 @@ async def resumen_desmoldeo(websocket: WebSocket, id: str):
     await ws_manager.connect(id, websocket)
     try:
         while True:
-            await websocket.receive_json()  # Aquí puedes hacer validaciones si e
+            await websocket.receive_json()
             await ws_manager.send_message(id, "data")
             await asyncio.sleep(0.2)
     except WebSocketDisconnect:
@@ -333,4 +333,26 @@ async def resumen_desmoldeo(websocket: WebSocket, id: str):
 
 @app.get("/")
 def read_root():
-        return {"nodo id": 2, "value": "Hola Mundo- Levanto el server!!!!!!!!!"}
+    try:
+        with db.engine.connect() as connection:
+            connection.execute(text("SELECT 1"))
+        estado_bdd = "Conectado"
+    except Exception as e:
+        estado_bdd = "Desconectado"
+    
+    try:
+        if opc_client.connected and opc_client.client:
+            root_node = opc_client.client.get_root_node()
+            root_node.get_browse_name()
+            estado_opc = "Conectado"
+        else:
+            estado_opc = "Desconectado"
+    except Exception as e:
+        estado_opc = "Desconectado"
+    
+    return {
+        "nodo id": 2, 
+        "value": "Hola Mundo- Levanto el server!", 
+        "Estado BDD": estado_bdd, 
+        "Estado OPC": estado_opc
+    }
