@@ -157,37 +157,6 @@ def proceso_central_opc_recetas(stop_event):
         loop.run_until_complete(client.disconnect())
         loop.close()
 
-def proceso_central_opc_alarmas(stop_event):
-    from services.opcAlarmas import OpcAlarmas
-
-    client = OPCUAClient(URL)
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-
-    loop.run_until_complete(client.connect())
-    alarma_reader = OpcAlarmas(client)
-    async def central_opc_alarmas():
-        while not stop_event.is_set():
-            try:
-                inicio = time.time()
-                await alarma_reader.leerAlarmasRobot()
-                fin = time.time()
-
-                duracion = fin - inicio
-
-                minutos = int(duracion // 60)
-                segundos = int(duracion % 60)
-
-                print(f"⏱ [UPDATE ALARMAS] Tiempo de ejecución: {minutos} minutos y {segundos} segundos")
-
-                await asyncio.sleep(5)
-            except Exception as e:
-                logger.warning(f"Error en el render alarmas: {e}")
-    try:
-        loop.run_until_complete(central_opc_alarmas())
-    finally:
-        loop.run_until_complete(client.disconnect())
-        loop.close()
 
 def proceso_central_opc_alarmas_2(stop_event):
     from services.opcAlarmas import OpcAlarmas
@@ -268,11 +237,9 @@ async def lifespan(app: FastAPI):
         asyncio.create_task(central_opc_render_ws())
         asyncio.create_task(tarea_exportar_y_enviar())
 
-        #p1 = Process(target=proceso_central_opc_ws, daemon=True) // OMITIR
         p2 = Process(target=proceso_central_opc_escritura, args=(stop_event,),daemon=True) #Actualizar correcciones al PLC
         p3 = Process(target=proceso_central_opc_recetas, args=(stop_event,),daemon=True) #Actualizar diccionario de recetas en la BDD
-        #p4 = Process(target=proceso_central_opc_alarmas_2,args=(stop_event,), daemon=True)
-        #p4 = Process(target=proceso_central_opc_alarmas,args=(stop_event,), daemon=True) 
+        p4 = Process(target=proceso_central_opc_alarmas_2,args=(stop_event,), daemon=True)
 
         #PARA FRENAR UN PROCESO SOLO FRENAR ESTAS LINEAS
 
@@ -284,7 +251,6 @@ async def lifespan(app: FastAPI):
         yield
         
     finally:
-        #p1.terminate()
 
         stop_event.set()
         time.sleep(1)  # Esperar a que se limpien los procesos
@@ -296,11 +262,12 @@ async def lifespan(app: FastAPI):
         p3.terminate()  # Como backup si no se cerraron
         p3.join(timeout=5)
         
-        #stop_event.set()
-        #time.sleep(1)  # Esperar a que se limpien los procesos
-        #p4.terminate()  # Como backup si no se cerraron
-        #p4.join(timeout=5)
-        #await opc_client.disconnect()
+        stop_event.set()
+        time.sleep(1)  # Esperar a que se limpien los procesos
+        p4.terminate()  # Como backup si no se cerraron
+        p4.join(timeout=5)
+
+        await opc_client.disconnect()
 
 app = FastAPI(
     lifespan=lifespan,
