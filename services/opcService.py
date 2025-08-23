@@ -800,7 +800,7 @@ class ObtenerNodosOpc:
                     "estadoAlarma" : historico_alarma.estadoAlarma,
                     "tipoAlarma" : alarma.tipoAlarma,
                     "descripcion" : alarma.descripcion, 
-                    "fechaRegistro" : historico_alarma.fechaRegistro,
+                    "fechaRegistro" : historico_alarma.tiempo_inicio,
                 }
                 registro_historico_a.append(registro_alarma)
             
