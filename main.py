@@ -227,8 +227,6 @@ async def lifespan(app: FastAPI):
             cargar_archivo_sql(ruta_sql_torre_configuraciones)
             logger.info(f"Cargar registros BDD [TorreConfiguraciones]")
         
-        
-
     except Exception as e:
         logger.error(f"Error al cargar diccionarios: {e}")
     try:
@@ -237,8 +235,8 @@ async def lifespan(app: FastAPI):
         asyncio.create_task(central_opc_render_ws())
         asyncio.create_task(tarea_exportar_y_enviar())
 
-        p2 = Process(target=proceso_central_opc_escritura, args=(stop_event,),daemon=True) #Actualizar correcciones al PLC
-        p3 = Process(target=proceso_central_opc_recetas, args=(stop_event,),daemon=True) #Actualizar diccionario de recetas en la BDD
+        p2 = Process(target=proceso_central_opc_escritura, args=(stop_event,),daemon=True)
+        p3 = Process(target=proceso_central_opc_recetas, args=(stop_event,),daemon=True)
         p4 = Process(target=proceso_central_opc_alarmas_2,args=(stop_event,), daemon=True)
 
         #PARA FRENAR UN PROCESO SOLO FRENAR ESTAS LINEAS
@@ -253,18 +251,18 @@ async def lifespan(app: FastAPI):
     finally:
 
         stop_event.set()
-        time.sleep(1)  # Esperar a que se limpien los procesos
-        p2.terminate()  # Como backup si no se cerraron
+        time.sleep(1)
+        p2.terminate()
         p2.join(timeout=5)
 
         stop_event.set()
-        time.sleep(1)  # Esperar a que se limpien los procesos
-        p3.terminate()  # Como backup si no se cerraron
+        time.sleep(1)
+        p3.terminate()
         p3.join(timeout=5)
         
         stop_event.set()
-        time.sleep(1)  # Esperar a que se limpien los procesos
-        p4.terminate()  # Como backup si no se cerraron
+        time.sleep(1)
+        p4.terminate()
         p4.join(timeout=5)
 
         await opc_client.disconnect()
@@ -274,10 +272,10 @@ app = FastAPI(
     )
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Permite todas las solicitudes de cualquier dominio
+    allow_origins=["*"],
     allow_credentials=True,
-    allow_methods=["*"],  # Permite todos los métodos (GET, POST, etc.)
-    allow_headers=["*"],  # Permite todos los headers
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 

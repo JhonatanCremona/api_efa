@@ -35,8 +35,8 @@ class OpcAlarmas:
             #root_node = asyncio.run(self.conexion_servidor.get_objects_nodos())  # Llamada fuera del hilo async
             root_node = await self.conexion_servidor.get_objects_nodos()
             objects_node = root_node.get_child(["0:Objects"])
-            server_interface_node = objects_node.get_child(["3:ServerInterfaces"])
-            server_interface_1 = server_interface_node.get_child([f"4:Server interface_1"])
+            server_interface_node = objects_node.get_child(["2:ServerInterfaces"])
+            server_interface_1 = server_interface_node.get_child([f"2:Server interface_1"])
             datos_opc_a_enviar = server_interface_1.get_child([f"{INDICE_OPC}:DATOS OPC A ENVIAR"])
             listaGeneralAlarmas = datos_opc_a_enviar.get_child([f"{INDICE_OPC}:Alarmas"])
             

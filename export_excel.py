@@ -194,6 +194,34 @@ def obtener_codigos_producto_por_ids_recetario(id_recetarios):
     finally:
         session.close()
 
+def obtener_cantidad_niveles_receta_por_ids_recetario(id_recetarios):
+    """
+    Obtiene la cantidad de niveles de la receta para cada id_recetario.
+    Args:
+        id_recetarios: Lista de IDs de recetarios
+    Returns:
+        Diccionario {id_recetario: cantidadNiveles}
+    """
+    if not id_recetarios:
+        return {}
+    
+    session = SessionLocal()
+    try:
+        # Convertir la lista a una cadena separada por comas para la consulta SQL
+        ids_str = ", ".join(str(id) for id in id_recetarios)
+        
+        query = text(f"""
+            SELECT id, cantidadNiveles
+            FROM recetario
+            WHERE id IN ({ids_str})
+        """)
+        
+        result = session.execute(query)
+        # Crear un diccionario {id_recetario: cantidadNiveles}
+        return {row[0]: row[1] for row in result.fetchall()}
+    finally:
+        session.close()
+
 def obtener_cantidad_ciclos_por_recetario(fecha):
     session = SessionLocal()
     try:
@@ -454,6 +482,33 @@ def calcular_eficiencia_bruta_por_recetario(niveles_fallados, niveles_desmoldado
     
     return eficiencias
 
+def calcular_eficiencia_por_receta(niveles_desmoldados, cantidad_niveles_receta):
+    """
+    Calcula la eficiencia por receta para cada recetario usando la fórmula:
+    (niveles_desmoldados / niveles_receta)
+    Args:
+        niveles_desmoldados: Diccionario {id_recetario: niveles_desmoldados}
+        cantidad_niveles_receta: Diccionario {id_recetario: cantidadNiveles}
+    Returns:
+        Diccionario {id_recetario: eficiencia_por_receta}
+    """
+    eficiencias_receta = {}
+    
+    # Obtener todos los id_recetario únicos de ambos diccionarios
+    todos_ids = set(niveles_desmoldados.keys()) | set(cantidad_niveles_receta.keys())
+    
+    for id_recetario in todos_ids:
+        desmoldados = niveles_desmoldados.get(id_recetario, 0)
+        niveles_receta = cantidad_niveles_receta.get(id_recetario, 1)  # Evitar división por cero
+        
+        if niveles_receta > 0:
+            eficiencia = desmoldados / niveles_receta
+            eficiencias_receta[id_recetario] = round(eficiencia, 2)
+        else:
+            eficiencias_receta[id_recetario] = 0.0
+    
+    return eficiencias_receta
+
 def obtener_detalles_ciclos_por_fecha(fecha):
     """
     Obtiene los detalles de todos los ciclos para una fecha específica.
@@ -538,11 +593,11 @@ def export_ciclodesmoldeo_efa_to_excel(file_path, fecha_hoy):
         
         if os.path.exists(logo_path):
             img = XLImage(logo_path)
-            img.height = 35
-            img.width = 140
-            ws.add_image(img, "F3")
+            img.height = 31.5
+            img.width = 126
+            ws.add_image(img, "G3")
 
-        ws.merge_cells("A1:F1")
+        ws.merge_cells("A1:G1")
         ws["A1"] = "RESUMEN DE PRODUCTIVIDAD | EFA ALIMENTOS"
         ws["A1"].font = Font(size=16, bold=True)
         ws["A1"].alignment = Alignment(horizontal="center")
@@ -557,6 +612,7 @@ def export_ciclodesmoldeo_efa_to_excel(file_path, fecha_hoy):
 
         # Obtener datos necesarios
         codigos_producto = obtener_codigos_producto_por_ids_recetario(id_recetarios)
+        cantidad_niveles_receta = obtener_cantidad_niveles_receta_por_ids_recetario(id_recetarios)
         cantidad_ciclos = obtener_cantidad_ciclos_por_recetario(fecha_inicio_str)
         ciclos_cancelados = obtener_ciclos_cancelados_por_recetario(fecha_inicio_str)
         pesos_totales = obtener_peso_total_por_recetario(fecha_inicio_str)
@@ -567,9 +623,10 @@ def export_ciclodesmoldeo_efa_to_excel(file_path, fecha_hoy):
         niveles_fallados = obtener_niveles_fallados_por_recetario(fecha_inicio_str)
         niveles_ciclados_neto = obtener_niveles_ciclados_neto_por_recetario(fecha_inicio_str)
         
-        # Calcular segundos por nivel y eficiencia bruta
+        # Calcular segundos por nivel, eficiencia bruta y eficiencia por receta
         segundos_por_nivel = obtener_segundos_por_nivel_por_recetario(tiempos_totales, niveles_desmoldados)
         eficiencia_bruta = calcular_eficiencia_bruta_por_recetario(niveles_fallados, niveles_desmoldados)
+        eficiencia_por_receta = calcular_eficiencia_por_receta(niveles_desmoldados, cantidad_niveles_receta)
 
         # Encabezados simplificados
         headers_cliente = [
@@ -578,7 +635,8 @@ def export_ciclodesmoldeo_efa_to_excel(file_path, fecha_hoy):
             "Peso total desmoldado [kg]",
             "Tiempo util desmoldado [HH:MM:SS]",
             "Niveles desmoldados\ncorrectamente",
-            "Segundos/Nivel [seg]"
+            "Segundos/Nivel [seg]",
+            "Torres equivalentes" #Eficiencia por receta
         ]
         
         # Añadir línea vacía y encabezados
@@ -606,25 +664,27 @@ def export_ciclodesmoldeo_efa_to_excel(file_path, fecha_hoy):
                 tiempo_total = tiempos_totales.get(id_recetario, "00:00:00")
                 niveles = niveles_desmoldados.get(id_recetario, 0)
                 seg_por_nivel = segundos_por_nivel.get(id_recetario, "0")
-                eficiencia = eficiencia_bruta.get(id_recetario, 0.0)
+                eficiencia_receta = eficiencia_por_receta.get(id_recetario, 0.0)
                 
                 ws.append([
                     codigo_producto,    # Producto
                     ciclos,             # Cantidad de ciclos
-                    peso_total, # Peso total desmoldado
+                    peso_total,         # Peso total desmoldado
                     tiempo_total,       # Tiempo total desmoldado
                     niveles,            # Niveles desmoldados correctamente
-                    seg_por_nivel       # Segundos/Nivel
+                    seg_por_nivel,      # Segundos/Nivel
+                    eficiencia_receta   # Eficiencia por receta
                 ])
         else:
             # Si no hay datos, agregar una fila con "Sin datos"
             ws.append([
                 "DESCONOCIDO",      # Producto
                 0,                  # Cantidad de ciclos
-                "0.0",           # Peso total desmoldado
+                "0.0",              # Peso total desmoldado
                 "00:00:00",         # Tiempo total desmoldado
                 0,                  # Niveles desmoldados correctamente
-                "0"           # Segundos/Nivel
+                "0",                # Segundos/Nivel
+                0.0                 # Eficiencia por receta
             ])
         
         # Calcular y agregar fila de totales
@@ -660,14 +720,18 @@ def export_ciclodesmoldeo_efa_to_excel(file_path, fecha_hoy):
         if total_niveles_ciclados_neto > 0:
             eficiencia_bruta_total = round((1 - (total_niveles_fallados / total_niveles_ciclados_neto)) * 100, 2)
         
+        # Calcular eficiencia por receta total (suma de todas las eficiencias individuales)
+        eficiencia_por_receta_total = sum(eficiencia_por_receta.values())
+        
         # Agregar fila de totales
         ws.append([
-            "TOTALES",            # Producto
-            total_ciclos,         # Cantidad de ciclos
-            total_peso,           # Peso total desmoldado
-            tiempo_total_formato, # Tiempo total desmoldado
-            total_niveles,        # Niveles desmoldados correctamente
-            segundos_por_nivel_total  # Segundos/Nivel
+            "TOTALES",                    # Producto
+            total_ciclos,                 # Cantidad de ciclos
+            total_peso,                   # Peso total desmoldado
+            tiempo_total_formato,         # Tiempo total desmoldado
+            total_niveles,                # Niveles desmoldados correctamente
+            segundos_por_nivel_total,     # Segundos/Nivel
+            round(eficiencia_por_receta_total, 1)  # Eficiencia por receta total
         ])
         
         # Dar formato a la fila de totales
@@ -675,7 +739,7 @@ def export_ciclodesmoldeo_efa_to_excel(file_path, fecha_hoy):
         ws.row_dimensions[fila_totales].height = 30
         
         # Aplicar estilo negrita a la fila de totales
-        for col in range(1, 7):  # 6 columnas (A-F)
+        for col in range(1, 8):  # 7 columnas (A-G)
             cell = ws.cell(row=fila_totales, column=col)
             cell.font = Font(bold=True)
             cell.alignment = Alignment(vertical='center')
@@ -688,7 +752,7 @@ def export_ciclodesmoldeo_efa_to_excel(file_path, fecha_hoy):
         first_table_last_row = ws.max_row
         
         # Agregar la primera tabla
-        first_table = Table(displayName="ResumenProductividadCliente", ref=f"A{first_table_first_row}:F{first_table_last_row}")
+        first_table = Table(displayName="ResumenProductividadCliente", ref=f"A{first_table_first_row}:G{first_table_last_row}")
         first_style = TableStyleInfo(
             name="TableStyleMedium9", showFirstColumn=False,
             showLastColumn=False, showRowStripes=True, showColumnStripes=False
@@ -704,8 +768,8 @@ def export_ciclodesmoldeo_efa_to_excel(file_path, fecha_hoy):
         # Insertar logo en la nueva hoja
         if os.path.exists(logo_path):
             img2 = XLImage(logo_path)
-            img2.height = 35
-            img2.width = 140
+            img2.height = 31.5
+            img2.width = 126
             ws_torre.add_image(img2, "L3")
 
         # Encabezado de la nueva hoja
@@ -878,6 +942,8 @@ def export_ciclodesmoldeo_efa_to_excel(file_path, fecha_hoy):
                         if column == "B":
                             # Para columna Producto, usar el mayor entre header y contenido, con mínimo 10
                             final_width = min(max(content_width + 2, 10), 25)
+                        elif "Torres equivalentes" in str(sheet[column + "6"].value or "") or any("Torres equivalentes" in str(cell.value or "") for cell in sheet[column]):
+                            final_width = 19  # Ancho específico para "Torres equivalentes"
                         elif "Tiempo" in str(max_header_length) or "MM:SS" in str(max_header_length):
                             final_width = 12  # Columnas de tiempo
                         elif is_header_multiline:
@@ -924,11 +990,11 @@ def export_ciclodesmoldeo_to_excel(file_path, fecha_hoy):
         logo_path = os.path.join(os.path.dirname(__file__), "static", "cremonarecort.png")
         if os.path.exists(logo_path):
             img = XLImage(logo_path)
-            img.height = 35
-            img.width = 140
-            ws.add_image(img, "H3")
+            img.height = 31.5
+            img.width = 126
+            ws.add_image(img, "K3")
 
-        ws.merge_cells("A1:I1")
+        ws.merge_cells("A1:K1")
         ws["A1"] = "RESUMEN DE PRODUCTIVIDAD | CREMINOX"
         ws["A1"].font = Font(size=16, bold=True)
         ws["A1"].alignment = Alignment(horizontal="center")
@@ -942,6 +1008,7 @@ def export_ciclodesmoldeo_to_excel(file_path, fecha_hoy):
         ws["B4"] = fecha_fin_str
 
         codigos_producto = obtener_codigos_producto_por_ids_recetario(id_recetarios)
+        cantidad_niveles_receta = obtener_cantidad_niveles_receta_por_ids_recetario(id_recetarios)
         cantidad_ciclos = obtener_cantidad_ciclos_por_recetario(fecha_inicio_str)
         ciclos_cancelados = obtener_ciclos_cancelados_por_recetario(fecha_inicio_str)
         pesos_totales = obtener_peso_total_por_recetario(fecha_inicio_str)
@@ -952,10 +1019,11 @@ def export_ciclodesmoldeo_to_excel(file_path, fecha_hoy):
         niveles_fallados = obtener_niveles_fallados_por_recetario(fecha_inicio_str)
         niveles_ciclados_neto = obtener_niveles_ciclados_neto_por_recetario(fecha_inicio_str)
         
-        # Calcular segundos por nivel, porcentaje de fallas y eficiencia bruta
+        # Calcular segundos por nivel, porcentaje de fallas, eficiencia bruta y eficiencia por receta
         segundos_por_nivel = obtener_segundos_por_nivel_por_recetario(tiempos_totales, niveles_desmoldados)
         porcentaje_fallas = calcular_porcentaje_fallas(cantidad_ciclos, ciclos_cancelados)
         eficiencia_bruta = calcular_eficiencia_bruta_por_recetario(niveles_fallados, niveles_desmoldados)
+        eficiencia_por_receta = calcular_eficiencia_por_receta(niveles_desmoldados, cantidad_niveles_receta)
 
         # Añadir las nuevas columnas a los encabezados
         headers = [
@@ -967,7 +1035,9 @@ def export_ciclodesmoldeo_to_excel(file_path, fecha_hoy):
             "Niveles desmoldados\ncorrectamente",
             "Segundos/Nivel [seg]",
             "Eficiencia bruta",
-            "% Falla"
+            "% Falla",
+            "Torres equivalentes",
+            "Kilos por hora\nproducidos [kg/h]"
         ]
         ws.append([])  # Línea vacía
         ws.append(headers)
@@ -993,6 +1063,16 @@ def export_ciclodesmoldeo_to_excel(file_path, fecha_hoy):
                 seg_por_nivel = segundos_por_nivel.get(id_recetario, "0")
                 falla_porcentaje = porcentaje_fallas.get(id_recetario, 0)
                 eficiencia = eficiencia_bruta.get(id_recetario, 0.0)
+                eficiencia_receta = eficiencia_por_receta.get(id_recetario, 0.0)
+                
+                # Calcular kilos por hora
+                kilos_por_hora = 0.0
+                if tiempo_total != "00:00:00":
+                    # Convertir tiempo HH:MM:SS a horas decimales
+                    partes_tiempo = tiempo_total.split(":")
+                    horas_decimales = int(partes_tiempo[0]) + int(partes_tiempo[1])/60 + int(partes_tiempo[2])/3600
+                    if horas_decimales > 0:
+                        kilos_por_hora = round(peso_total / horas_decimales, 2)
                 
                 # Añadir las columnas en la fila
                 ws.append([
@@ -1003,8 +1083,10 @@ def export_ciclodesmoldeo_to_excel(file_path, fecha_hoy):
                     tiempo_total,
                     niveles,
                     seg_por_nivel,
-                    f"{eficiencia}%",      # Eficiencia bruta con formato de porcentaje
-                    f"{falla_porcentaje}%"  # % Falla
+                    f"{eficiencia}%",       # Eficiencia bruta con formato de porcentaje
+                    f"{falla_porcentaje}%", # % Falla
+                    eficiencia_receta,       # Eficiencia por receta
+                    kilos_por_hora             # Kilos por hora
                 ])
         else:
             # Si no hay datos, agregar una fila con "Sin datos"
@@ -1016,8 +1098,10 @@ def export_ciclodesmoldeo_to_excel(file_path, fecha_hoy):
                 "00:00",
                 0,
                 "0",
-                "0.0%",            # Eficiencia bruta
-                "0%"               # % Falla
+                "0.0%",             # Eficiencia bruta
+                "0%",               # % Falla
+                0.0,                # Eficiencia por receta
+                0.0                 # Kilos por hora
             ])
             
         # Agregar la fila de totales
@@ -1060,17 +1144,28 @@ def export_ciclodesmoldeo_to_excel(file_path, fecha_hoy):
         if total_niveles_ciclados_neto > 0:
             eficiencia_bruta_total = round((1 - (total_niveles_fallados / total_niveles_ciclados_neto)) * 100, 2)
         
+        # Calcular eficiencia por receta total (suma de todas las eficiencias individuales)
+        eficiencia_por_receta_total = sum(eficiencia_por_receta.values())
+        
+        # Calcular kilos por hora total
+        kilos_por_hora_total = 0.0
+        if total_segundos > 0:
+            horas_totales_decimales = total_segundos / 3600
+            kilos_por_hora_total = round(total_peso / horas_totales_decimales, 2)
+        
         # Agregar la fila de totales
         ws.append([
-            "TOTALES",            # ID Receta
-            "",                   # Producto
-            total_ciclos,         # Cantidad de ciclos
-            total_peso,   # Peso total desmoldado
-            tiempo_total_formato, # Tiempo total desmoldado
-            total_niveles,        # Niveles desmoldados correctamente
-            segundos_por_nivel_total,  # Segundos/Nivel
-            f"{eficiencia_bruta_total}%",  # Eficiencia bruta total
-            f"{porcentaje_falla_total}%"  # % Falla (total)
+            "TOTALES",                        # ID Receta
+            "",                               # Producto
+            total_ciclos,                     # Cantidad de ciclos
+            total_peso,                       # Peso total desmoldado
+            tiempo_total_formato,             # Tiempo total desmoldado
+            total_niveles,                    # Niveles desmoldados correctamente
+            segundos_por_nivel_total,         # Segundos/Nivel
+            f"{eficiencia_bruta_total}%",     # Eficiencia bruta total
+            f"{porcentaje_falla_total}%",     # % Falla (total)
+            round(eficiencia_por_receta_total, 1),  # Eficiencia por receta total
+            kilos_por_hora_total                # Kilos por hora total
         ])
         
         # Dar formato a la fila de totales
@@ -1078,7 +1173,7 @@ def export_ciclodesmoldeo_to_excel(file_path, fecha_hoy):
         ws.row_dimensions[fila_totales].height = 30  # El doble de la altura normal
         
         # Aplicar estilo negrita a la fila de totales
-        for col in range(1, 10):  # 9 columnas (A-I)
+        for col in range(1, 12):  # 11 columnas (A-K)
             cell = ws.cell(row=fila_totales, column=col)
             cell.font = Font(bold=True)
             cell.alignment = Alignment(vertical='center')
@@ -1091,7 +1186,7 @@ def export_ciclodesmoldeo_to_excel(file_path, fecha_hoy):
         last_table_row = ws.max_row  # La última fila de datos (incluyendo totales)
 
         # Agregar la primera tabla
-        table = Table(displayName="ResumenProductividad", ref=f"A{first_table_row}:I{last_table_row}")
+        table = Table(displayName="ResumenProductividad", ref=f"A{first_table_row}:K{last_table_row}")
         style = TableStyleInfo(
             name="TableStyleMedium9", showFirstColumn=False,
             showLastColumn=False, showRowStripes=True, showColumnStripes=False
@@ -1124,7 +1219,7 @@ def export_ciclodesmoldeo_to_excel(file_path, fecha_hoy):
         # El título de la segunda tabla debe estar 2 filas después de la última fila de la primera tabla
         segunda_tabla_titulo_fila = ultima_fila_primera_tabla + 3
         
-        ws.merge_cells(f"A{segunda_tabla_titulo_fila}:F{segunda_tabla_titulo_fila}")
+        ws.merge_cells(f"A{segunda_tabla_titulo_fila}:G{segunda_tabla_titulo_fila}")
         cell = ws.cell(row=segunda_tabla_titulo_fila, column=1)
         cell.value = "RESUMEN DE PRODUCTIVIDAD | EFA ALIMENTOS"
         cell.font = Font(size=16, bold=True)
@@ -1148,9 +1243,9 @@ def export_ciclodesmoldeo_to_excel(file_path, fecha_hoy):
         # Insertar el segundo logo
         if os.path.exists(logo_path):
             img2 = XLImage(logo_path)
-            img2.height = 35
-            img2.width = 140
-            ws.add_image(img2, f"F{fecha_row}")  # Logo alineado a la derecha
+            img2.height = 31.5
+            img2.width = 126
+            ws.add_image(img2, f"G{fecha_row}")  # Logo alineado a la derecha
 
         # Añadir los encabezados simplificados (después de la fecha)
         headers_row = empty_row + 1  # Una fila vacía después de la fecha/logo
@@ -1161,7 +1256,8 @@ def export_ciclodesmoldeo_to_excel(file_path, fecha_hoy):
             "Peso total desmoldado [kg]",
             "Tiempo util desmoldado [HH:MM:SS]",
             "Niveles desmoldados\ncorrectamente",
-            "Segundos/Nivel [seg]"
+            "Segundos/Nivel [seg]",
+            "Torres equivalentes" #Eficiencia por receta
         ]
         
         # Agregar encabezados
@@ -1189,36 +1285,39 @@ def export_ciclodesmoldeo_to_excel(file_path, fecha_hoy):
                 tiempo_total = tiempos_totales.get(id_recetario, "00:00:00")
                 niveles = niveles_desmoldados.get(id_recetario, 0)
                 seg_por_nivel = segundos_por_nivel.get(id_recetario, "0")
-                eficiencia = eficiencia_bruta.get(id_recetario, 0.0)
+                eficiencia_receta = eficiencia_por_receta.get(id_recetario, 0.0)
                 
                 # Añadir solo las columnas especificadas en la segunda tabla
                 ws.append([
                     codigo_producto,    # Producto
                     ciclos,             # Cantidad de ciclos
-                    peso_total, # Peso total desmoldado
+                    peso_total,         # Peso total desmoldado
                     tiempo_total,       # Tiempo total desmoldado
                     niveles,            # Niveles desmoldados correctamente
-                    seg_por_nivel       # Segundos/Nivel
+                    seg_por_nivel,      # Segundos/Nivel
+                    eficiencia_receta   # Torres equivalentes (Eficiencia por receta)
                 ])
         else:
             # Si no hay datos, agregar una fila con "Sin datos"
             ws.append([
                 "DESCONOCIDO",      # Producto
                 0,                  # Cantidad de ciclos
-                "0.0",           # Peso total desmoldado
-                "00:00",            # Tiempo total desmoldado
+                "0.0",              # Peso total desmoldado
+                "00:00:00",         # Tiempo total desmoldado
                 0,                  # Niveles desmoldados correctamente
-                "0"           # Segundos/Nivel
+                "0",                # Segundos/Nivel
+                0.0                 # Torres equivalentes (Eficiencia por receta)
             ])
         
         # Agregar fila de totales a la segunda tabla
         ws.append([
             "TOTALES",            # Producto
             total_ciclos,         # Cantidad de ciclos
-            total_peso,   # Peso total desmoldado
+            total_peso,           # Peso total desmoldado
             tiempo_total_formato, # Tiempo total desmoldado
             total_niveles,        # Niveles desmoldados correctamente
-            segundos_por_nivel_total  # Segundos/Nivel
+            segundos_por_nivel_total,  # Segundos/Nivel
+            round(eficiencia_por_receta_total, 1)  # Torres equivalentes (Eficiencia por receta total)
         ])
         
         # Dar formato a la fila de totales de la segunda tabla
@@ -1226,7 +1325,7 @@ def export_ciclodesmoldeo_to_excel(file_path, fecha_hoy):
         ws.row_dimensions[fila_totales_segunda].height = 30  # El doble de la altura normal
         
         # Aplicar estilo negrita a la fila de totales de la segunda tabla
-        for col in range(1, 7):  # 6 columnas (A-F)
+        for col in range(1, 8):  # 7 columnas (A-G)
             cell = ws.cell(row=fila_totales_segunda, column=col)
             cell.font = Font(bold=True)
             cell.alignment = Alignment(vertical='center')
@@ -1239,7 +1338,7 @@ def export_ciclodesmoldeo_to_excel(file_path, fecha_hoy):
         second_table_last_row = ws.max_row  # La última fila de datos (incluyendo totales)
         
         # Agregar la segunda tabla
-        second_table = Table(displayName="ResumenProductividadCliente", ref=f"A{second_table_first_row}:F{second_table_last_row}")
+        second_table = Table(displayName="ResumenProductividadCliente", ref=f"A{second_table_first_row}:G{second_table_last_row}")
         second_style = TableStyleInfo(
             name="TableStyleMedium9", showFirstColumn=False,
             showLastColumn=False, showRowStripes=True, showColumnStripes=False
@@ -1255,8 +1354,8 @@ def export_ciclodesmoldeo_to_excel(file_path, fecha_hoy):
         # Insertar logo en la nueva hoja
         if os.path.exists(logo_path):
             img3 = XLImage(logo_path)
-            img3.height = 35
-            img3.width = 140
+            img3.height = 31.5
+            img3.width = 126
             ws_torre.add_image(img3, "M3")
 
         # Encabezado de la nueva hoja
@@ -1432,8 +1531,8 @@ def export_ciclodesmoldeo_to_excel(file_path, fecha_hoy):
         # Insertar el logo para la segunda tabla de torres
         if os.path.exists(logo_path):
             img4 = XLImage(logo_path)
-            img4.height = 35
-            img4.width = 140
+            img4.height = 31.5
+            img4.width = 126
             ws_torre.add_image(img4, f"L{fecha_row_torres}")  # Logo alineado a la derecha
 
         # Encabezados para la segunda tabla por torre (sin "Recuento de Fallas")
@@ -1595,6 +1694,10 @@ def export_ciclodesmoldeo_to_excel(file_path, fecha_hoy):
                         if column == "B":
                             # Para otras hojas, usar la lógica normal
                             final_width = min(max(content_width + 2, 10), 25)
+                        elif "Torres equivalentes" in str(sheet[column + "7"].value or "") or any("Torres equivalentes" in str(cell.value or "") for cell in sheet[column]):
+                            final_width = 19  # Ancho específico para "Torres equivalentes"
+                        elif "Kilos por hora" in str(sheet[column + "7"].value or "") or any("Kilos por hora" in str(cell.value or "") for cell in sheet[column]):
+                            final_width = 19  # Ancho específico para "Kilos por hora"
                         elif "Tiempo" in str(max_header_length) or "MM:SS" in str(max_header_length):
                             final_width = 12  # Columnas de tiempo
                         elif is_header_multiline:

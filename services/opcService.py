@@ -230,9 +230,9 @@ class ObtenerNodosOpc:
         try:
             root_node = await self.conexion_servidor.get_objects_nodos()
             objects_node = root_node.get_child(["0:Objects"])
-            server_interface_node = objects_node.get_child(["3:ServerInterfaces"])
+            server_interface_node = objects_node.get_child(["2:ServerInterfaces"])
             
-            server_interface_1 = server_interface_node.get_child([f"4:Server interface_1"])
+            server_interface_1 = server_interface_node.get_child([f"2:Server interface_1"])
 
             if not server_interface_1:
                 logger.error("No se encontró el nodo 'Server interface_1'.")
@@ -605,7 +605,7 @@ class ObtenerNodosOpc:
                     PESO_FILA_PRODUCTO = RECETA_ACTUAL.get("PESO DEL PRODUCTO", 0) * (RECETA_ACTUAL.get("MOLDES POR NIVEL", 0) * RECETA_ACTUAL.get("PRODUCTOS POR MOLDE", 0))
                     
                     db_recetaXCiclo = RecetarioXCiclo(
-                        cantidadNivelesFinalizado = 0,  # Inicia en 0
+                        cantidadNivelesFinalizado = 0,
                         cantidadNivelesSeleccionados = NIVELES_SELECCIONADOS_CICLO,
                         pesoPorNivel = PESO_FILA_PRODUCTO,
                         id_recetario = id_receta,
@@ -788,7 +788,7 @@ class ObtenerNodosOpc:
             datos_alarmas_h = (
                 db_session.query(Alarma, HistoricoAlarma)
                 .join(Alarma, HistoricoAlarma.id_alarma == Alarma.id)
-                .filter(HistoricoAlarma.fechaRegistro.between(una_hora_atras, fecha_actual_h))
+                .filter(HistoricoAlarma.tiempo_inicio.between(una_hora_atras, fecha_actual_h))
                 .all()
             )
 
@@ -800,7 +800,7 @@ class ObtenerNodosOpc:
                     "estadoAlarma" : historico_alarma.estadoAlarma,
                     "tipoAlarma" : alarma.tipoAlarma,
                     "descripcion" : alarma.descripcion, 
-                    "fechaRegistro" : historico_alarma.tiempo_inicio,
+                    "fechaRegistro" : historico_alarma.tiempo_inicio.isoformat(),
                 }
                 registro_historico_a.append(registro_alarma)
             
@@ -820,9 +820,9 @@ class ObtenerNodosOpc:
         try:
             root_node = await self.conexion_servidor.get_objects_nodos()
             objects_node = root_node.get_child(["0:Objects"])
-            server_interface_node = objects_node.get_child(["3:ServerInterfaces"])
+            server_interface_node = objects_node.get_child(["2:ServerInterfaces"])
 
-            server_interface_1 = server_interface_node.get_child([f"4:Server interface_1"])
+            server_interface_1 = server_interface_node.get_child([f"2:Server interface_1"])
 
             if not server_interface_1:
                 logger.error("No se encontró el nodo 'Server interface_1'.")
@@ -947,9 +947,9 @@ class ObtenerNodosOpc:
             db: Session = next(get_db())
             root_node = await self.conexion_servidor.get_objects_nodos()
             objects_node = root_node.get_child(["0:Objects"])
-            server_interface_node = objects_node.get_child(["3:ServerInterfaces"])
+            server_interface_node = objects_node.get_child(["2:ServerInterfaces"])
 
-            server_interface_1 = server_interface_node.get_child([f"4:Server interface_1"])
+            server_interface_1 = server_interface_node.get_child([f"2:Server interface_1"])
 
             if not server_interface_1:
                 logger.error("No se encontró el nodo 'Server interface_1'.")
@@ -1283,9 +1283,9 @@ class ObtenerNodosOpc:
         try:
             root_node = await self.conexion_servidor.get_objects_nodos()
             objects_node = root_node.get_child(["0:Objects"])
-            server_interface_node = objects_node.get_child(["3:ServerInterfaces"])
+            server_interface_node = objects_node.get_child(["2:ServerInterfaces"])
 
-            server_interface_1 = server_interface_node.get_child([f"4:Server interface_1"])
+            server_interface_1 = server_interface_node.get_child([f"2:Server interface_1"])
 
             if not server_interface_1:
                 logger.error("No se encontró 'Server interface_1'.")
