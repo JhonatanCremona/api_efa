@@ -94,19 +94,15 @@ class OPCUAClient:
         if not self.client or not self.connected:
             raise Exception("⚠️ Cliente OPC UA no conectado.")
 
-        # Armar ReadValueId para cada nodo
         read_list = []
         for node in node_objects:
-            # aceptar tanto Node como string NodeId
             nodeid = node.nodeid if hasattr(node, "nodeid") else ua.NodeId.from_string(node)
             r = ua.ReadValueId()
             r.NodeId = nodeid
             r.AttributeId = ua.AttributeIds.Value
             read_list.append(r)
 
-        # Llamada bulk al cliente (protegida por lock por los hilos)
         with self._io_lock:
-            dvs = self.client.uaclient.read(read_list)  # ← ESTE ES EL MÉTODO VÁLIDO
+            dvs = self.client.uaclient.read(read_list)
 
-        # Extraer valores primitivos (True/False, etc.)
         return [dv.Value.Value if hasattr(dv, "Value") and dv.Value is not None else None for dv in dvs]

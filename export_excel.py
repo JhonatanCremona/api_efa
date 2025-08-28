@@ -158,6 +158,37 @@ def calcular_tiempo_util_mm_ss(tiempo_desmolde_str, tiempo_pausado_str):
     except:
         return "00:00"
 
+def calcular_tiempo_entre_ciclos(fecha_inicio_actual, fecha_fin_anterior):
+    """
+    Calcula el tiempo entre el inicio del ciclo actual y la finalización del ciclo anterior.
+    Args:
+        fecha_inicio_actual: Fecha de inicio del ciclo actual (datetime)
+        fecha_fin_anterior: Fecha de fin del ciclo anterior (datetime)
+    Returns:
+        String en formato HH:MM:SS
+    """
+    if not fecha_inicio_actual or not fecha_fin_anterior:
+        return "00:00:00"
+    
+    try:
+        # Calcular la diferencia en segundos
+        diferencia = fecha_inicio_actual - fecha_fin_anterior
+        segundos_totales = int(diferencia.total_seconds())
+        
+        # Si la diferencia es negativa o muy grande (más de 24 horas), retornar 00:00:00
+        if segundos_totales < 0 or segundos_totales > 86400:  # 24 horas = 86400 segundos
+            return "00:00:00"
+        
+        # Convertir a HH:MM:SS
+        horas = segundos_totales // 3600
+        minutos = (segundos_totales % 3600) // 60
+        segundos = segundos_totales % 60
+        
+        return f"{horas:02d}:{minutos:02d}:{segundos:02d}"
+        
+    except:
+        return "00:00:00"
+
 def obtener_id_recetario_por_fecha(fecha):
     session = SessionLocal()
     try:
@@ -554,6 +585,7 @@ def obtener_detalles_ciclos_por_fecha(fecha):
                 END
                 AND t.id_recetario = rxc.id_recetario
             WHERE DATE(cd.fecha_inicio) = :fecha
+            ORDER BY cd.fecha_inicio ASC
         """)
         result = session.execute(query, {"fecha": fecha})
         return result.fetchall()
@@ -1356,10 +1388,10 @@ def export_ciclodesmoldeo_to_excel(file_path, fecha_hoy):
             img3 = XLImage(logo_path)
             img3.height = 31.5
             img3.width = 126
-            ws_torre.add_image(img3, "M3")
+            ws_torre.add_image(img3, "N3")
 
         # Encabezado de la nueva hoja
-        ws_torre.merge_cells("A1:N1")  # Fusionar celdas para el título (14 columnas)
+        ws_torre.merge_cells("A1:O1")  # Fusionar celdas para el título (15 columnas)
         ws_torre["A1"] = "RESUMEN DE PRODUCTIVIDAD POR TORRE | CREMINOX"
         ws_torre["A1"].font = Font(size=16, bold=True)
         ws_torre["A1"].alignment = Alignment(horizontal="center")
@@ -1387,7 +1419,8 @@ def export_ciclodesmoldeo_to_excel(file_path, fecha_hoy):
             "Tiempo Desmolde\n[MM:SS]",
             "Tiempo Pausado\n[MM:SS]",
             "Tiempo Útil\n[MM:SS]",
-            "Recuento de Fallas"
+            "Recuento de Fallas",
+            "Tiempo entre ciclos\n[HH:MM:SS]"
         ]
         
         # Añadir línea vacía y encabezados
@@ -1410,12 +1443,22 @@ def export_ciclodesmoldeo_to_excel(file_path, fecha_hoy):
         
         # Contador de fallas acumulado
         contador_fallas = 0
+        fecha_fin_anterior = None  # Para almacenar la fecha de fin del ciclo anterior
         
         if detalles_ciclos:
-            for ciclo in detalles_ciclos:
+            for i, ciclo in enumerate(detalles_ciclos):
                 # Formatear fechas
                 fecha_inicio = ciclo[8].strftime("%Y-%m-%d %H:%M:%S") if ciclo[8] else "N/A"
                 fecha_fin = ciclo[9].strftime("%Y-%m-%d %H:%M:%S") if ciclo[9] else "N/A"
+                
+                # Calcular tiempo entre ciclos
+                if i == 0:  # Primer ciclo
+                    tiempo_entre_ciclos = "00:00:00"
+                else:
+                    tiempo_entre_ciclos = calcular_tiempo_entre_ciclos(ciclo[8], fecha_fin_anterior)
+                
+                # Actualizar fecha_fin_anterior para el siguiente ciclo
+                fecha_fin_anterior = ciclo[9]
                 
                 # Obtener tiempos directamente de la base
                 tiempo_pausado_str = ciclo[10] or "00:00"
@@ -1440,7 +1483,7 @@ def export_ciclodesmoldeo_to_excel(file_path, fecha_hoy):
                     ciclo[2] or "N/A",         # Torre
                     ciclo[3] or 0,             # Niveles Desmoldados
                     ciclo[4] or 0,             # Niveles Seleccionados
-                    ciclo[5] or 0, # Peso Desmoldado
+                    ciclo[5] or 0,             # Peso Desmoldado
                     tipo_fin,                  # Tipo de Fin
                     ciclo[7] or "N/A",         # Cinta de Desmolde
                     fecha_inicio,              # Inicio
@@ -1448,7 +1491,8 @@ def export_ciclodesmoldeo_to_excel(file_path, fecha_hoy):
                     tiempo_desmolde_mm_ss,     # Tiempo Desmolde [MM:SS]
                     tiempo_pausado_mm_ss,      # Tiempo Pausado [MM:SS]
                     tiempo_util_mm_ss,         # Tiempo Útil [MM:SS]
-                    valor_fallas               # Recuento de Fallas (número solo en fallas, "-" en el resto)
+                    valor_fallas,              # Recuento de Fallas (número solo en fallas, "-" en el resto)
+                    tiempo_entre_ciclos        # Tiempo entre ciclos [MM:SS]
                 ])
         else:
             # Si no hay datos, agregar una fila con "Sin datos"
@@ -1458,7 +1502,7 @@ def export_ciclodesmoldeo_to_excel(file_path, fecha_hoy):
                 "N/A",          # Torre
                 0,              # Niveles Desmoldados
                 0,              # Niveles Seleccionados
-                0,      # Peso Desmoldado
+                0,              # Peso Desmoldado
                 "N/A",          # Tipo de Fin
                 "N/A",          # Cinta de Desmolde
                 "N/A",          # Inicio
@@ -1466,7 +1510,8 @@ def export_ciclodesmoldeo_to_excel(file_path, fecha_hoy):
                 "00:00",        # Tiempo Desmolde [MM:SS]
                 "00:00",        # Tiempo Pausado [MM:SS]
                 "00:00",        # Tiempo Útil [MM:SS]
-                "-"             # Recuento de Fallas
+                "-",            # Recuento de Fallas
+                "00:00:00"      # Tiempo entre ciclos [HH:MM:SS]
             ])
         
         # Definir la tabla de torre
@@ -1480,12 +1525,12 @@ def export_ciclodesmoldeo_to_excel(file_path, fecha_hoy):
             tipo_fin_cell = ws_torre[f"G{row_num}"]  # Columna G es "Tipo de Fin"
             if tipo_fin_cell.value == "CANCELADO AL INICIAR":
                 # Aplicar color de fondo rojo claro a toda la fila
-                for col_num in range(1, 15):  # Columnas A-N (14 columnas)
+                for col_num in range(1, 16):  # Columnas A-O (15 columnas)
                     cell = ws_torre.cell(row=row_num, column=col_num)
                     cell.fill = light_red_fill
         
         # Agregar la tabla de torre
-        torre_table = Table(displayName="ResumenProductividadTorre", ref=f"A{torre_table_first_row}:N{torre_table_last_row}")
+        torre_table = Table(displayName="ResumenProductividadTorre", ref=f"A{torre_table_first_row}:O{torre_table_last_row}")
         torre_style = TableStyleInfo(
             name="TableStyleMedium9", showFirstColumn=False,
             showLastColumn=False, showRowStripes=True, showColumnStripes=False
@@ -1501,7 +1546,7 @@ def export_ciclodesmoldeo_to_excel(file_path, fecha_hoy):
         # Crear 2 filas vacías de separación explícitas
         for i in range(1, 3):
             nueva_fila = ultima_fila_primera_tabla_torres + i
-            for col in range(1, 15):  # Asegurarse de que todas las columnas estén vacías (14 columnas)
+            for col in range(1, 16):  # Asegurarse de que todas las columnas estén vacías (15 columnas)
                 ws_torre.cell(row=nueva_fila, column=col, value=None)
         
         # El título de la segunda tabla debe estar 2 filas después de la última fila de la primera tabla
