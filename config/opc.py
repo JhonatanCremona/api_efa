@@ -13,7 +13,32 @@ class OPCUAClient:
         self.retry_delay = retry_delay
         self.connected = False  # Indicador de conexión
 
+    async def connect_fast(self):
+        """Intento rápido de conexión sin bloquear la API"""
+        try:
+            if self.client is None or not self.connected:
+                self.client = Client(self.server_url)
+                # Timeout más corto para no bloquear
+                await asyncio.wait_for(
+                    asyncio.to_thread(self.client.connect), 
+                    timeout=3.0
+                )
+                self.connected = True
+                logger.info("✅ Conectado al servidor OPC UA.")
+                return True
+        except Exception as e:
+            logger.warning(f"⚠️ No se pudo conectar al servidor OPC UA: {e}")
+            self.connected = False
+            if self.client:
+                try:
+                    self.client.disconnect()
+                except:
+                    pass
+                self.client = None
+            return False
+
     async def connect(self):
+        """Método original con reintentos para uso en segundo plano"""
         retries = 0
         while retries < self.max_retries:
             try:

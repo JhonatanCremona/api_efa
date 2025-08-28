@@ -80,14 +80,35 @@ def cargar_archivo_sql(file_path: str):
 
 stop_event = Event()
 
+async def background_opc_reconnect():
+    """Tarea en segundo plano para intentar reconectar al OPC cuando no está disponible"""
+    while True:
+        try:
+            if not opc_client.connected:
+                logger.info("🔄 Intentando reconectar al servidor OPC UA en segundo plano...")
+                success = await opc_client.connect_fast()
+                if success:
+                    logger.info("✅ Reconexión OPC UA exitosa!")
+                    asyncio.create_task(central_opc_render_ws())
+                    break
+            await asyncio.sleep(5)  # Intentar cada 5 segundos
+        except Exception as e:
+            logger.error(f"Error en reconexión OPC: {e}")
+            await asyncio.sleep(5)
+
 async def central_opc_render_ws():
         while True:
             try:
-                data = await listaDatosOpc.conexionOpcPLC()
-                await ws_manager.send_message("datos", data)
+                if opc_client.connected:
+                    data = await listaDatosOpc.conexionOpcPLC()
+                    await ws_manager.send_message("datos", data)
+                else:
+                    # Enviar datos vacíos o de error cuando no hay conexión OPC
+                    await ws_manager.send_message("datos", {"error": "OPC no conectado"})
                 await asyncio.sleep(2.0)
             except Exception as e:
                 logger.error(f"Error en el lector del OPC (lectura datos): {e}")
+                await asyncio.sleep(5.0)  # Esperar más tiempo en caso de error
 
 def proceso_central_opc_escritura(stop_event):
     from services.opcService import ObtenerNodosOpc
@@ -229,43 +250,67 @@ async def lifespan(app: FastAPI):
         
     except Exception as e:
         logger.error(f"Error al cargar diccionarios: {e}")
+    
+    # Intentar conectar al servidor OPC pero no bloquear el inicio de la API
+    opc_connected = False
+    p2 = p3 = p4 = None
+    
     try:
-        await opc_client.connect()
-        logger.info("Conectado al servidor OPC UA.")
-        asyncio.create_task(central_opc_render_ws())
-        asyncio.create_task(tarea_exportar_y_enviar())
+        opc_connected = await opc_client.connect_fast()
+        if opc_connected:
+            logger.info("Conectado al servidor OPC UA.")
+            asyncio.create_task(central_opc_render_ws())
+            asyncio.create_task(tarea_exportar_y_enviar())
 
-        p2 = Process(target=proceso_central_opc_escritura, args=(stop_event,),daemon=True)
-        p3 = Process(target=proceso_central_opc_recetas, args=(stop_event,),daemon=True)
-        p4 = Process(target=proceso_central_opc_alarmas_2,args=(stop_event,), daemon=True)
+            p2 = Process(target=proceso_central_opc_escritura, args=(stop_event,),daemon=True)
+            p3 = Process(target=proceso_central_opc_recetas, args=(stop_event,),daemon=True)
+            p4 = Process(target=proceso_central_opc_alarmas_2,args=(stop_event,), daemon=True)
 
-        #PARA FRENAR UN PROCESO SOLO FRENAR ESTAS LINEAS
+            #PARA FRENAR UN PROCESO SOLO FRENAR ESTAS LINEAS
 
-        #p1.start()
-        #p2.start()
-        #p3.start()
-        #p4.start()
+            #p1.start()
+            #p2.start()
+            #p3.start()
+            #p4.start()
+        else:
+            logger.warning("No se pudo conectar al servidor OPC UA, pero la API continuará funcionando.")
+            # Iniciar tarea de reconexión en segundo plano
+            asyncio.create_task(background_opc_reconnect())
+    except Exception as e:
+        logger.error(f"Error al conectar con el servidor OPC UA: {e}. La API funcionará sin conexión OPC.")
+        opc_connected = False
+        # Iniciar tarea de reconexión en segundo plano
+        asyncio.create_task(background_opc_reconnect())
 
+    try:
         yield
         
     finally:
+        # Limpiar procesos solo si fueron creados
+        if p2 is not None:
+            stop_event.set()
+            time.sleep(1)
+            p2.terminate()
+            p2.join(timeout=5)
 
-        stop_event.set()
-        time.sleep(1)
-        p2.terminate()
-        p2.join(timeout=5)
-
-        stop_event.set()
-        time.sleep(1)
-        p3.terminate()
-        p3.join(timeout=5)
+        if p3 is not None:
+            stop_event.set()
+            time.sleep(1)
+            p3.terminate()
+            p3.join(timeout=5)
         
-        stop_event.set()
-        time.sleep(1)
-        p4.terminate()
-        p4.join(timeout=5)
+        if p4 is not None:
+            stop_event.set()
+            time.sleep(1)
+            p4.terminate()
+            p4.join(timeout=5)
 
-        await opc_client.disconnect()
+        # Desconectar OPC solo si estaba conectado
+        if opc_connected:
+            try:
+                await opc_client.disconnect()
+            except Exception as e:
+                logger.error(f"Error al desconectar OPC UA: {e}")
 
 app = FastAPI(
     lifespan=lifespan,
