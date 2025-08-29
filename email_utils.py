@@ -981,6 +981,10 @@ El archivo incluye:
 - Resumen de productividad por torre (Hoja n°1)
 - Detalles de ciclos realizados (Hoja n°2)
 
+Este documento está siendo compartido a los siguientes usuarios:
+jlortiz@alimentosefa.com.mx
+control.documentos@alimentosefa.com.mx
+
 Saludos cordiales."""
                         
                         resultado_efa = await send_email_with_attachment(
@@ -1012,6 +1016,19 @@ El archivo incluye:
 - Resumen de productividad por torre (Hoja n°1)
 - Detalles de ciclos realizados (Hoja n°2)
 
+Este documento está siendo compartido a los siguientes usuarios de Creminox:
+Leandro Javier Lacolla
+Fernando Russo
+Jhonatan Fulguera
+Adrian Bouquet (visión cliente)
+Matias Stamm
+Guillermo Gomez
+Evando Samuel Amarilla
+
+El documento de clientes, está siendo compartido a los siguientes correos de Alimentos EFA:
+jlortiz@alimentosefa.com.mx
+control.documentos@alimentosefa.com.mx
+
 Saludos cordiales."""
                         
                         resultado_creminox = await send_email_with_attachment(
@@ -1040,8 +1057,21 @@ Saludos cordiales."""
 Adjunto encontrará los reportes de productividad de la "Celda de Desmoldeo" para la fecha {fecha_str}.
 
 Los archivos incluyen:
-- Reporte completo de ingeniería con todas las métricas (Archivo 1)
+- Reporte completo de Ingeniería con todas las métricas (Archivo 1)
 - Reporte simplificado para cliente (Archivo 2)
+
+Este documento está siendo compartido a los siguientes usuarios de Creminox:
+Leandro Javier Lacolla (visión Creminox)
+Fernando Russo (ambos archivos)
+Jhonatan Fulguera (ambos archivos)
+Adrian Bouquet (visión cliente)
+Matias Stamm (visión Creminox)
+Guillermo Gomez (visión Creminox)
+Evando Samuel Amarilla (ambos archivos)
+
+El documento de clientes, está siendo compartido a los siguientes correos de Alimentos EFA:
+jlortiz@alimentosefa.com.mx
+control.documentos@alimentosefa.com.mx
 
 Saludos cordiales."""
                         
