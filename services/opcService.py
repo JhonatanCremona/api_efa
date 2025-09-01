@@ -698,7 +698,10 @@ class ObtenerNodosOpc:
                 lista_resumen_general["NGripperActual"] = self.get_node_value_safely(e_datosGripper, "NGripperActual", 0)
                 lista_resumen_general["TorreActual"] = self.get_node_value_safely(e_datosSeleccionado, "N_torre_actual", 0)
                 
-                if RECETA_ACTUAL:
+                if ESTADO_CICLO_DESMOLDEO == False:
+                    lista_resumen_general["PesoProducto"] = 0.0
+                    lista_resumen_general["PesoActualDesmoldado"] = 0.0
+                elif RECETA_ACTUAL:
                     PESO_FILA_PRODUCTO = RECETA_ACTUAL.get("PESO DEL PRODUCTO", 0) * (RECETA_ACTUAL.get("MOLDES POR NIVEL", 0) * RECETA_ACTUAL.get("PRODUCTOS POR MOLDE", 0))
                     lista_resumen_general["PesoProducto"] = round(PESO_FILA_PRODUCTO, 2)
                     PESO_ACTUAL_DESMOLDADO = PESO_FILA_PRODUCTO * CONTADOR_NIVELES_DESMOLDADOS
@@ -881,11 +884,14 @@ class ObtenerNodosOpc:
             resultado["estadoMaquina"] = estado_maquina.get(estadoActual)
             resultado["iniciado"] = ESTADO_CICLO_DESMOLDEO
 
-            # Evitar TypeError en caso de valores None
-            peso_producto = round(resultado.get("PesoProducto", 0),2)
-            nivel_actual = resultado.get("sdda_nivel_actual", 0)
-
-            resultado["PesoActualDesmoldado"] = round((peso_producto or 0) * nivel_actual, 2)
+            # Asegurarse de que PesoActualDesmoldado sea 0 cuando el ciclo esté inactivo
+            if ESTADO_CICLO_DESMOLDEO == False:
+                resultado["PesoActualDesmoldado"] = 0.0
+            else:
+                # Evitar TypeError en caso de valores None
+                peso_producto = round(resultado.get("PesoProducto", 0),2)
+                nivel_actual = resultado.get("sdda_nivel_actual", 0)
+                resultado["PesoActualDesmoldado"] = round((peso_producto or 0) * nivel_actual, 2)
             resultado["TiempoTranscurrido"] = TIEMPO_TRANSCURRIDO
 
             celda = {
