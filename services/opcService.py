@@ -280,11 +280,23 @@ class ObtenerNodosOpc:
                     
                     # Obtener información de la receta actual
                     id_receta = self.get_node_value_safely(e_datosSeleccionado, "N_receta_actual", 1)
-                    NIVELES_SELECCIONADOS_CICLO = self.get_node_value_safely(e_datosSeleccionado, "nivelesSeleccionados", 0)
-                    opc_logger.info(f"[NIVEL DESMOLDADO SIN CICLO] Usando receta ID: {id_receta}, Niveles seleccionados: {NIVELES_SELECCIONADOS_CICLO}")
+                    niveles_seleccionados_opc = self.get_node_value_safely(e_datosSeleccionado, "nivelesSeleccionados", 0)
                     
-                    # Cargar datos de la receta
+                    # Cargar datos de la receta para validar cantidadNiveles
                     receta_db = db_session.query(Recetario).filter(Recetario.id == id_receta).first()
+                    
+                    # Validar que nivelesSeleccionados no sea mayor que cantidadNiveles de la receta
+                    if receta_db and receta_db.cantidadNiveles:
+                        NIVELES_SELECCIONADOS_CICLO = min(niveles_seleccionados_opc, receta_db.cantidadNiveles)
+                        if niveles_seleccionados_opc > receta_db.cantidadNiveles:
+                            opc_logger.warning(f"[VALIDACIÓN] Niveles seleccionados del OPC ({niveles_seleccionados_opc}) mayor que cantidadNiveles de la receta ({receta_db.cantidadNiveles}). Usando valor máximo permitido: {NIVELES_SELECCIONADOS_CICLO}")
+                        else:
+                            opc_logger.info(f"[VALIDACIÓN] Niveles seleccionados validados: {NIVELES_SELECCIONADOS_CICLO}")
+                    else:
+                        NIVELES_SELECCIONADOS_CICLO = niveles_seleccionados_opc
+                        opc_logger.warning(f"[VALIDACIÓN] No se pudo validar niveles seleccionados (receta no encontrada o sin cantidadNiveles). Usando valor del OPC: {NIVELES_SELECCIONADOS_CICLO}")
+                    
+                    opc_logger.info(f"[NIVEL DESMOLDADO SIN CICLO] Usando receta ID: {id_receta}, Niveles seleccionados: {NIVELES_SELECCIONADOS_CICLO}")
                     RECETA_ACTUAL.clear()
                     
                     if receta_db:
@@ -474,7 +486,22 @@ class ObtenerNodosOpc:
             if flanco_inicio_ciclo:
                 opc_logger.info("[FLANCO CICLO_INICIADO] Se detectó inicio de ciclo")
 
-                NIVELES_SELECCIONADOS_CICLO = self.get_node_value_safely(e_datosSeleccionado, "nivelesSeleccionados", 0)
+                # Obtener niveles seleccionados del OPC y ID de receta
+                niveles_seleccionados_opc = self.get_node_value_safely(e_datosSeleccionado, "nivelesSeleccionados", 0)
+                id_receta = self.get_node_value_safely(e_datosSeleccionado, "N_receta_actual", 1)
+                
+                # Validar niveles seleccionados contra la receta de la base de datos
+                receta_validacion = db_session.query(Recetario).filter(Recetario.id == id_receta).first()
+                if receta_validacion and receta_validacion.cantidadNiveles:
+                    NIVELES_SELECCIONADOS_CICLO = min(niveles_seleccionados_opc, receta_validacion.cantidadNiveles)
+                    if niveles_seleccionados_opc > receta_validacion.cantidadNiveles:
+                        opc_logger.warning(f"[VALIDACIÓN FLANCO] Niveles seleccionados del OPC ({niveles_seleccionados_opc}) mayor que cantidadNiveles de la receta ({receta_validacion.cantidadNiveles}). Usando valor máximo permitido: {NIVELES_SELECCIONADOS_CICLO}")
+                    else:
+                        opc_logger.info(f"[VALIDACIÓN FLANCO] Niveles seleccionados validados: {NIVELES_SELECCIONADOS_CICLO}")
+                else:
+                    NIVELES_SELECCIONADOS_CICLO = niveles_seleccionados_opc
+                    opc_logger.warning(f"[VALIDACIÓN FLANCO] No se pudo validar niveles seleccionados (receta no encontrada o sin cantidadNiveles). Usando valor del OPC: {NIVELES_SELECCIONADOS_CICLO}")
+                
                 opc_logger.info(f"[FLANCO CICLO_INICIADO] Niveles seleccionados: {NIVELES_SELECCIONADOS_CICLO}")
 
                 if ciclo_actual is not None:
@@ -538,8 +565,7 @@ class ObtenerNodosOpc:
                 ESTADO_CICLO_DESMOLDEO = True
                 ciclo_guardado_por_flanco = False
 
-                id_receta = self.get_node_value_safely(e_datosSeleccionado, "N_receta_actual", 1)
-                
+                # Obtener receta antes de crear el ciclo para usar los datos validados
                 receta_db = db_session.query(Recetario).filter(Recetario.id == id_receta).first()
                 
                 RECETA_ACTUAL.clear()
