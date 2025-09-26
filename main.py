@@ -323,7 +323,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
 app.include_router(usuarios.RouterUsers)
 app.include_router(graficosHistorico.RoutersGraficosH)
 app.include_router(productividad.RouterProductividad)

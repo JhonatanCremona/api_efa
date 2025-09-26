@@ -1,6 +1,11 @@
 FROM python:3.12
-WORKDIR /app
 
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    tzdata \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV TZ=America/Mexico_City
+WORKDIR /app
 COPY . .
 
 RUN pip install "fastapi[standard]"
