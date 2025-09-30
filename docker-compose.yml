@@ -51,35 +51,5 @@ services:
       bridge_network:
       macvlan_network:
         ipv4_address: 192.168.10.115
-
-  nextjs-app:
-    build:
-      context: ../efa_2  # La carpeta donde está el Dockerfile
-      dockerfile: web.Dockerfile
-    ports:
-      - "3000:3000"
-    volumes:
-      - ../efa_2:/app 
-    restart: always
-    depends_on:
-      - fastapi_app
-    networks:
-      - bridge_network
-  nextjs-camaras-app:
-    build:
-      context: ../camaras-efa  # La carpeta donde está el Dockerfile
-      dockerfile: camaras.Dockerfile
-    ports:
-      - "3001:3001"
-    volumes:
-      - ../camaras-efa:/app 
-    restart: always
-    depends_on:
-      - nexts-app
-    networks:
-      bridge_network:
-      macvlan_network:
-        ipv4_address: 192.168.10.116  
-
 volumes:
   mysql_data:
