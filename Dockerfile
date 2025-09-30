@@ -9,16 +9,16 @@ WORKDIR /app
 COPY . .
 
 RUN pip install "fastapi[standard]"
-    pip install PyMySQL
-    pip install sqlalchemy
-    pip install cryptography
-    pip install opcua
-    pip install python-jose
-    pip install pandas openpyxl
-    pip install passlib
-    pip install bcrypt
-    pip install aiosmtplib
-    pip install Pillow
+RUN pip install PyMySQL
+RUN pip install sqlalchemy
+RUN pip install cryptography
+RUN pip install opcua
+RUN pip install python-jose
+RUN pip install pandas openpyxl
+RUN pip install passlib
+RUN pip install bcrypt
+RUN pip install aiosmtplib
+RUN pip install Pillow
 RUN pip install --upgrade pip
 
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
