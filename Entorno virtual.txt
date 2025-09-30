@@ -17,6 +17,9 @@ pip install aiosmtplib
 pip install Pillow
 pip install --upgrade pip
 
+O esto
+
+pip install -r requirements.txt
 
 Ejecutar entorno virtual
 
