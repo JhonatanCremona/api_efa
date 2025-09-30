@@ -1,7 +1,8 @@
 from typing import Annotated
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordBearer
-from passlib.context import CryptContext
+# Reemplazo de passlib.context por bcrypt puro
+import bcrypt
 from fastapi import Depends, HTTPException, status
 from dotenv import load_dotenv
 from jose import jwt, JWTError
@@ -24,7 +25,25 @@ def get_db():
 
 db_dependency = Annotated[Session, Depends(get_db)]
 
-bcrypt_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
+# Funciones de bcrypt puro para reemplazar CryptContext
+def hash_password(password: str) -> str:
+    """Hash de contraseña usando bcrypt puro"""
+    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+def verify_password(password: str, hashed: str) -> bool:
+    """Verificación de contraseña usando bcrypt puro"""
+    return bcrypt.checkpw(password.encode('utf-8'), hashed.encode('utf-8'))
+
+# Mantener compatibilidad con el código existente
+class BcryptContextCompatibility:
+    def hash(self, password: str) -> str:
+        return hash_password(password)
+    
+    def verify(self, password: str, hashed: str) -> bool:
+        return verify_password(password, hashed)
+
+# Para mantener compatibilidad con el código existente
+bcrypt_context = BcryptContextCompatibility()
 oauth2_bearer = OAuth2PasswordBearer(tokenUrl='auth/token')
 oauth2_bearer_dependency = Annotated[str, Depends(oauth2_bearer)]
 

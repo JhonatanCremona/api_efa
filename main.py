@@ -23,7 +23,7 @@ from models.torre import Torre
 from models.torreconfiguraciones import TorreConfiguraciones
 from models.usuario import Usuario 
 from models.etapa import Etapa
-from services.desp import bcrypt_context
+from services.desp import bcrypt_context, hash_password
 from routers import usuarios, graficosHistorico, productividad, configuracionesHTTP
 
 import logging

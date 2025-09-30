@@ -12,7 +12,6 @@ pip install cryptography
 pip install opcua
 pip install python-jose
 pip install pandas openpyxl
-pip install passlib
 pip install bcrypt
 pip install aiosmtplib
 pip install Pillow

@@ -8,7 +8,7 @@ from models.usuario import Usuario
 from dotenv import load_dotenv
 from jose import jwt
 import os
-from services.desp import db_dependency, bcrypt_context,user_dependency
+from services.desp import db_dependency, bcrypt_context, user_dependency, hash_password, verify_password
 
 load_dotenv()
 
@@ -32,7 +32,7 @@ def authenticate_user(username: str, password: str, db):
     user = db.query(Usuario).filter(Usuario.name == username).first()
     if not user:
         return False
-    if not bcrypt_context.verify(password, user.password):
+    if not verify_password(password, user.password):
         return False
     
     return user

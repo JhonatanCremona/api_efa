@@ -15,7 +15,6 @@ RUN pip install cryptography
 RUN pip install opcua
 RUN pip install python-jose
 RUN pip install pandas openpyxl
-RUN pip install passlib
 RUN pip install bcrypt
 RUN pip install aiosmtplib
 RUN pip install Pillow
