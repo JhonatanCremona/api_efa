@@ -264,13 +264,13 @@ async def lifespan(app: FastAPI):
 
             p2 = Process(target=proceso_central_opc_escritura, args=(stop_event,),daemon=True)
             p3 = Process(target=proceso_central_opc_recetas, args=(stop_event,),daemon=True)
-            p4 = Process(target=proceso_central_opc_alarmas_2,args=(stop_event,), daemon=True)
+            #p4 = Process(target=proceso_central_opc_alarmas_2,args=(stop_event,), daemon=True)
 
             #PARA FRENAR UN PROCESO SOLO FRENAR ESTAS LINEAS
 
             #p1.start()
-            #p2.start()
-            #p3.start()
+            p2.start()
+            p3.start()
             #p4.start()
         else:
             logger.warning("No se pudo conectar al servidor OPC UA, pero la API continuará funcionando.")
