@@ -26,3 +26,7 @@ Ejecutar entorno virtual
 .\venv\Scripts\actívate
 
 fastapi run main.py
+
+Actualizar requirements
+
+pip freeze > requirements.txt

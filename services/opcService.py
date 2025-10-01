@@ -49,7 +49,9 @@ lista_resumen_general = {
     "sdda_nivel_actual": 0,
     "NGripperActual": 0,
     "PesoActualDesmoldado": 0,
-    "TorreActual": 0
+    "TorreActual": 0,
+    "PesoPorNivel": 0,
+    "NivelesDesmoldados": 0
 }
 lista_sector_io = {
     "banda_desmoldeo": "",       # string vacío
@@ -724,19 +726,14 @@ class ObtenerNodosOpc:
                 lista_resumen_general["NGripperActual"] = self.get_node_value_safely(e_datosGripper, "NGripperActual", 0)
                 lista_resumen_general["TorreActual"] = self.get_node_value_safely(e_datosSeleccionado, "N_torre_actual", 0)
                 
-                if ESTADO_CICLO_DESMOLDEO == False:
-                    lista_resumen_general["PesoProducto"] = 0.0
-                    lista_resumen_general["PesoActualDesmoldado"] = 0.0
-                elif RECETA_ACTUAL:
-                    PESO_FILA_PRODUCTO = RECETA_ACTUAL.get("PESO DEL PRODUCTO", 0) * (RECETA_ACTUAL.get("MOLDES POR NIVEL", 0) * RECETA_ACTUAL.get("PRODUCTOS POR MOLDE", 0))
-                    lista_resumen_general["PesoProducto"] = round(PESO_FILA_PRODUCTO, 2)
-                    PESO_ACTUAL_DESMOLDADO = PESO_FILA_PRODUCTO * CONTADOR_NIVELES_DESMOLDADOS
-                    PESO_TOTAL_CICLO = PESO_ACTUAL_DESMOLDADO
-                    lista_resumen_general["PesoActualDesmoldado"] = round(PESO_TOTAL_CICLO, 2)
-                else:
-                    lista_resumen_general["PesoProducto"] = 0.0
-                    lista_resumen_general["PesoActualDesmoldado"] = 0.0
-
+                PESO_FILA_PRODUCTO = RECETA_ACTUAL.get("PESO DEL PRODUCTO", 0) * (RECETA_ACTUAL.get("MOLDES POR NIVEL", 0) * RECETA_ACTUAL.get("PRODUCTOS POR MOLDE", 0))
+                lista_resumen_general["PesoPorNivel"] = round(PESO_FILA_PRODUCTO, 2)
+                lista_resumen_general["PesoProducto"] = RECETA_ACTUAL.get("PESO DEL PRODUCTO", 0)
+                PESO_ACTUAL_DESMOLDADO = PESO_FILA_PRODUCTO * CONTADOR_NIVELES_DESMOLDADOS
+                PESO_TOTAL_CICLO = PESO_ACTUAL_DESMOLDADO
+                lista_resumen_general["PesoActualDesmoldado"] = round(PESO_TOTAL_CICLO, 2)
+                lista_resumen_general["NivelesDesmoldados"] = CONTADOR_NIVELES_DESMOLDADOS
+            
             if flag_nivel != ULTIMO_NIVEL and ESTADO_CICLO_DESMOLDEO == True:
                 flag_nivel = ULTIMO_NIVEL
                 if RECETA_ACTUAL:
@@ -759,7 +756,8 @@ class ObtenerNodosOpc:
                     "sdda_nivel_actual": 0,
                     "NGripperActual": 0,
                     "PesoActualDesmoldado": 0.0,
-                    "TorreActual": 0
+                    "TorreActual": 0,
+                    "PesoPorNivel": 0.0,
                 }
                 
                 PESO_ACTUAL_DESMOLDADO = 0

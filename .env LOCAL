@@ -13,16 +13,16 @@ CREDENCIAL_SQL_USER_ADMIN = "Cremona2025"
 CREDENCIAL_SQL_USER_CLIENT = "12345678"
 
 #DEPLOY IFFA - LOCAL OPC VIRTUAL
-MYSQL_HOST = 192.168.20.43
-DATABASE_URL=mysql+pymysql://root:echo3241@192.168.20.43:3306/efa
+MYSQL_HOST = 192.168.20.48
+DATABASE_URL=mysql+pymysql://root:echo3241@192.168.20.48:3306/efa
 INDICE_OPC_UA = "2"
-OPC_SERVER_IP = "192.168.20.43"
+OPC_SERVER_IP = "192.168.20.48"
 OPC_SERVER_PORT = "4840"
 #CAMBIAR ESTO: objects_node.get_child(["3:ServerInterfaces"])
 #POR ESTO: objects_node.get_child(["2:ServerInterfaces"])
 
 #CAMBIAR ESTO: 4:Server interface_1"])
-#POR ESTO: 2:Server interface_1"])
+#POR ESTO: 4:Server interface_1"])
 
 #--------------------------------------------------------------------
 
@@ -35,7 +35,7 @@ OPC_SERVER_PORT = "4840"
 #CAMBIAR ESTO: objects_node.get_child(["2:ServerInterfaces"])
 #POR ESTO: objects_node.get_child(["3:ServerInterfaces"])
 
-#CAMBIAR ESTO: 2:Server interface_1"])
+#CAMBIAR ESTO: 4:Server interface_1"])
 #POR ESTO: 4:Server interface_1"])
 
 #DATOS CORREOS
@@ -43,5 +43,5 @@ EMAIL_FROM=pruebascremona@gmail.com
 EMAIL_TO=evandoamarilla15@gmail.com
 MAILJET_SMTP_USER=0149b99d78a0dd072274340b28f42ce0
 MAILJET_SMTP_PASS=8708748a5dfc5b775aead35cd835c71c
-START_DATE=2025-08-26
+START_DATE=2026-10-26
 TIEMPO_EXCEL=1

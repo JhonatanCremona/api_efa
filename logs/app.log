@@ -49065,3 +49065,60 @@ evel": "INFO", "name": "uvicorn", "message": "\u2705 Conectado al servidor OPC U
 {"timestamp": "2025-08-27T14:25:15.511366", "level": "INFO", "name": "uvicorn", "message": "Escrito hBastidor -> Correccion_hBastidor: 0", "filename": "opcService.py", "line": 1239}
 {"timestamp": "2025-08-27T14:25:16.279741", "level": "INFO", "name": "uvicorn", "message": "Escrito TAG -> TAG: OVB-029", "filename": "opcService.py", "line": 1239}
 {"timestamp": "2025-08-27T14:25:17.834893", "level": "WARNING", "name": "uvicorn", "message": "\u26a0\ufe0f Conexi\u00f3n OPC UA cerrada.", "filename": "opc.py", "line": 36}
+{"timestamp": "2025-10-01T10:41:38.931463", "level": "INFO", "name": "uvicorn", "message": "\u2705 Conectado al servidor OPC UA.", "filename": "opc.py", "line": 50}
+{"timestamp": "2025-10-01T10:41:39.184696", "level": "INFO", "name": "uvicorn", "message": "\u2705 Conectado al servidor OPC UA.", "filename": "opc.py", "line": 50}
+{"timestamp": "2025-10-01T10:41:39.593781", "level": "ERROR", "name": "uvicorn", "message": "Sinconexion al servidor OPC UA-ORIGEN", "filename": "opcService.py", "line": 1128}
+{"timestamp": "2025-10-01T10:41:39.594749", "level": "INFO", "name": "uvicorn", "message": "\ud83d\udd04 Intentando reconectar al servidor OPC UA...", "filename": "opc.py", "line": 67}
+{"timestamp": "2025-10-01T10:41:40.187847", "level": "WARNING", "name": "uvicorn", "message": "\u26a0\ufe0f Conexi\u00f3n OPC UA cerrada.", "filename": "opc.py", "line": 61}
+{"timestamp": "2025-10-01T10:41:40.224138", "level": "ERROR", "name": "uvicorn", "message": "Error al intertar ACTUALIZAR RECETAS, problema de conexion \"The requested operation has no match to return.\"(BadNoMatch)", "filename": "opcRecetas.py", "line": 75}
+{"timestamp": "2025-10-01T10:41:40.225111", "level": "INFO", "name": "uvicorn", "message": "\ud83d\udd04 Intentando reconectar al servidor OPC UA...", "filename": "opc.py", "line": 67}
+{"timestamp": "2025-10-01T10:41:40.825699", "level": "WARNING", "name": "uvicorn", "message": "\u26a0\ufe0f Conexi\u00f3n OPC UA cerrada.", "filename": "opc.py", "line": 61}
+{"timestamp": "2025-10-01T10:41:42.290660", "level": "INFO", "name": "uvicorn", "message": "\u2705 Conectado al servidor OPC UA.", "filename": "opc.py", "line": 50}
+{"timestamp": "2025-10-01T10:41:43.184802", "level": "INFO", "name": "uvicorn", "message": "\u2705 Conectado al servidor OPC UA.", "filename": "opc.py", "line": 50}
+{"timestamp": "2025-10-01T10:41:47.968062", "level": "ERROR", "name": "uvicorn", "message": "Sinconexion al servidor OPC UA-ORIGEN", "filename": "opcService.py", "line": 1128}
+{"timestamp": "2025-10-01T10:41:47.968521", "level": "INFO", "name": "uvicorn", "message": "\ud83d\udd04 Intentando reconectar al servidor OPC UA...", "filename": "opc.py", "line": 67}
+{"timestamp": "2025-10-01T10:41:48.566999", "level": "WARNING", "name": "uvicorn", "message": "\u26a0\ufe0f Conexi\u00f3n OPC UA cerrada.", "filename": "opc.py", "line": 61}
+{"timestamp": "2025-10-01T10:41:49.289255", "level": "ERROR", "name": "uvicorn", "message": "Error al intertar ACTUALIZAR RECETAS, problema de conexion \"The requested operation has no match to return.\"(BadNoMatch)", "filename": "opcRecetas.py", "line": 75}
+{"timestamp": "2025-10-01T10:41:49.290244", "level": "INFO", "name": "uvicorn", "message": "\ud83d\udd04 Intentando reconectar al servidor OPC UA...", "filename": "opc.py", "line": 67}
+{"timestamp": "2025-10-01T10:41:49.990186", "level": "WARNING", "name": "uvicorn", "message": "\u26a0\ufe0f Conexi\u00f3n OPC UA cerrada.", "filename": "opc.py", "line": 61}
+{"timestamp": "2025-10-01T10:43:41.604133", "level": "INFO", "name": "uvicorn", "message": "\u2705 Conectado al servidor OPC UA.", "filename": "opc.py", "line": 50}
+{"timestamp": "2025-10-01T10:43:41.718535", "level": "INFO", "name": "uvicorn", "message": "\u2705 Conectado al servidor OPC UA.", "filename": "opc.py", "line": 50}
+{"timestamp": "2025-10-01T10:43:45.614902", "level": "ERROR", "name": "uvicorn", "message": "Error al intertar ACTUALIZAR RECETAS, problema de conexion ", "filename": "opcRecetas.py", "line": 75}
+{"timestamp": "2025-10-01T10:43:45.615979", "level": "INFO", "name": "uvicorn", "message": "\ud83d\udd04 Intentando reconectar al servidor OPC UA...", "filename": "opc.py", "line": 67}
+{"timestamp": "2025-10-01T10:43:45.740550", "level": "ERROR", "name": "uvicorn", "message": "Sinconexion al servidor OPC UA-ORIGEN", "filename": "opcService.py", "line": 1128}
+{"timestamp": "2025-10-01T10:43:45.741577", "level": "INFO", "name": "uvicorn", "message": "\ud83d\udd04 Intentando reconectar al servidor OPC UA...", "filename": "opc.py", "line": 67}
+{"timestamp": "2025-10-01T10:43:46.496847", "level": "WARNING", "name": "uvicorn", "message": "\u26a0\ufe0f Conexi\u00f3n OPC UA cerrada.", "filename": "opc.py", "line": 61}
+{"timestamp": "2025-10-01T10:43:46.700539", "level": "WARNING", "name": "uvicorn", "message": "\u26a0\ufe0f Conexi\u00f3n OPC UA cerrada.", "filename": "opc.py", "line": 61}
+{"timestamp": "2025-10-01T10:43:48.446787", "level": "INFO", "name": "uvicorn", "message": "\u2705 Conectado al servidor OPC UA.", "filename": "opc.py", "line": 50}
+{"timestamp": "2025-10-01T10:43:48.853253", "level": "INFO", "name": "uvicorn", "message": "\u2705 Conectado al servidor OPC UA.", "filename": "opc.py", "line": 50}
+{"timestamp": "2025-10-01T10:43:55.070310", "level": "ERROR", "name": "uvicorn", "message": "Sinconexion al servidor OPC UA-ORIGEN", "filename": "opcService.py", "line": 1128}
+{"timestamp": "2025-10-01T10:43:55.071314", "level": "INFO", "name": "uvicorn", "message": "\ud83d\udd04 Intentando reconectar al servidor OPC UA...", "filename": "opc.py", "line": 67}
+{"timestamp": "2025-10-01T10:43:55.336992", "level": "ERROR", "name": "uvicorn", "message": "Error al intertar ACTUALIZAR RECETAS, problema de conexion \"The requested operation has no match to return.\"(BadNoMatch)", "filename": "opcRecetas.py", "line": 75}
+{"timestamp": "2025-10-01T10:43:55.338017", "level": "INFO", "name": "uvicorn", "message": "\ud83d\udd04 Intentando reconectar al servidor OPC UA...", "filename": "opc.py", "line": 67}
+{"timestamp": "2025-10-01T10:43:55.669443", "level": "WARNING", "name": "uvicorn", "message": "\u26a0\ufe0f Conexi\u00f3n OPC UA cerrada.", "filename": "opc.py", "line": 61}
+{"timestamp": "2025-10-01T10:43:56.138663", "level": "WARNING", "name": "uvicorn", "message": "\u26a0\ufe0f Conexi\u00f3n OPC UA cerrada.", "filename": "opc.py", "line": 61}
+{"timestamp": "2025-10-01T10:43:58.010012", "level": "INFO", "name": "uvicorn", "message": "\u2705 Conectado al servidor OPC UA.", "filename": "opc.py", "line": 50}
+{"timestamp": "2025-10-01T10:43:58.299049", "level": "INFO", "name": "uvicorn", "message": "\u2705 Conectado al servidor OPC UA.", "filename": "opc.py", "line": 50}
+{"timestamp": "2025-10-01T10:44:04.454090", "level": "ERROR", "name": "uvicorn", "message": "Sinconexion al servidor OPC UA-ORIGEN", "filename": "opcService.py", "line": 1128}
+{"timestamp": "2025-10-01T10:44:04.454749", "level": "INFO", "name": "uvicorn", "message": "\ud83d\udd04 Intentando reconectar al servidor OPC UA...", "filename": "opc.py", "line": 67}
+{"timestamp": "2025-10-01T10:44:05.058507", "level": "WARNING", "name": "uvicorn", "message": "\u26a0\ufe0f Conexi\u00f3n OPC UA cerrada.", "filename": "opc.py", "line": 61}
+{"timestamp": "2025-10-01T10:44:05.124669", "level": "ERROR", "name": "uvicorn", "message": "Error al intertar ACTUALIZAR RECETAS, problema de conexion \"The requested operation has no match to return.\"(BadNoMatch)", "filename": "opcRecetas.py", "line": 75}
+{"timestamp": "2025-10-01T10:44:05.125652", "level": "INFO", "name": "uvicorn", "message": "\ud83d\udd04 Intentando reconectar al servidor OPC UA...", "filename": "opc.py", "line": 67}
+{"timestamp": "2025-10-01T10:44:05.721466", "level": "WARNING", "name": "uvicorn", "message": "\u26a0\ufe0f Conexi\u00f3n OPC UA cerrada.", "filename": "opc.py", "line": 61}
+{"timestamp": "2025-10-01T10:44:07.217368", "level": "INFO", "name": "uvicorn", "message": "\u2705 Conectado al servidor OPC UA.", "filename": "opc.py", "line": 50}
+{"timestamp": "2025-10-01T10:44:07.832508", "level": "INFO", "name": "uvicorn", "message": "\u2705 Conectado al servidor OPC UA.", "filename": "opc.py", "line": 50}
+{"timestamp": "2025-10-01T10:44:57.992516", "level": "INFO", "name": "uvicorn", "message": "\u2705 Conectado al servidor OPC UA.", "filename": "opc.py", "line": 50}
+{"timestamp": "2025-10-01T10:44:58.202542", "level": "INFO", "name": "uvicorn", "message": "\u2705 Conectado al servidor OPC UA.", "filename": "opc.py", "line": 50}
+{"timestamp": "2025-10-01T10:45:01.382352", "level": "INFO", "name": "uvicorn", "message": "PANTALLA OPC: False", "filename": "opcRecetas.py", "line": 52}
+{"timestamp": "2025-10-01T10:45:09.076631", "level": "INFO", "name": "uvicorn", "message": "PANTALLA OPC: False", "filename": "opcRecetas.py", "line": 52}
+{"timestamp": "2025-10-01T10:45:09.486784", "level": "INFO", "name": "uvicorn", "message": "Escrito DisteNivel -> Correccion_DisteNivel: 0", "filename": "opcService.py", "line": 1274}
+{"timestamp": "2025-10-01T10:45:10.206384", "level": "INFO", "name": "uvicorn", "message": "Escrito hAjuste -> Correccion_hAjuste: 0", "filename": "opcService.py", "line": 1274}
+{"timestamp": "2025-10-01T10:45:10.855532", "level": "INFO", "name": "uvicorn", "message": "Escrito hAjusteN1 -> Correccion_hAjusteN1: 0", "filename": "opcService.py", "line": 1274}
+{"timestamp": "2025-10-01T10:45:11.580962", "level": "INFO", "name": "uvicorn", "message": "Escrito hBastidor -> Correccion_hBastidor: 0", "filename": "opcService.py", "line": 1274}
+{"timestamp": "2025-10-01T10:45:12.219684", "level": "INFO", "name": "uvicorn", "message": "Escrito TAG -> TAG: OVB-019", "filename": "opcService.py", "line": 1274}
+{"timestamp": "2025-10-01T10:45:16.959645", "level": "INFO", "name": "uvicorn", "message": "PANTALLA OPC: False", "filename": "opcRecetas.py", "line": 52}
+{"timestamp": "2025-10-01T10:45:24.697820", "level": "INFO", "name": "uvicorn", "message": "PANTALLA OPC: False", "filename": "opcRecetas.py", "line": 52}
+{"timestamp": "2025-10-01T10:45:32.517024", "level": "INFO", "name": "uvicorn", "message": "PANTALLA OPC: False", "filename": "opcRecetas.py", "line": 52}
+{"timestamp": "2025-10-01T10:45:40.312938", "level": "INFO", "name": "uvicorn", "message": "PANTALLA OPC: False", "filename": "opcRecetas.py", "line": 52}
+{"timestamp": "2025-10-01T10:45:48.164841", "level": "INFO", "name": "uvicorn", "message": "PANTALLA OPC: False", "filename": "opcRecetas.py", "line": 52}
+{"timestamp": "2025-10-01T10:45:56.627712", "level": "INFO", "name": "uvicorn", "message": "PANTALLA OPC: False", "filename": "opcRecetas.py", "line": 52}
