@@ -1,4 +1,6 @@
 {
-  "enviados": {},
+  "enviados": {
+    "2025-10-01": true
+  },
   "correos_exitosos": {}
 }

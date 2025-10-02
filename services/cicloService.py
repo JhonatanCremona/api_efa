@@ -22,7 +22,7 @@ def buscarCiclos(id_receta, tabla_datos):
 
 def buscarCiclos1_con_tiempo_util(idReceta, listaRecetaXCiclo, listaReceta_dic, listaCiclos_dic):
     def calcular_tiempo_util(tiempo_desmolde_str, tiempo_pausado_str):
-        """Calcula el tiempo útil restando el tiempo pausado del tiempo de desmolde"""
+        """Calcula el tiempo útil restando el tiempo pausado del tiempo de desmolde, retorna en segundos totales"""
         try:
             # Procesar tiempo de desmolde
             if not tiempo_desmolde_str or tiempo_desmolde_str == "" or tiempo_desmolde_str is None:
@@ -38,52 +38,42 @@ def buscarCiclos1_con_tiempo_util(idReceta, listaRecetaXCiclo, listaReceta_dic, 
             if tiempo_pausado_str == "None" or tiempo_pausado_str == "" or tiempo_pausado_str == "0":
                 tiempo_pausado_str = "00:00"
             
-            # Convertir tiempo de desmolde a minutos
-            partes_desmolde = tiempo_desmolde_str.split(':')
-            minutos_desmolde = 0
-            if len(partes_desmolde) == 2:
-                minutos_desmolde = int(partes_desmolde[0])
-                segundos_desmolde = int(partes_desmolde[1])
-                # Convertir segundos a minutos (redondeando hacia arriba si hay segundos)
-                minutos_extra = segundos_desmolde // 60
-                segundos_restantes = segundos_desmolde % 60
-                minutos_desmolde = minutos_desmolde + minutos_extra
-                # Si hay segundos restantes, sumar 1 minuto más
-                if segundos_restantes > 0:
-                    minutos_desmolde += 1
+            # LOG PARA DIAGNOSTICAR: Imprimir tiempos antes de convertir
+            print(f"[DEBUG TIEMPO] Desmolde: '{tiempo_desmolde_str}', Pausado: '{tiempo_pausado_str}'")
             
-            # Convertir tiempo pausado a minutos
+            # Convertir tiempo de desmolde a segundos
+            partes_desmolde = tiempo_desmolde_str.split(':')
+            segundos_desmolde = 0
+            if len(partes_desmolde) == 2:  # mm:ss
+                segundos_desmolde = int(partes_desmolde[0]) * 60 + int(partes_desmolde[1])
+            elif len(partes_desmolde) == 3:  # hh:mm:ss
+                segundos_desmolde = int(partes_desmolde[0]) * 3600 + int(partes_desmolde[1]) * 60 + int(partes_desmolde[2])
+            
+            # Convertir tiempo pausado a segundos
             partes_pausado = tiempo_pausado_str.split(':')
-            minutos_pausado = 0
-            if len(partes_pausado) == 2:
-                minutos_pausado = int(partes_pausado[0])
-                segundos_pausado = int(partes_pausado[1])
-                # Convertir segundos a minutos (redondeando hacia arriba si hay segundos)
-                minutos_extra = segundos_pausado // 60
-                segundos_restantes = segundos_pausado % 60
-                minutos_pausado = minutos_pausado + minutos_extra
-                # Si hay segundos restantes, sumar 1 minuto más
-                if segundos_restantes > 0:
-                    minutos_pausado += 1
+            segundos_pausado = 0
+            if len(partes_pausado) == 2:  # mm:ss
+                segundos_pausado = int(partes_pausado[0]) * 60 + int(partes_pausado[1])
+            elif len(partes_pausado) == 3:  # hh:mm:ss
+                segundos_pausado = int(partes_pausado[0]) * 3600 + int(partes_pausado[1]) * 60 + int(partes_pausado[2])
             
             # Calcular tiempo útil (desmolde - pausado)
-            minutos_util = max(0, minutos_desmolde - minutos_pausado)
+            segundos_util = max(0, segundos_desmolde - segundos_pausado)
             
-            # Convertir a formato hh:mm
-            horas = minutos_util // 60
-            minutos_finales = minutos_util % 60
+            # LOG PARA DIAGNOSTICAR: Imprimir resultado
+            print(f"[DEBUG TIEMPO] Segundos Desmolde: {segundos_desmolde}, Pausado: {segundos_pausado}, Útil: {segundos_util}")
             
-            return f"{horas:02d}:{minutos_finales:02d}"
+            return segundos_util  # Retornar segundos totales en lugar de formato string
             
         except (ValueError, AttributeError, TypeError) as e:
             print(f"Error calculando tiempo útil - Desmolde: '{tiempo_desmolde_str}', Pausado: '{tiempo_pausado_str}': {e}")
-            return "00:00"
+            return 0
     
     return [
         {
             "id_ciclo": recetaXCiclo.id_ciclo_desmoldeo,
             "pesoTotal": listaCiclos_dic[recetaXCiclo.id_ciclo_desmoldeo].pesoDesmoldado,
-            "tiempoTotal": calcular_tiempo_util(
+            "tiempoTotal": calcular_tiempo_util(  # Ahora retorna segundos
                 listaCiclos_dic[recetaXCiclo.id_ciclo_desmoldeo].tiempoDesmolde,
                 listaCiclos_dic[recetaXCiclo.id_ciclo_desmoldeo].tiempoPausado
             )
@@ -93,30 +83,15 @@ def buscarCiclos1_con_tiempo_util(idReceta, listaRecetaXCiclo, listaReceta_dic, 
            listaCiclos_dic[recetaXCiclo.id_ciclo_desmoldeo].estadoMaquina in ["FINALIZADO", "CANCELADO"]
     ]
 
-def convertir_horas_a_minutos(tiempo_horas_str):
-    """Convierte tiempo en formato 'hh:mm' a minutos totales para operaciones matemáticas"""
+def convertir_segundos_a_horas(segundos_totales):
+    """Convierte segundos totales a formato 'hh:mm:ss'"""
     try:
-        if not tiempo_horas_str or tiempo_horas_str == "00:00":
-            return 0
-        
-        partes = tiempo_horas_str.split(':')
-        if len(partes) == 2:
-            horas = int(partes[0])
-            minutos = int(partes[1])
-            return (horas * 60) + minutos
-        else:
-            return 0
-    except (ValueError, AttributeError, TypeError):
-        return 0
-
-def convertir_minutos_a_horas(minutos_totales):
-    """Convierte minutos totales a formato 'hh:mm'"""
-    try:
-        horas = minutos_totales // 60
-        minutos = minutos_totales % 60
-        return f"{horas:02d}:{minutos:02d}"
+        horas = segundos_totales // 3600
+        minutos = (segundos_totales % 3600) // 60
+        segundos = segundos_totales % 60
+        return f"{horas:02d}:{minutos:02d}:{segundos:02d}"
     except (ValueError, TypeError):
-        return "00:00"
+        return "00:00:00"
 
 def resumenDeProductividad(db, fecha_inicio:date, fecha_fin:date):
     fecha_inicio = datetime.combine(fecha_inicio, datetime.min.time())
@@ -152,17 +127,17 @@ def resumenDeProductividad(db, fecha_inicio:date, fecha_fin:date):
             listaBuscarCiclo = buscarCiclos1_con_tiempo_util(receta.id, tablaCiclos, {r.id: r for _,_, r in tablaCiclos}, {c.id: c for c, _, _ in tablaCiclos})
 
             pesoFinal = sum(cicloData["pesoTotal"] for cicloData in listaBuscarCiclo)
-            # Convertir cada tiempo a minutos antes de sumar
-            tiempoTotalMinutos = sum(convertir_horas_a_minutos(cicloData["tiempoTotal"]) for cicloData in listaBuscarCiclo)
-            # Convertir el total de minutos de vuelta a formato hh:mm
-            tiempoTotalCiclo = convertir_minutos_a_horas(tiempoTotalMinutos)
+            # Sumar segundos directamente
+            tiempoTotalSegundos = sum(cicloData["tiempoTotal"] for cicloData in listaBuscarCiclo)
+            # Convertir segundos totales a formato hh:mm:ss
+            tiempoTotalCiclo = convertir_segundos_a_horas(tiempoTotalSegundos)
 
             productosRealizados[receta.id] = {
                 "id_recetario": receta.id,
                 "NombreProducto": receta.codigoProducto,
                 "pesoTotal": pesoFinal,
                 "cantidadCiclos": len(listaBuscarCiclo),
-                "tiempoTotal": tiempoTotalCiclo,  # Ahora en formato "hh:mm"
+                "tiempoTotal": tiempoTotalCiclo,  # Ahora en formato "hh:mm:ss"
             }
             
     respuestaProductividad["CantidadCiclosCorrectos"] = cantidadCiclosTotal

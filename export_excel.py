@@ -196,7 +196,8 @@ def obtener_id_recetario_por_fecha(fecha):
             SELECT DISTINCT rxc.id_recetario
             FROM recetarioxciclo rxc
             JOIN ciclodesmoldeo cd ON rxc.id_ciclo_desmoldeo = cd.id
-            WHERE DATE(cd.fecha_inicio) = :fecha
+            WHERE DATE(cd.fecha_fin) = :fecha
+            AND cd.fecha_fin IS NOT NULL
         """)
         result = session.execute(query, {"fecha": fecha})
         ids = [row[0] for row in result.fetchall()]
@@ -260,7 +261,8 @@ def obtener_cantidad_ciclos_por_recetario(fecha):
             SELECT rxc.id_recetario, COUNT(DISTINCT rxc.id_ciclo_desmoldeo) as cantidad_ciclos
             FROM recetarioxciclo rxc
             JOIN ciclodesmoldeo cd ON rxc.id_ciclo_desmoldeo = cd.id
-            WHERE DATE(cd.fecha_inicio) = :fecha
+            WHERE DATE(cd.fecha_fin) = :fecha
+            AND cd.fecha_fin IS NOT NULL
             AND cd.estadoMaquina != 'CANCELADO AL INICIAR'
             GROUP BY rxc.id_recetario
         """)
@@ -277,7 +279,8 @@ def obtener_ciclos_cancelados_por_recetario(fecha):
             SELECT rxc.id_recetario, COUNT(DISTINCT rxc.id_ciclo_desmoldeo) as ciclos_cancelados
             FROM recetarioxciclo rxc
             JOIN ciclodesmoldeo cd ON rxc.id_ciclo_desmoldeo = cd.id
-            WHERE DATE(cd.fecha_inicio) = :fecha
+            WHERE DATE(cd.fecha_fin) = :fecha
+            AND cd.fecha_fin IS NOT NULL
             AND cd.estadoMaquina = 'CANCELADO'
             GROUP BY rxc.id_recetario
         """)
@@ -295,7 +298,8 @@ def obtener_peso_total_por_recetario(fecha):
             SELECT rxc.id_recetario, SUM(cd.pesoDesmoldado) as peso_total
             FROM recetarioxciclo rxc
             JOIN ciclodesmoldeo cd ON rxc.id_ciclo_desmoldeo = cd.id
-            WHERE DATE(cd.fecha_inicio) = :fecha
+            WHERE DATE(cd.fecha_fin) = :fecha
+            AND cd.fecha_fin IS NOT NULL
             GROUP BY rxc.id_recetario
         """)
         result = session.execute(query, {"fecha": fecha})
@@ -311,7 +315,8 @@ def obtener_tiempo_total_por_recetario(fecha):
             SELECT rxc.id_recetario, cd.tiempoDesmolde, cd.tiempoPausado
             FROM recetarioxciclo rxc
             JOIN ciclodesmoldeo cd ON rxc.id_ciclo_desmoldeo = cd.id
-            WHERE DATE(cd.fecha_inicio) = :fecha
+            WHERE DATE(cd.fecha_fin) = :fecha
+            AND cd.fecha_fin IS NOT NULL
         """)
         result = session.execute(query, {"fecha": fecha})
         
@@ -377,7 +382,8 @@ def obtener_niveles_desmoldados_por_recetario(fecha):
             SELECT rxc.id_recetario, SUM(rxc.cantidadNivelesFinalizado) as niveles_desmoldados
             FROM recetarioxciclo rxc
             JOIN ciclodesmoldeo cd ON rxc.id_ciclo_desmoldeo = cd.id
-            WHERE DATE(cd.fecha_inicio) = :fecha
+            WHERE DATE(cd.fecha_fin) = :fecha
+            AND cd.fecha_fin IS NOT NULL
             GROUP BY rxc.id_recetario
         """)
         result = session.execute(query, {"fecha": fecha})
@@ -450,7 +456,8 @@ def obtener_niveles_fallados_por_recetario(fecha):
             SELECT rxc.id_recetario, COUNT(DISTINCT rxc.id_ciclo_desmoldeo) as niveles_fallados
             FROM recetarioxciclo rxc
             JOIN ciclodesmoldeo cd ON rxc.id_ciclo_desmoldeo = cd.id
-            WHERE DATE(cd.fecha_inicio) = :fecha
+            WHERE DATE(cd.fecha_fin) = :fecha
+            AND cd.fecha_fin IS NOT NULL
             AND cd.estadoMaquina = 'CANCELADO'
             GROUP BY rxc.id_recetario
         """)
@@ -474,7 +481,8 @@ def obtener_niveles_ciclados_neto_por_recetario(fecha):
             SELECT rxc.id_recetario, SUM(rxc.cantidadNivelesSeleccionados) as niveles_ciclados_neto
             FROM recetarioxciclo rxc
             JOIN ciclodesmoldeo cd ON rxc.id_ciclo_desmoldeo = cd.id
-            WHERE DATE(cd.fecha_inicio) = :fecha
+            WHERE DATE(cd.fecha_fin) = :fecha
+            AND cd.fecha_fin IS NOT NULL
             GROUP BY rxc.id_recetario
         """)
         result = session.execute(query, {"fecha": fecha})
@@ -584,7 +592,8 @@ def obtener_detalles_ciclos_por_fecha(fecha):
                     ELSE cd.id_torre
                 END
                 AND t.id_recetario = rxc.id_recetario
-            WHERE DATE(cd.fecha_inicio) = :fecha
+            WHERE DATE(cd.fecha_fin) = :fecha
+            AND cd.fecha_fin IS NOT NULL
             ORDER BY cd.fecha_inicio ASC
         """)
         result = session.execute(query, {"fecha": fecha})
