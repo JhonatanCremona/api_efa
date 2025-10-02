@@ -131,7 +131,8 @@ def resumenDeProductividad(db, fecha_inicio:date, fecha_fin:date):
         db.query(CicloDesmoldeo, RecetarioXCiclo, Recetario)
         .join(RecetarioXCiclo, CicloDesmoldeo.id == RecetarioXCiclo.id_ciclo_desmoldeo)
         .join(Recetario, RecetarioXCiclo.id_recetario == Recetario.id)
-        .filter(CicloDesmoldeo.fecha_inicio.between(fecha_inicio,fecha_fin))
+        .filter(CicloDesmoldeo.fecha_fin.between(fecha_inicio, fecha_fin))  # Cambiado de fecha_inicio a fecha_fin
+        .filter(CicloDesmoldeo.fecha_fin.isnot(None))  # Agregado para seguridad
         .filter(CicloDesmoldeo.estadoMaquina.in_(["FINALIZADO", "CANCELADO"]))
         .all()
     )
@@ -183,7 +184,8 @@ def generarDocumentoXLMSProductividad(db, fecha_inicio:date, fecha_fin:date):
         db.query(CicloDesmoldeo, RecetarioXCiclo, Recetario)
         .join(RecetarioXCiclo, CicloDesmoldeo.id == RecetarioXCiclo.id_ciclo_desmoldeo)
         .join(Recetario, RecetarioXCiclo.id_recetario == Recetario.id)
-        .filter(CicloDesmoldeo.fecha_inicio.between(fecha_inicio, fecha_fin))
+        .filter(CicloDesmoldeo.fecha_fin.between(fecha_inicio, fecha_fin))  # Cambiado de fecha_inicio a fecha_fin
+        .filter(CicloDesmoldeo.fecha_fin.isnot(None))  # Agregado para seguridad
         .filter(CicloDesmoldeo.estadoMaquina.in_(["FINALIZADO", "CANCELADO"]))
         .all()
     )
@@ -590,7 +592,8 @@ def get_lista_productos(db, fecha_inicio: date, fecha_fin: date):
         db.query(CicloDesmoldeo, RecetarioXCiclo, Recetario)
         .join(RecetarioXCiclo, CicloDesmoldeo.id == RecetarioXCiclo.id_ciclo_desmoldeo)
         .join(Recetario, RecetarioXCiclo.id_recetario == Recetario.id)
-        .filter(CicloDesmoldeo.fecha_inicio.between(fecha_inicio, fecha_fin))
+        .filter(CicloDesmoldeo.fecha_fin.between(fecha_inicio, fecha_fin))  # Cambiado de fecha_inicio a fecha_fin
+        .filter(CicloDesmoldeo.fecha_fin.isnot(None))  # Agregado para seguridad
         .filter(CicloDesmoldeo.estadoMaquina.in_(["FINALIZADO", "CANCELADO"]))
         .all()
     )
@@ -619,7 +622,8 @@ def generarDocumentoXLMSGraficos(db, fecha_inicio:date, fecha_fin:date):
         db.query(CicloDesmoldeo, RecetarioXCiclo, Recetario)
         .join(RecetarioXCiclo, CicloDesmoldeo.id == RecetarioXCiclo.id_ciclo_desmoldeo)
         .join(Recetario, RecetarioXCiclo.id_recetario == Recetario.id)
-        .filter(CicloDesmoldeo.fecha_inicio.between(fecha_inicio, fecha_fin))
+        .filter(CicloDesmoldeo.fecha_fin.between(fecha_inicio, fecha_fin))  # Cambiado de fecha_inicio a fecha_fin
+        .filter(CicloDesmoldeo.fecha_fin.isnot(None))  # Agregado para seguridad
         .filter(CicloDesmoldeo.estadoMaquina.in_(["FINALIZADO", "CANCELADO"]))
         .all()
     )
@@ -945,7 +949,8 @@ def get_lista_total_ciclos_productos(db, fecha_inicio:date, fecha_fin:date):
         db.query(CicloDesmoldeo, RecetarioXCiclo, Recetario)
         .join(RecetarioXCiclo, CicloDesmoldeo.id == RecetarioXCiclo.id_ciclo_desmoldeo)
         .join(Recetario, RecetarioXCiclo.id_recetario == Recetario.id)
-        .filter(CicloDesmoldeo.fecha_inicio.between(fecha_inicio, fecha_fin))
+        .filter(CicloDesmoldeo.fecha_fin.between(fecha_inicio, fecha_fin))  # Cambiado de fecha_inicio a fecha_fin
+        .filter(CicloDesmoldeo.fecha_fin.isnot(None))  # Agregado para seguridad
         .filter(CicloDesmoldeo.estadoMaquina.in_(["FINALIZADO", "CANCELADO"]))
         .all()
     )
