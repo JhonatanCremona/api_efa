@@ -189,7 +189,7 @@ def generarDocumentoXLMSProductividad(db, fecha_inicio:date, fecha_fin:date):
         print(f"Error al cargar la imagen: {e}")
 
     # Título principal
-    ws.merge_cells("A1:F1")
+    ws.merge_cells("A1:G1")
     ws["A1"] = "RESUMEN DE PRODUCTIVIDAD | EFA ALIMENTOS"
     ws["A1"].font = Font(size=16, bold=True)
     ws["A1"].alignment = Alignment(horizontal="center")
@@ -213,6 +213,7 @@ def generarDocumentoXLMSProductividad(db, fecha_inicio:date, fecha_fin:date):
         tiempos_totales = {}
         niveles_desmoldados = {}
         segundos_por_nivel = {}
+        eficiencia_por_receta = {}
         
         # Procesar cada receta UNA SOLA VEZ
         recetas_procesadas = set()
@@ -275,6 +276,14 @@ def generarDocumentoXLMSProductividad(db, fecha_inicio:date, fecha_fin:date):
                     segundos_por_nivel[receta.id] = int(total_segundos / niveles)
                 else:
                     segundos_por_nivel[receta.id] = "0"
+                
+                # Eficiencia por receta (Torres equivalentes)
+                cantidad_niveles_receta = receta.cantidadNiveles or 1  # Evitar división por cero
+                if cantidad_niveles_receta > 0:
+                    eficiencia = niveles / cantidad_niveles_receta
+                    eficiencia_por_receta[receta.id] = round(eficiencia, 2)
+                else:
+                    eficiencia_por_receta[receta.id] = 0.0
     else:
         codigos_producto = {}
         cantidad_ciclos = {}
@@ -282,6 +291,7 @@ def generarDocumentoXLMSProductividad(db, fecha_inicio:date, fecha_fin:date):
         tiempos_totales = {}
         niveles_desmoldados = {}
         segundos_por_nivel = {}
+        eficiencia_por_receta = {}
 
     # Encabezados simplificados
     headers_cliente = [
@@ -290,7 +300,8 @@ def generarDocumentoXLMSProductividad(db, fecha_inicio:date, fecha_fin:date):
         "Peso total desmoldado [kg]",
         "Tiempo util desmoldado [HH:MM:SS]",
         "Niveles desmoldados\ncorrectamente",
-        "Segundos/Nivel [seg]"
+        "Segundos/Nivel [seg]",
+        "Torres equivalentes"
     ]
     
     # Añadir línea vacía y encabezados
@@ -318,6 +329,7 @@ def generarDocumentoXLMSProductividad(db, fecha_inicio:date, fecha_fin:date):
             tiempo_total = tiempos_totales.get(id_recetario, "00:00:00")
             niveles = niveles_desmoldados.get(id_recetario, 0)
             seg_por_nivel = segundos_por_nivel.get(id_recetario, "0")
+            torres_equiv = eficiencia_por_receta.get(id_recetario, 0.0)
             
             ws.append([
                 codigo_producto,    # Producto
@@ -325,7 +337,8 @@ def generarDocumentoXLMSProductividad(db, fecha_inicio:date, fecha_fin:date):
                 peso_total,         # Peso total desmoldado
                 tiempo_total,       # Tiempo total desmoldado
                 niveles,            # Niveles desmoldados correctamente
-                seg_por_nivel       # Segundos/Nivel
+                seg_por_nivel,      # Segundos/Nivel
+                torres_equiv        # Torres equivalentes
             ])
     else:
         # Si no hay datos, agregar una fila con "Sin datos"
@@ -335,7 +348,8 @@ def generarDocumentoXLMSProductividad(db, fecha_inicio:date, fecha_fin:date):
             "0.0",             # Peso total desmoldado
             "00:00:00",         # Tiempo total desmoldado
             0,                  # Niveles desmoldados correctamente
-            "0"                # Segundos/Nivel
+            "0",                # Segundos/Nivel
+            0.0                 # Torres equivalentes
         ])
     
     # Calcular y agregar fila de totales
@@ -363,14 +377,18 @@ def generarDocumentoXLMSProductividad(db, fecha_inicio:date, fecha_fin:date):
     if total_niveles > 0:
         segundos_por_nivel_total = int(total_segundos / total_niveles)
     
+    # Calcular torres equivalentes total (suma de todas las eficiencias individuales)
+    torres_equivalentes_total = round(sum(eficiencia_por_receta.values()), 1)
+    
     # Agregar fila de totales
     ws.append([
-        "TOTALES",            # Producto
-        total_ciclos,         # Cantidad de ciclos
-        total_peso,           # Peso total desmoldado
-        tiempo_total_formato, # Tiempo total desmoldado
-        total_niveles,        # Niveles desmoldados correctamente
-        segundos_por_nivel_total  # Segundos/Nivel
+        "TOTALES",                # Producto
+        total_ciclos,             # Cantidad de ciclos
+        total_peso,               # Peso total desmoldado
+        tiempo_total_formato,     # Tiempo total desmoldado
+        total_niveles,            # Niveles desmoldados correctamente
+        segundos_por_nivel_total, # Segundos/Nivel
+        torres_equivalentes_total # Torres equivalentes
     ])
     
     # Dar formato a la fila de totales
@@ -379,7 +397,7 @@ def generarDocumentoXLMSProductividad(db, fecha_inicio:date, fecha_fin:date):
     
     # Aplicar estilo negrita a la fila de totales
     from openpyxl.styles import Border, Side
-    for col in range(1, 7):  # 6 columnas (A-F)
+    for col in range(1, 8):  # 7 columnas (A-G)
         cell = ws.cell(row=fila_totales, column=col)
         cell.font = Font(bold=True)
         cell.alignment = Alignment(vertical='center')
@@ -393,7 +411,7 @@ def generarDocumentoXLMSProductividad(db, fecha_inicio:date, fecha_fin:date):
     
     # Agregar la tabla
     from openpyxl.worksheet.table import Table, TableStyleInfo
-    first_table = Table(displayName="ResumenProductividadCliente", ref=f"A{first_table_first_row}:F{first_table_last_row}")
+    first_table = Table(displayName="ResumenProductividadCliente", ref=f"A{first_table_first_row}:G{first_table_last_row}")
     first_style = TableStyleInfo(
         name="TableStyleMedium9", showFirstColumn=False,
         showLastColumn=False, showRowStripes=True, showColumnStripes=False
@@ -455,6 +473,8 @@ def generarDocumentoXLMSProductividad(db, fecha_inicio:date, fecha_fin:date):
                     final_width = min(max(content_width + 2, 12), 16)  # Columnas de peso
                 elif "[seg]" in str(ws[column + "6"].value or ""):
                     final_width = 21  # Segundos/Nivel
+                elif "Torres equivalentes" in str(ws[column + "6"].value or "") or any("Torres equivalentes" in str(cell.value or "") for cell in ws[column]):
+                    final_width = 19  # Torres equivalentes
                 else:
                     final_width = min(max(content_width + 2, 10), 25)  # Otras columnas
             
