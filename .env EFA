@@ -13,11 +13,11 @@ CREDENCIAL_SQL_USER_ADMIN = "Cremona2025"
 CREDENCIAL_SQL_USER_CLIENT = "12345678"
 
 #DEPLOY IFFA - LOCAL OPC VIRTUAL
-MYSQL_HOST = 192.168.20.46
-DATABASE_URL=mysql+pymysql://root:echo3241@192.168.20.46:3306/efa
-INDICE_OPC_UA = "2"
-OPC_SERVER_IP = "192.168.20.46"
-OPC_SERVER_PORT = "4840"
+##MYSQL_HOST = 192.168.20.57
+##DATABASE_URL=mysql+pymysql://root:echo3241@192.168.20.57:3306/efa
+##INDICE_OPC_UA = "2"
+##OPC_SERVER_IP = "192.168.20.29"
+##OPC_SERVER_PORT = "4840"
 #CAMBIAR ESTO: objects_node.get_child(["3:ServerInterfaces"])
 #POR ESTO: objects_node.get_child(["2:ServerInterfaces"])
 
@@ -27,11 +27,11 @@ OPC_SERVER_PORT = "4840"
 #--------------------------------------------------------------------
 
 #DEPLOY MINI PC EFA - OPC PLC
-##MYSQL_HOST = 192.168.10.114
-##DATABASE_URL=mysql+pymysql://root:echo3241@192.168.10.114:3306/efa
-##INDICE_OPC_UA = "4"
-##OPC_SERVER_IP = "192.168.10.121"
-##OPC_SERVER_PORT = "4840"
+MYSQL_HOST = 192.168.10.114
+DATABASE_URL=mysql+pymysql://root:echo3241@192.168.10.114:3306/efa
+INDICE_OPC_UA = "4"
+OPC_SERVER_IP = "192.168.10.121"
+OPC_SERVER_PORT = "4840"
 #CAMBIAR ESTO: objects_node.get_child(["2:ServerInterfaces"])
 #POR ESTO: objects_node.get_child(["3:ServerInterfaces"])
 
@@ -43,5 +43,5 @@ EMAIL_FROM=pruebascremona@gmail.com
 EMAIL_TO=evandoamarilla15@gmail.com
 MAILJET_SMTP_USER=0149b99d78a0dd072274340b28f42ce0
 MAILJET_SMTP_PASS=8708748a5dfc5b775aead35cd835c71c
-START_DATE=2025-10-01
+START_DATE=2025-10-06
 TIEMPO_EXCEL=1

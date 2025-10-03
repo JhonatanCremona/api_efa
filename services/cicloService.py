@@ -132,15 +132,22 @@ def resumenDeProductividad(db, fecha_inicio:date, fecha_fin:date):
             # Convertir segundos totales a formato hh:mm:ss
             tiempoTotalCiclo = convertir_segundos_a_horas(tiempoTotalSegundos)
 
+            # Calcular torres equivalentes (eficiencia por receta) como en export_excel.py
+            niveles_desmoldados = sum(rxc.cantidadNivelesFinalizado for c, rxc, r in tablaCiclos if rxc.id_recetario == receta.id)
+            cantidad_niveles_receta = receta.cantidadNiveles or 1  # Evitar división por cero
+            torres_equivalentes = round(niveles_desmoldados / cantidad_niveles_receta, 2) if cantidad_niveles_receta > 0 else 0.0
+
             productosRealizados[receta.id] = {
                 "id_recetario": receta.id,
                 "NombreProducto": receta.codigoProducto,
                 "pesoTotal": pesoFinal,
-                "cantidadCiclos": len(listaBuscarCiclo),
+                "cantidadCiclos": torres_equivalentes,  # Ahora muestra torres equivalentes
                 "tiempoTotal": tiempoTotalCiclo,  # Ahora en formato "hh:mm:ss"
             }
             
-    respuestaProductividad["CantidadCiclosCorrectos"] = cantidadCiclosTotal
+    # Calcular total de torres equivalentes sumando todas las eficiencias por receta
+    torres_equivalentes_total = sum(producto["cantidadCiclos"] for producto in productosRealizados.values())
+    respuestaProductividad["CantidadCiclosCorrectos"] = round(torres_equivalentes_total, 1)  # Ahora muestra total de torres equivalentes
     respuestaProductividad["PesoTotalCiclos"] = totalPeso / 1000 # Total en Toneladas
     respuestaProductividad["ProductosRealizados"] = list(productosRealizados.values())
 
@@ -964,15 +971,32 @@ def get_lista_total_ciclos_productos(db, fecha_inicio:date, fecha_fin:date):
             listaPeso.append({"fecha_fin": fecha, "PesoDiarioProducto": peso})
     listaResultado["pesoProducto"] = listaPeso
 
-    grouped_by_day = defaultdict(int)
+    # Calcular torres equivalentes agrupadas por día
+    torres_equivalentes_por_dia = defaultdict(float)
+    recetas_procesadas_por_dia = defaultdict(set)
 
     for ciclo, recetaXCiclo, receta in tablaBDD:
         dia = ciclo.fecha_fin.strftime("%Y-%m-%d")
-        grouped_by_day[dia] += 1
+        
+        # Solo procesar cada receta una vez por día
+        if receta.id not in recetas_procesadas_por_dia[dia]:
+            recetas_procesadas_por_dia[dia].add(receta.id)
+            
+            # Calcular niveles desmoldados para esta receta en este día
+            niveles_desmoldados = sum(
+                rxc.cantidadNivelesFinalizado for c, rxc, r in tablaBDD 
+                if rxc.id_recetario == receta.id and c.fecha_fin.strftime("%Y-%m-%d") == dia
+            )
+            
+            # Calcular torres equivalentes (eficiencia por receta) como en export_excel.py
+            cantidad_niveles_receta = receta.cantidadNiveles or 1  # Evitar división por cero
+            torres_equivalentes = round(niveles_desmoldados / cantidad_niveles_receta, 2) if cantidad_niveles_receta > 0 else 0.0
+            
+            torres_equivalentes_por_dia[dia] += torres_equivalentes
 
     listaResultado["ciclos"] = [
-        {"fecha_fin": fecha, "CiclosCompletados": count} 
-        for fecha, count in grouped_by_day.items()
+        {"fecha_fin": fecha, "CiclosCompletados": round(torres_equiv, 2)} 
+        for fecha, torres_equiv in torres_equivalentes_por_dia.items()
     ]
 
     return listaResultado
