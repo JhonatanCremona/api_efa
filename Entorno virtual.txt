@@ -3,6 +3,8 @@ Remove-Item -Recurse -Force venv
 
 Python -m venv venv
 
+Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
+
 .\venv\Scripts\activate
 
 pip install "fastapi[standard]"
@@ -30,3 +32,8 @@ fastapi run main.py
 Actualizar requirements
 
 pip freeze > requirements.txt
+
+En MySQL
+CREATE USER 'root'@'%' IDENTIFIED BY 'echo3241';
+GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION;
+FLUSH PRIVILEGES;

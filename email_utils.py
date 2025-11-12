@@ -24,8 +24,10 @@ CORREOS_ADMIN_PATH = os.path.join(EXCEL_DIR, "correos-admin.txt")
 
 EMAIL_TO = os.getenv("EMAIL_TO")
 EMAIL_FROM = os.getenv("EMAIL_FROM")
-MAILJET_SMTP_USER = os.getenv("MAILJET_SMTP_USER")
-MAILJET_SMTP_PASS = os.getenv("MAILJET_SMTP_PASS")
+SMTP_USER = os.getenv("SMTP_USER")
+SMTP_PASS = os.getenv("SMTP_PASS")
+SMTP_HOST = os.getenv("SMTP_HOST", "smtp.office365.com")
+SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
 START_DATE = os.getenv("START_DATE")
 
 def get_registro():
@@ -47,90 +49,22 @@ def set_registro(registro):
 
 def validar_y_limpiar_registro():
     """
-    Valida y limpia el registro de envíos, eliminando entradas muy antiguas
-    para evitar que el archivo crezca indefinidamente.
+    Devuelve el registro sin eliminar entradas antiguas.
+    Antes se eliminaban entradas mayores a 30 días; esa lógica fue removida.
+    Se asegura que las claves esperadas existan.
     """
     registro = get_registro()
-    
-    # Eliminar registros más antiguos que 30 días
-    fecha_limite = datetime.now().date() - timedelta(days=30)
-    eliminados_enviados = 0
-    eliminados_intentos = 0
-    
-    # Limpiar enviados
-    if "enviados" in registro:
-        enviados_filtrados = {}
-        for fecha_str, valor in registro["enviados"].items():
-            try:
-                fecha_registro = datetime.strptime(fecha_str, "%Y-%m-%d").date()
-                if fecha_registro >= fecha_limite:
-                    enviados_filtrados[fecha_str] = valor
-                else:
-                    eliminados_enviados += 1
-            except ValueError:
-                # Formato de fecha inválido, eliminar entrada
-                eliminados_enviados += 1
-                continue
-        
-        registro["enviados"] = enviados_filtrados
-    else:
+
+    # Asegurar claves necesarias pero no eliminar nada
+    if "enviados" not in registro:
         registro["enviados"] = {}
-    
-    # Limpiar intentos fallidos (estructura antigua)
-    if "intentos_fallidos" in registro:
-        intentos_filtrados = {}
-        for fecha_str, info in registro["intentos_fallidos"].items():
-            try:
-                fecha_registro = datetime.strptime(fecha_str, "%Y-%m-%d").date()
-                if fecha_registro >= fecha_limite:
-                    intentos_filtrados[fecha_str] = info
-                else:
-                    eliminados_intentos += 1
-            except ValueError:
-                # Formato de fecha inválido, eliminar entrada
-                eliminados_intentos += 1
-                continue
-        
-        registro["intentos_fallidos"] = intentos_filtrados
-    
-    # Limpiar correos fallidos (nueva estructura)
-    if "correos_fallidos" in registro:
-        correos_filtrados = {}
-        for fecha_str, correos_info in registro["correos_fallidos"].items():
-            try:
-                fecha_registro = datetime.strptime(fecha_str, "%Y-%m-%d").date()
-                if fecha_registro >= fecha_limite:
-                    correos_filtrados[fecha_str] = correos_info
-                else:
-                    eliminados_intentos += 1
-            except ValueError:
-                # Formato de fecha inválido, eliminar entrada
-                eliminados_intentos += 1
-                continue
-        
-        registro["correos_fallidos"] = correos_filtrados
-    
-    # Limpiar correos exitosos (nueva estructura)
-    if "correos_exitosos" in registro:
-        exitosos_filtrados = {}
-        for fecha_str, correos_info in registro["correos_exitosos"].items():
-            try:
-                fecha_registro = datetime.strptime(fecha_str, "%Y-%m-%d").date()
-                if fecha_registro >= fecha_limite:
-                    exitosos_filtrados[fecha_str] = correos_info
-                else:
-                    eliminados_enviados += 1
-            except ValueError:
-                # Formato de fecha inválido, eliminar entrada
-                eliminados_enviados += 1
-                continue
-        
-        registro["correos_exitosos"] = exitosos_filtrados
-    
-    if eliminados_enviados > 0 or eliminados_intentos > 0:
-        logger.info(f"Limpieza de registro: eliminadas {eliminados_enviados} entradas enviadas y {eliminados_intentos} intentos fallidos antiguos")
-        set_registro(registro)
-    
+    if "intentos_fallidos" not in registro:
+        registro["intentos_fallidos"] = {}
+    if "correos_fallidos" not in registro:
+        registro["correos_fallidos"] = {}
+    if "correos_exitosos" not in registro:
+        registro["correos_exitosos"] = {}
+
     return registro
 
 def leer_correos_desde_archivos():
@@ -232,7 +166,7 @@ def limpiar_excel_dir(max_archivos=17):
 
 async def send_email_with_attachment(subject, body, to_emails, from_email, username, password, file_path=None, max_retries=2):
     """
-    Envía correos con adjunto y retorna información sobre el éxito del envío.
+    Envía correos con adjunto usando Outlook/Office365 y retorna información sobre el éxito del envío.
     
     Returns:
         dict: {
@@ -249,7 +183,7 @@ async def send_email_with_attachment(subject, body, to_emails, from_email, usern
     
     # Validar configuración SMTP
     if not all([from_email, username, password]):
-        error_msg = "Configuración SMTP incompleta. Verifique EMAIL_FROM, MAILJET_SMTP_USER y MAILJET_SMTP_PASS"
+        error_msg = "Configuración SMTP incompleta. Verifique EMAIL_FROM, SMTP_USER y SMTP_PASS"
         logger.error(error_msg)
         return {
             'success': False,
@@ -349,8 +283,8 @@ async def send_email_with_attachment(subject, body, to_emails, from_email, usern
             try:
                 await aiosmtplib.send(
                     message,
-                    hostname="in-v3.mailjet.com",
-                    port=587,
+                    hostname=SMTP_HOST,
+                    port=SMTP_PORT,
                     start_tls=True,
                     username=username,
                     password=password,
@@ -396,7 +330,7 @@ async def send_email_with_attachment(subject, body, to_emails, from_email, usern
 
 async def send_email_with_multiple_attachments(subject, body, to_emails, from_email, username, password, file_paths=None, max_retries=2):
     """
-    Función para enviar correos con múltiples archivos adjuntos
+    Función para enviar correos con múltiples archivos adjuntos usando Outlook/Office365
     
     Returns:
         dict: {
@@ -413,7 +347,7 @@ async def send_email_with_multiple_attachments(subject, body, to_emails, from_em
     
     # Validar configuración SMTP
     if not all([from_email, username, password]):
-        error_msg = "Configuración SMTP incompleta. Verifique EMAIL_FROM, MAILJET_SMTP_USER y MAILJET_SMTP_PASS"
+        error_msg = "Configuración SMTP incompleta. Verifique EMAIL_FROM, SMTP_USER y SMTP_PASS"
         logger.error(error_msg)
         return {
             'success': False,
@@ -519,8 +453,8 @@ async def send_email_with_multiple_attachments(subject, body, to_emails, from_em
             try:
                 await aiosmtplib.send(
                     message,
-                    hostname="in-v3.mailjet.com",
-                    port=587,
+                    hostname=SMTP_HOST,
+                    port=SMTP_PORT,
                     start_tls=True,
                     username=username,
                     password=password,
@@ -571,13 +505,18 @@ def daterange(start_date, end_date):
     for n in range((end_date - start_date).days + 1):
         yield start_date + timedelta(n)
 
-async def verificar_conectividad_smtp(hostname="in-v3.mailjet.com", port=587, timeout=5):
+async def verificar_conectividad_smtp(hostname=None, port=None, timeout=5):
     """
-    Verifica si hay conectividad con el servidor SMTP.
+    Verifica si hay conectividad con el servidor SMTP (Outlook/Office365).
     
     Returns:
         bool: True si hay conectividad, False en caso contrario
     """
+    if hostname is None:
+        hostname = SMTP_HOST
+    if port is None:
+        port = SMTP_PORT
+        
     try:
         # Verificar conectividad básica TCP
         reader, writer = await asyncio.wait_for(
@@ -992,8 +931,8 @@ Saludos cordiales."""
                             body=body_efa,
                             to_emails=correos_efa_pendientes,
                             from_email=EMAIL_FROM,
-                            username=MAILJET_SMTP_USER,
-                            password=MAILJET_SMTP_PASS,
+                            username=SMTP_USER,
+                            password=SMTP_PASS,
                             file_path=excel_efa_path
                         )
                         
@@ -1036,8 +975,8 @@ Saludos cordiales."""
                             body=body_creminox,
                             to_emails=correos_creminox_pendientes,
                             from_email=EMAIL_FROM,
-                            username=MAILJET_SMTP_USER,
-                            password=MAILJET_SMTP_PASS,
+                            username=SMTP_USER,
+                            password=SMTP_PASS,
                             file_path=excel_creminox_path
                         )
                         
@@ -1080,8 +1019,8 @@ Saludos cordiales."""
                             body=body_admin,
                             to_emails=correos_admin_pendientes,
                             from_email=EMAIL_FROM,
-                            username=MAILJET_SMTP_USER,
-                            password=MAILJET_SMTP_PASS,
+                            username=SMTP_USER,
+                            password=SMTP_PASS,
                             file_paths=[excel_creminox_path, excel_efa_path]
                         )
                         
@@ -1113,8 +1052,8 @@ Saludos cordiales."""
                             body=body_creminox,
                             to_emails=correos_creminox_pendientes,
                             from_email=EMAIL_FROM,
-                            username=MAILJET_SMTP_USER,
-                            password=MAILJET_SMTP_PASS,
+                            username=SMTP_USER,
+                            password=SMTP_PASS,
                             file_path=excel_creminox_path
                         )
                         
@@ -1131,8 +1070,8 @@ Saludos cordiales."""
                             body=body_creminox,
                             to_emails=correos_admin_pendientes,
                             from_email=EMAIL_FROM,
-                            username=MAILJET_SMTP_USER,
-                            password=MAILJET_SMTP_PASS,
+                            username=SMTP_USER,
+                            password=SMTP_PASS,
                             file_path=excel_creminox_path
                         )
                         
@@ -1156,8 +1095,8 @@ Saludos cordiales."""
                             body=body_sin_datos,
                             to_emails=correos_efa_pendientes,
                             from_email=EMAIL_FROM,
-                            username=MAILJET_SMTP_USER,
-                            password=MAILJET_SMTP_PASS,
+                            username=SMTP_USER,
+                            password=SMTP_PASS,
                             file_path=None
                         )
                         
@@ -1185,8 +1124,8 @@ Saludos cordiales."""
                             body=body_sin_datos,
                             to_emails=todos_correos_pendientes,
                             from_email=EMAIL_FROM,
-                            username=MAILJET_SMTP_USER,
-                            password=MAILJET_SMTP_PASS,
+                            username=SMTP_USER,
+                            password=SMTP_PASS,
                             file_path=None
                         )
                         
